@@ -39,9 +39,8 @@ def createBoard():
     for y in range(0, 8, 2):
         for x in range(0, 8, 2):
             pygame.draw.rect(board, green, (150*x, 150*y, 150, 150))
-            pygame.draw.rect(board, white, ((x + 1)*150, 150*y, 150, 150))
-            pygame.draw.rect(
-                board, green, ((x + 1)*150, (y + 1)*150, 150, 150))
+            pygame.draw.rect(board, white, ((x + 1)*150, 150*y, 150, 150))     
+            pygame.draw.rect(board, green, ((x + 1)*150, (y + 1)*150, 150, 150))
             pygame.draw.rect(board, white, (150*x, (y + 1)*150, 150, 150))
 
     return board
