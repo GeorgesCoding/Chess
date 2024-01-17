@@ -1,34 +1,47 @@
 import pygame
 
-# initialize window
-pygame.init()
-screen = pygame.display.set_mode((1200,1200))
-pygame.display.set_caption("Chess")
+def main():
 
-# change to custom icon
-programIcon = pygame.image.load('icon.png')
-pygame.display.set_icon(programIcon)
+   # initialize window
+   screen = pygame.display.set_mode((1200,1200))
+   clock = pygame.time.Clock()
 
-# create board object
-board = pygame.Surface((1200, 1200))
-board.fill((31, 31, 31))
+   # customize window
+   pygame.display.set_caption("Chess")
+   programIcon = pygame.image.load('icon.png')
+   pygame.display.set_icon(programIcon)
 
-# draw board
-for y in range(0,8, 2):
-    for x in range(0, 8, 2):
-        pygame.draw.rect(board, (211, 255, 155), (150*x, 150*y, 150, 150))
-        pygame.draw.rect(board, (235, 236, 208), ((x + 1)*150, 150*y, 150, 150))
-        pygame.draw.rect(board, (211, 255, 155), ((x + 1)*150, (y + 1)*150, 150, 150))
-        pygame.draw.rect(board, (235, 236, 208), (150*x, (y + 1)*150, 150, 150))
+   # make board
+   board = createBoard()
 
-# add board to window
-screen.blit(board, (0,0))
+   # main loop
+   while True:
+      for event in pygame.event.get():
+         if event.type == pygame.QUIT:
+            return
+      
+      screen.blit(board,(0,0))
+      pygame.display.flip()
+      clock.tick(60)
+   
+def createBoard():
 
-pygame.display.flip()
+   # create board surface
+   board = pygame.Surface((1200, 1200))
 
-# main loop
-running = True
-while running:
-   for event in pygame.event.get():
-      if event.type == pygame.QUIT:
-         running = False
+   # board colours
+   green = (119, 149, 86)
+   white = (235, 236, 208)
+
+   # draw board
+   for y in range(0,8, 2):
+      for x in range(0, 8, 2):
+        pygame.draw.rect(board, green, (150*x, 150*y, 150, 150))
+        pygame.draw.rect(board, white, ((x + 1)*150, 150*y, 150, 150))
+        pygame.draw.rect(board, green, ((x + 1)*150, (y + 1)*150, 150, 150))
+        pygame.draw.rect(board, white, (150*x, (y + 1)*150, 150, 150))
+
+   return board
+
+if __name__ == '__main__':
+   main()
