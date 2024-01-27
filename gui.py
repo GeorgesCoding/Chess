@@ -23,11 +23,6 @@ def main():
     [y][x]
     """
 
-    # green space, highlight with gray (220, 220, 220)
-    # white space highlight with white
-    # highlight old square and highlight the square that the piece is one
-    # once placed, remove all colours
-
     # draw board & pieces
     boardSurface = createBoard()
     piecesSurface = drawPieces(board)
