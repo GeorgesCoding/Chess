@@ -9,7 +9,7 @@ def main():
 
     # customize window
     pygame.display.set_caption("Chess")
-    programIcon = pygame.image.load('icon.png')
+    programIcon = pygame.image.load('Assets\icon.png')
     pygame.display.set_icon(programIcon)
     screen.fill(pygame.Color(48, 46, 43))
 
@@ -118,51 +118,51 @@ def drag(screen, selected, boardSurface):
             pygame.draw.rect(screen, (3, 80, 200, 50), ((x * 150)+25, (y * 150)+25, 150, 150), 5)
 
         if piece == 1:  # black pawn
-            bPawn = pygame.transform.scale(pygame.image.load('Pieces\Pawn.png'), size).convert_alpha()
+            bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), size).convert_alpha()
             screen.blit(bPawn, mouseLocation)
 
         elif piece == 3:  # black knight
-            bKnight = pygame.transform.scale(pygame.image.load('Pieces\Knight.png'), size).convert_alpha()
+            bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), size).convert_alpha()
             screen.blit(bKnight, mouseLocation)
 
         elif piece == 4:  # black bishop
-            bBishop = pygame.transform.scale(pygame.image.load('Pieces\Bishop.png'), size).convert_alpha()
+            bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), size).convert_alpha()
             screen.blit(bBishop, mouseLocation)
 
         elif piece == 5:  # black rook
-            bRook = pygame.transform.scale(pygame.image.load('Pieces\Rook.png'), size).convert_alpha()
+            bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), size).convert_alpha()
             screen.blit(bRook, mouseLocation)
 
         elif piece == 7:  # black queen
-            bQueen = pygame.transform.scale(pygame.image.load('Pieces\Queen.png'), size).convert_alpha()
+            bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), size).convert_alpha()
             screen.blit(bQueen, mouseLocation)
 
         elif piece == 9:  # black king
-            bKing = pygame.transform.scale(pygame.image.load('Pieces\King.png'), size).convert_alpha()
+            bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), size).convert_alpha()
             screen.blit(bKing, mouseLocation)
 
         elif piece == -1:  # white pawn
-            wPawn = pygame.transform.scale(pygame.image.load('Pieces\wPawn.png'), size).convert_alpha()
+            wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), size).convert_alpha()
             screen.blit(wPawn, mouseLocation)
 
         elif piece == -3:  # white knight
-            wKnight = pygame.transform.scale(pygame.image.load('Pieces\wKnight.png'), size).convert_alpha()
+            wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), size).convert_alpha()
             screen.blit(wKnight, mouseLocation)
 
         elif piece == -4:  # white bishop
-            wBishop = pygame.transform.scale(pygame.image.load('Pieces\wBishop.png'), size).convert_alpha()
+            wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), size).convert_alpha()
             screen.blit(wBishop, mouseLocation)
 
         elif piece == -5:  # white rook
-            wRook = pygame.transform.scale(pygame.image.load('Pieces\wRook.png'), size).convert_alpha()
+            wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), size).convert_alpha()
             screen.blit(wRook, mouseLocation)
 
         elif piece == -7:  # white queen
-            wQueen = pygame.transform.scale(pygame.image.load('Pieces\wQueen.png'), size).convert_alpha()
+            wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), size).convert_alpha()
             screen.blit(wQueen, mouseLocation)
 
         elif piece == -9:  # white king
-            wKing = pygame.transform.scale(pygame.image.load('Pieces\wKing.png'), size).convert_alpha()
+            wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), size).convert_alpha()
             screen.blit(wKing, mouseLocation)
 
 
@@ -186,18 +186,18 @@ def drawPieces(board):
     pieces = pygame.Surface((1200, 1250), pygame.SRCALPHA, 32).convert_alpha()
 
     # load & scale all pieces
-    bPawn = pygame.transform.scale(pygame.image.load('Pieces\Pawn.png'), size).convert_alpha()
-    bBishop = pygame.transform.scale(pygame.image.load('Pieces\Bishop.png'), size).convert_alpha()
-    bKnight = pygame.transform.scale(pygame.image.load('Pieces\Knight.png'), size).convert_alpha()
-    bRook = pygame.transform.scale(pygame.image.load('Pieces\Rook.png'), size).convert_alpha()
-    bQueen = pygame.transform.scale(pygame.image.load('Pieces\Queen.png'), size).convert_alpha()
-    bKing = pygame.transform.scale(pygame.image.load('Pieces\King.png'), size).convert_alpha()
-    wPawn = pygame.transform.scale(pygame.image.load('Pieces\wPawn.png'), size).convert_alpha()
-    wBishop = pygame.transform.scale(pygame.image.load('Pieces\wBishop.png'), size).convert_alpha()
-    wKnight = pygame.transform.scale(pygame.image.load('Pieces\wKnight.png'), size).convert_alpha()
-    wRook = pygame.transform.scale(pygame.image.load('Pieces\wRook.png'), size).convert_alpha()
-    wQueen = pygame.transform.scale(pygame.image.load('Pieces\wQueen.png'), size).convert_alpha()
-    wKing = pygame.transform.scale(pygame.image.load('Pieces\wKing.png'), size).convert_alpha()
+    bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), size).convert_alpha()
+    bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), size).convert_alpha()
+    bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), size).convert_alpha()
+    bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), size).convert_alpha()
+    bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), size).convert_alpha()
+    bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), size).convert_alpha()
+    wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), size).convert_alpha()
+    wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), size).convert_alpha()
+    wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), size).convert_alpha()
+    wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), size).convert_alpha()
+    wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), size).convert_alpha()
+    wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), size).convert_alpha()
 
     # indexes of 2D array
     x = y = -1
