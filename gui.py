@@ -9,14 +9,15 @@ def main():
     size = pygame.display.Info().current_h
     size = size - 120
     pSize = (size-50)/8
-    
+    oldMouse = 0, 0
+
     # initialize window
     screen = pygame.display.set_mode((size, size))
 
     # customize window
     pygame.display.set_caption("Chess")
-    programIcon = pygame.image.load('Assets\icon.png')
-    pygame.display.set_icon(programIcon)
+    icon = pygame.image.load('Assets\icon.png')
+    pygame.display.set_icon(icon)
     screen.fill(pygame.Color(48, 46, 43))
 
     # 2D array to represent state of board
@@ -55,15 +56,20 @@ def main():
                 if selected != None:
                     tempPiece = selected[0]
                     newX, newY = getPos(pSize, size)
-                    board[newY][newX] = tempPiece
-                    boardSurface = createBoard(size, pSize)
-                    piecesSurface = drawPieces(board, pSize, size)
-                    selected = None
+                    if newX != 10: # if mouse go outside of board
+                        
+                        board[newY][newX] = tempPiece
+                        boardSurface = createBoard(size, pSize)
+                        piecesSurface = drawPieces(board, pSize, size)
+                        selected = None
+                    else:
+                        oldMouse = newX, newY
+
 
         # add surfaces to screen
         screen.blit(boardSurface, (25, 25))
         screen.blit(piecesSurface, (0, 0))
-
+        
         # creates 'dragging' animation for pieces
         drag(screen, selected, pSize, size)
 
@@ -118,58 +124,58 @@ def drag(screen, selected, pSize, size):
         dSize = (pSize, pSize)
         mX, mY = pygame.mouse.get_pos()
         mouseLocation = (mX - (pSize/2), mY - (pSize/2))
-
         x, y = getPos(pSize, size)
+
         if x != 10:
             pygame.draw.rect(screen, (3, 80, 200, 50), ((x * pSize)+25, (y * pSize)+25, pSize, pSize), 5)
 
-        if piece == 1:  # black pawn
-            bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()
-            screen.blit(bPawn, mouseLocation)
+            if piece == 1:  # black pawn
+                bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()
+                screen.blit(bPawn, mouseLocation)
 
-        elif piece == 3:  # black knight
-            bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), dSize).convert_alpha()
-            screen.blit(bKnight, mouseLocation)
+            elif piece == 3:  # black knight
+                bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), dSize).convert_alpha()
+                screen.blit(bKnight, mouseLocation)
 
-        elif piece == 4:  # black bishop
-            bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), dSize).convert_alpha()
-            screen.blit(bBishop, mouseLocation)
+            elif piece == 4:  # black bishop
+                bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), dSize).convert_alpha()
+                screen.blit(bBishop, mouseLocation)
 
-        elif piece == 5:  # black rook
-            bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), dSize).convert_alpha()
-            screen.blit(bRook, mouseLocation)
+            elif piece == 5:  # black rook
+                bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), dSize).convert_alpha()
+                screen.blit(bRook, mouseLocation)
 
-        elif piece == 7:  # black queen
-            bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), dSize).convert_alpha()
-            screen.blit(bQueen, mouseLocation)
+            elif piece == 7:  # black queen
+                bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), dSize).convert_alpha()
+                screen.blit(bQueen, mouseLocation)
 
-        elif piece == 9:  # black king
-            bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha()
-            screen.blit(bKing, mouseLocation)
+            elif piece == 9:  # black king
+                bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha()
+                screen.blit(bKing, mouseLocation)
 
-        elif piece == -1:  # white pawn
-            wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha()
-            screen.blit(wPawn, mouseLocation)
+            elif piece == -1:  # white pawn
+                wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha()
+                screen.blit(wPawn, mouseLocation)
 
-        elif piece == -3:  # white knight
-            wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), dSize).convert_alpha()
-            screen.blit(wKnight, mouseLocation)
+            elif piece == -3:  # white knight
+                wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), dSize).convert_alpha()
+                screen.blit(wKnight, mouseLocation)
 
-        elif piece == -4:  # white bishop
-            wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), dSize).convert_alpha()
-            screen.blit(wBishop, mouseLocation)
+            elif piece == -4:  # white bishop
+                wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), dSize).convert_alpha()
+                screen.blit(wBishop, mouseLocation)
 
-        elif piece == -5:  # white rook
-            wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), dSize).convert_alpha()
-            screen.blit(wRook, mouseLocation)
+            elif piece == -5:  # white rook
+                wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), dSize).convert_alpha()
+                screen.blit(wRook, mouseLocation)
 
-        elif piece == -7:  # white queen
-            wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), dSize).convert_alpha()
-            screen.blit(wQueen, mouseLocation)
+            elif piece == -7:  # white queen
+                wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), dSize).convert_alpha()
+                screen.blit(wQueen, mouseLocation)
 
-        elif piece == -9:  # white king
-            wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), dSize).convert_alpha()
-            screen.blit(wKing, mouseLocation)
+            elif piece == -9:  # white king
+                wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), dSize).convert_alpha()
+                screen.blit(wKing, mouseLocation)
 
 
 # gets the piece of the current mouse position
