@@ -1,5 +1,17 @@
 import pygame
 
+"""
+========================
+=== NOTES FOR VIEWER ===
+========================
+Each sub array in the board array is a row in the board
+The elements in each sub array are the individual spaces on the board in that row
+Initialized to the starting position of the board
+Black is positive, white is negative, 10 is an empty space
+index starts at [0][0], in the following format: [y][x]
+the value '10' or 'None' is used for null cases
+"""
+
 
 # main control function
 def main():
@@ -17,17 +29,9 @@ def main():
     pygame.display.set_caption("Chess")
     icon = pygame.image.load('Assets\icon.png')
     pygame.display.set_icon(icon)
-    screen.fill(pygame.Color(48, 46, 43))
 
     # 2D array to represent state of board
     board = [[5, 3, 4, 7, 9, 4, 3, 5], [1]*8, [0]*8, [0]*8, [0]*8, [0]*8, [-1]*8, [-5, -3, -4, -7, -9, -4, -3, -5]]
-    """
-    Each sub array is a row in the board
-    The elements in each sub array are the individual spaces on the board in that row
-    Initialized to the starting position of the board
-    Black is positive, white is negative, zero is an empty space
-    [y][x]
-    """
 
     # draw board & pieces
     boardSurface = createBoard(size, pSize)
@@ -48,28 +52,41 @@ def main():
                 if piece != 10:
                     selected = piece, x, y  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
-                    pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * pSize), (y * pSize), pSize, pSize), 5)  # outline old space
+                    pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * pSize) + 25, (y * pSize) + 25, pSize, pSize), 5)  # outline old space
                     piecesSurface = drawPieces(board, pSize, size)
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if selected != None:
                     tempPiece = selected[0]
                     newX, newY = getPos(pSize, size)
-                    if newX != 10: # mouse in bounds of board
+                    if newX != 10:  # mouse in bounds of board
                         board[newY][newX] = tempPiece
                         boardSurface = createBoard(size, pSize)
                         piecesSurface = drawPieces(board, pSize, size)
                         selected = None
 
         # add surfaces to screen
-        screen.blit(boardSurface, (25, 25))
+        screen.blit(boardSurface, (0, 0))
         screen.blit(piecesSurface, (0, 0))
-        
+
         # creates 'dragging' animation for pieces
         drag(screen, selected, pSize, size)
 
         # update display
         pygame.display.flip()
+
+
+# test function: prints the state of the board
+def testBoard(board):
+    print(board[0])
+    print(board[1])
+    print(board[2])
+    print(board[3])
+    print(board[4])
+    print(board[5])
+    print(board[6])
+    print(board[7])
+    print("--------------------------------")
 
 
 # gets the position of the mouse in terms of the board tile coordinates
@@ -89,19 +106,23 @@ def getPos(pSize, size):
 def createBoard(size, pSize):
 
     # create board surface
-    tempBoard = pygame.Surface((size-50, size-50))
+    tempBoard = pygame.Surface((size, size))
 
     # board colours
     green = (119, 149, 86)
     white = (235, 236, 208)
+    gray = (48, 46, 43)
+
+    # draw background
+    pygame.draw.rect(tempBoard, gray, (0, 0, size, size))
 
     # draw boards
     for y in range(0, 8, 2):
         for x in range(0, 8, 2):
-            pygame.draw.rect(tempBoard, white, (pSize*x, pSize*y, pSize, pSize))
-            pygame.draw.rect(tempBoard, green, ((x + 1)*pSize, pSize*y, pSize, pSize))
-            pygame.draw.rect(tempBoard, white, ((x + 1)*pSize, (y + 1)*pSize, pSize, pSize))
-            pygame.draw.rect(tempBoard, green, (pSize*x, (y + 1)*pSize, pSize, pSize))
+            pygame.draw.rect(tempBoard, white, (pSize*x + 25, pSize*y + 25, pSize, pSize))
+            pygame.draw.rect(tempBoard, green, ((x + 1)*pSize + 25, pSize*y + 25, pSize, pSize))
+            pygame.draw.rect(tempBoard, white, ((x + 1)*pSize + 25, (y + 1)*pSize + 25, pSize, pSize))
+            pygame.draw.rect(tempBoard, green, (pSize*x + 25, (y + 1)*pSize + 25, pSize, pSize))
 
     return tempBoard
 
@@ -111,80 +132,66 @@ def location(a, b, pSize):
     return (25 + (a*pSize), 25 + (b * pSize))
 
 
-def draw(screen, mouseLocation, dSize, piece):
-    if piece == 1:  # black pawn
-            bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()
-            screen.blit(bPawn, mouseLocation)
-
-    elif piece == 3:  # black knight
-            bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), dSize).convert_alpha()
-            screen.blit(bKnight, mouseLocation)
-
-    elif piece == 4:  # black bishop
-            bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), dSize).convert_alpha()
-            screen.blit(bBishop, mouseLocation)
-
-    elif piece == 5:  # black rook
-        bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), dSize).convert_alpha()
-        screen.blit(bRook, mouseLocation)
-
-    elif piece == 7:  # black queen
-        bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), dSize).convert_alpha()
-        screen.blit(bQueen, mouseLocation)
-
-    elif piece == 9:  # black king
-        bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha()
-        screen.blit(bKing, mouseLocation)
-
-    elif piece == -1:  # white pawn
-        wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha()
-        screen.blit(wPawn, mouseLocation)
-
-    elif piece == -3:  # white knight
-        wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), dSize).convert_alpha()
-        screen.blit(wKnight, mouseLocation)
-
-    elif piece == -4:  # white bishop
-        wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), dSize).convert_alpha()
-        screen.blit(wBishop, mouseLocation)
-
-    elif piece == -5:  # white rook
-        wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), dSize).convert_alpha()
-        screen.blit(wRook, mouseLocation)
-
-    elif piece == -7:  # white queen
-        wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), dSize).convert_alpha()
-        screen.blit(wQueen, mouseLocation)
-
-    elif piece == -9:  # white king
-        wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), dSize).convert_alpha()
-        screen.blit(wKing, mouseLocation)
-
-
-
-
 # creates a 'dragging' animation for the pieces
 def drag(screen, selected, pSize, size):
     if selected != None:
-        old = 0,0
+        half = pSize/2
         piece = selected[0]
         dSize = (pSize, pSize)
         mX, mY = pygame.mouse.get_pos()
-        mouseLocation = (mX - (pSize/2), mY - (pSize/2))
+        mouseLocation = (mX - half, mY - half)
         x, y = getPos(pSize, size)
-        pieceLocation = (mX+(pSize/2), mY + (pSize/2))
-        
-        if x != 10:
-            pygame.draw.rect(screen, (3, 80, 200, 50), ((x * pSize)+25, (y * pSize)+25, pSize, pSize), 5)
 
-        if pieceLocation[0] >= (size-25) or pieceLocation[1] >= (size-25) or pieceLocation[1] < 25 or mY < pieceLocation[0]:
-            draw(screen, old, dSize, piece)
-            print(1)
-            
-        else:
-            draw(screen, mouseLocation, dSize, piece)
-            old = mX, mY
+        # draw where piece will land according to mouse location
+        pygame.draw.rect(screen, (3, 80, 200, 50), ((x * pSize)+25, (y * pSize)+25, pSize, pSize), 5)
 
+        if piece == 1:  # black pawn
+            bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()
+            screen.blit(bPawn, mouseLocation)
+
+        elif piece == 3:  # black knight
+            bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), dSize).convert_alpha()
+            screen.blit(bKnight, mouseLocation)
+
+        elif piece == 4:  # black bishop
+            bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), dSize).convert_alpha()
+            screen.blit(bBishop, mouseLocation)
+
+        elif piece == 5:  # black rook
+            bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), dSize).convert_alpha()
+            screen.blit(bRook, mouseLocation)
+
+        elif piece == 7:  # black queen
+            bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), dSize).convert_alpha()
+            screen.blit(bQueen, mouseLocation)
+
+        elif piece == 9:  # black king
+            bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha()
+            screen.blit(bKing, mouseLocation)
+
+        elif piece == -1:  # white pawn
+            wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha()
+            screen.blit(wPawn, mouseLocation)
+
+        elif piece == -3:  # white knight
+            wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), dSize).convert_alpha()
+            screen.blit(wKnight, mouseLocation)
+
+        elif piece == -4:  # white bishop
+            wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), dSize).convert_alpha()
+            screen.blit(wBishop, mouseLocation)
+
+        elif piece == -5:  # white rook
+            wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), dSize).convert_alpha()
+            screen.blit(wRook, mouseLocation)
+
+        elif piece == -7:  # white queen
+            wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), dSize).convert_alpha()
+            screen.blit(wQueen, mouseLocation)
+
+        elif piece == -9:  # white king
+            wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), dSize).convert_alpha()
+            screen.blit(wKing, mouseLocation)
 
 
 # gets the piece of the current mouse position
@@ -194,9 +201,9 @@ def getPiece(board, pSize, size):
         if board[y][x] != 0:
             return board[y][x], x, y
         else:
-            return 10, 10, 10
+            return 10, 10, 10  # no piece
     else:
-        return 10, 10, 10
+        return 10, 10, 10  # no piece
 
 
 # draws the pieces in their positions according to the 2D board array
