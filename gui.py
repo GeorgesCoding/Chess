@@ -13,69 +13,6 @@ the value '10' or 'None' is used for null cases
 """
 
 
-# main control function
-def main():
-
-    # automatically changes game size according to monitor size
-    pygame.init()
-    size = pygame.display.Info().current_h
-    size = size - 120
-    pSize = (size-50)/8
-
-    # initialize window
-    screen = pygame.display.set_mode((size, size))
-
-    # customize window
-    pygame.display.set_caption("Chess")
-    icon = pygame.image.load('Assets\icon.png')
-    pygame.display.set_icon(icon)
-
-    # 2D array to represent state of board
-    board = [[5, 3, 4, 7, 9, 4, 3, 5], [1]*8, [0]*8, [0]*8, [0]*8, [0]*8, [-1]*8, [-5, -3, -4, -7, -9, -4, -3, -5]]
-
-    # draw board & pieces
-    boardSurface = createBoard(size, pSize)
-    piecesSurface = drawPieces(board, pSize, size)
-
-    # selected piece variable
-    selected = None
-
-    # main loop
-    while True:
-        piece, x, y = getPiece(board, pSize, size)  # checks if there is a piece under the mouse
-        for event in pygame.event.get():
-
-            if event.type == pygame.QUIT:
-                return
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if piece != 10:
-                    selected = piece, x, y  # piece is selected, toggles selected variable
-                    board[y][x] = 0  # remove piece from board
-                    pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * pSize) + 25, (y * pSize) + 25, pSize, pSize), 5)  # outline old space
-                    piecesSurface = drawPieces(board, pSize, size)
-
-            if event.type == pygame.MOUSEBUTTONUP:
-                if selected != None:
-                    tempPiece = selected[0]
-                    newX, newY = getPos(pSize, size)
-                    if newX != 10:  # mouse in bounds of board
-                        board[newY][newX] = tempPiece
-                        boardSurface = createBoard(size, pSize)
-                        piecesSurface = drawPieces(board, pSize, size)
-                        selected = None
-
-        # add surfaces to screen
-        screen.blit(boardSurface, (0, 0))
-        screen.blit(piecesSurface, (0, 0))
-
-        # creates 'dragging' animation for pieces
-        drag(screen, selected, pSize, size)
-
-        # update display
-        pygame.display.flip()
-
-
 # test function: prints the state of the board
 def testBoard(board):
     print(board[0])
@@ -145,7 +82,7 @@ def drag(screen, selected, pSize, size):
         # draw where piece will land according to mouse location
         pygame.draw.rect(screen, (3, 80, 200, 50), ((x * pSize)+25, (y * pSize)+25, pSize, pSize), 5)
 
-        if piece == 1:  # black pawn
+        if piece == 1 or piece == 11:  # black pawn
             bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()
             screen.blit(bPawn, mouseLocation)
 
@@ -169,7 +106,7 @@ def drag(screen, selected, pSize, size):
             bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha()
             screen.blit(bKing, mouseLocation)
 
-        elif piece == -1:  # white pawn
+        elif piece == -1 or piece == -11:  # white pawn
             wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha()
             screen.blit(wPawn, mouseLocation)
 
@@ -235,7 +172,7 @@ def drawPieces(board, pSize, size):
         for n in _:
             x += 1
 
-            if n == 1:  # black pawn
+            if n == 1 or n == 11:  # black pawn
                 pieces.blit(bPawn, location(x, y, pSize))
 
             elif n == 3:  # black knight
@@ -253,7 +190,7 @@ def drawPieces(board, pSize, size):
             elif n == 9:  # black king
                 pieces.blit(bKing, location(x, y, pSize))
 
-            elif n == -1:  # white pawn
+            elif n == -1 or n == -11:  # white pawn
                 pieces.blit(wPawn, location(x, y, pSize))
 
             elif n == -3:  # white knight
@@ -276,7 +213,3 @@ def drawPieces(board, pSize, size):
         x = -1
 
     return pieces
-
-
-if __name__ == '__main__':
-    main()
