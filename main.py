@@ -7,7 +7,10 @@ from rules import *
 ========================
 === NOTES FOR VIEWER ===
 ========================
-This file is responsible for running the entire game
+• This file is responsible for running the entire game
+• Make sure 'pygame' module is installed prior to running file
+    - Using pip: pip install pygame
+    - Run file with terminal command: 'py main.py'
 """
 
 

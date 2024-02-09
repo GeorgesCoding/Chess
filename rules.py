@@ -2,13 +2,14 @@ import pygame
 from gui import *
 
 """ 
-all legal moves are computed in terms of a list
-if the new position is in that list, then the move is legal
+========================
+=== NOTES FOR VIEWER ===
+========================
+• All legal moves are computed in terms of a list
+• If the new position is in that list, then the move is legal
 
-saving switching turns for last
-same with external conditions including
-check, pawn at end of board, castle, checkmate
-focusing soley on movements of pieces
+• Saving the following cases after primary movements are completed:
+    - Switching turns, check, pawn at end of board, castle, checkmate
 """
 
 
@@ -31,6 +32,18 @@ def move(piece, newY, newX, oldY, oldX, board):
     elif piece in rook:
         moves = rookMove(piece, oldY, oldX, board)
         return ((newY, newX) in moves)
+
+    elif piece in knight:
+        return
+
+    elif piece in bishop:
+        return
+
+    elif piece in queen:
+        return
+
+    elif piece in king:
+        return
 
 
 # determines if a set of coordinates are in bounds
@@ -148,3 +161,9 @@ def rookMove(piece, y, x, board):
         moves.append((y, tempX - 1))
 
     return moves
+
+
+def knightMove(piece, y, x, board):
+    moves = []
+    tempY = y
+    tempX = x
