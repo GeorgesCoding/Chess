@@ -96,13 +96,13 @@ def pawnMove(piece, y, x, board):
         if board[y+1][x] == 0:
             moves.append((y+1, x))  # forward one space
 
-        if board[y+2][x] == 0 and piece == 11:  # first move
+        if piece == 11 and board[y+2][x] == 0:  # first move
             moves.append((y+2, x))
 
-        if spaceCheck(piece, board, y + 1, x + 1):  # right capture
+        if spaceCheck(piece, board, y + 1, x + 1) and board[y+1][x+1] != 0:  # right capture
             moves.append((y+1, x+1))
 
-        if spaceCheck(piece, board, y + 1, x - 1):  # left capture
+        if spaceCheck(piece, board, y + 1, x - 1) and board[y+1][x-1] != 0:  # left capture
             moves.append((y+1, x-1))
 
         return moves
@@ -111,13 +111,13 @@ def pawnMove(piece, y, x, board):
         if board[y-1][x] == 0:
             moves.append((y-1, x))  # forward one space
 
-        if board[y-2][x] == 0 and piece == -11:  # first move
+        if piece == -11 and board[y-2][x] == 0:  # first move
             moves.append((y-2, x))
 
-        if spaceCheck(piece, board, y - 1, x + 1):  # right capture
+        if spaceCheck(piece, board, y - 1, x + 1) and board[y-1][x+1] != 0:  # right capture
             moves.append((y-1, x+1))
 
-        if spaceCheck(piece, board, y - 1, x - 1):  # left capture
+        if spaceCheck(piece, board, y - 1, x - 1) and board[y-1][x-1] != 0:  # left capture
             moves.append((y-1, x-1))
 
         return moves

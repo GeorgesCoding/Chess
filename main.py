@@ -24,7 +24,7 @@ def main():
     pSize = (size-50)/8
 
     # initialize window
-    screen = pygame.display.set_mode((size, size))
+    screen = pygame.display.set_mode((size + 500, size))
 
     # customize window
     pygame.display.set_caption("Chess")
@@ -34,12 +34,15 @@ def main():
     # 2D array to represent state of board
     board = [[5, 3, 4, 7, 9, 4, 3, 5], [11]*8, [0]*8, [0]*8, [0]*8, [0]*8, [-11]*8, [-5, -3, -4, -7, -9, -4, -3, -5]]
 
-    # draw board & pieces
+    # draw board, pieces and side bar
     boardSurface = createBoard(size, pSize)
+    boardSurface = buttons(boardSurface, size)
     piecesSurface = drawPieces(board, pSize, size)
 
     # selected piece variable
     selected = None
+    
+    turn = 1
 
     # starting position of piece being moved
     oldX, oldY = 0, 0
@@ -53,7 +56,7 @@ def main():
                 return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if tempPiece != 10:
+                if tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn):
                     selected = tempPiece, x, y  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
                     pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * pSize) + 25, (y * pSize) + 25, pSize, pSize), 5)  # outline old space
@@ -68,11 +71,13 @@ def main():
                     if newX != 10 and move(piece, newY, newX, oldY, oldX, board):  # mouse in bounds of board
                         board[newY][newX] = piece
                         firstMove(piece, board, newY, newX)
+                        turn = -turn
 
                     else:
                         board[oldY][oldX] = piece
 
                 boardSurface = createBoard(size, pSize)
+                boardSurface = buttons(boardSurface, size)
                 piecesSurface = drawPieces(board, pSize, size)
                 selected = None
                 oldY, oldX = 0, 0

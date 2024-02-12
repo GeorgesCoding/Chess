@@ -13,6 +13,18 @@ import pygame
 """
 
 
+# toggles the turn
+def playerTurn(colour, turn):
+    if colour == "Black" and turn == 1:
+        return True
+    elif colour == "White" and turn == 1:
+        return False
+    elif colour == "Black" and turn == -1:
+        return False
+    elif colour == "White" and turn == -1:
+        return True
+
+
 # helper function: prints the state of the board
 def testBoard(board):
     x = 0
@@ -40,7 +52,7 @@ def getPos(pSize, size):
 def createBoard(size, pSize):
 
     # create board surface
-    tempBoard = pygame.Surface((size, size))
+    tempBoard = pygame.Surface((size + size/1.9, size))
 
     # board colours
     green = (119, 149, 86)
@@ -48,15 +60,54 @@ def createBoard(size, pSize):
     gray = (48, 46, 43)
 
     # draw background
-    pygame.draw.rect(tempBoard, gray, (0, 0, size, size))
+    pygame.draw.rect(tempBoard, gray, (0, 0, size + size/1.9, size))
 
-    # draw boards
-    for y in range(0, 8, 2):
+    # draw rounded corners
+    pygame.draw.rect(tempBoard, white, (25, 25, pSize, pSize), 0, 0, 12)
+    pygame.draw.rect(tempBoard, green, (pSize*7 + 25, 25, pSize, pSize), 0, 0, 0, 12)
+    pygame.draw.rect(tempBoard, green, (25, pSize*7 + 25, pSize, pSize), 0, 0, 0, 0, 12)
+    pygame.draw.rect(tempBoard, white, (pSize*7 + 25, pSize*7 + 25, pSize, pSize), 0, 0, 0, 0, 0, 12)
+
+    for i in range(1, 7, 2):
+        pygame.draw.rect(tempBoard, white, (25 + pSize * (i + 1), 25, pSize, pSize))
+        pygame.draw.rect(tempBoard, green, (25 + pSize * i, 25, pSize, pSize))
+
+    for n in range(1, 7, 2):
+        pygame.draw.rect(tempBoard, green, (25 + pSize * (n + 1), pSize * 7 + 25, pSize, pSize))
+        pygame.draw.rect(tempBoard, white, (25 + pSize * n, pSize * 7 + 25, pSize, pSize))
+
+    # draw middle of board
+    for y in range(1, 6, 2):
         for x in range(0, 8, 2):
-            pygame.draw.rect(tempBoard, white, (pSize*x + 25, pSize*y + 25, pSize, pSize))
-            pygame.draw.rect(tempBoard, green, ((x + 1)*pSize + 25, pSize*y + 25, pSize, pSize))
-            pygame.draw.rect(tempBoard, white, ((x + 1)*pSize + 25, (y + 1)*pSize + 25, pSize, pSize))
-            pygame.draw.rect(tempBoard, green, (pSize*x + 25, (y + 1)*pSize + 25, pSize, pSize))
+            pygame.draw.rect(tempBoard, green, (25 + pSize * x, pSize * y + 25, pSize, pSize))
+            pygame.draw.rect(tempBoard, white, (25 + pSize * (x + 1), pSize * y + 25, pSize, pSize))
+            pygame.draw.rect(tempBoard, green, (25 + pSize * (x + 1), pSize * (y + 1) + 25, pSize, pSize))
+            pygame.draw.rect(tempBoard, white, (25 + pSize * x, pSize * (y + 1) + 25, pSize, pSize))
+
+    return tempBoard
+
+
+# side window and button control
+def buttons(tempBoard, size):
+
+    # draw side window
+    pygame.draw.rect(tempBoard, (33, 32, 29), (size, 25, (size/1.9)-25, size - 50), 0, 0, 12, 12, 12, 12)
+
+    buttonSize = ((size/1.9)-25 - 60)/3
+    green = (104, 136, 80)
+
+    # draw buttons
+    pygame.draw.rect(tempBoard, green, (size + 15, 45, buttonSize, (size - 45)/6), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(tempBoard, green, (size + 30 + buttonSize, 45, buttonSize, (size - 45)/6), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(tempBoard, green, (size + 45 + buttonSize * 2, 45, buttonSize, (size - 45)/6), 0, 0, 12, 12, 12, 12)
+
+    restart = pygame.transform.scale(pygame.image.load('Assets\Restart.png'), (buttonSize-15, buttonSize-15)).convert_alpha()
+    twoPlayer = pygame.transform.scale(pygame.image.load('Assets\TPlayer.png'), (buttonSize, buttonSize)).convert_alpha()
+    computer = pygame.transform.scale(pygame.image.load('Assets\Computer.png'), (buttonSize, buttonSize)).convert_alpha()
+
+    tempBoard.blit(restart, (size + 15*1.5, 60))
+    tempBoard.blit(twoPlayer, (size + 30 + buttonSize, 45*1.175))
+    tempBoard.blit(computer, (size + 45 + buttonSize * 2, 45*1.1))
 
     return tempBoard
 
