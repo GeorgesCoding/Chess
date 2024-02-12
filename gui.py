@@ -13,16 +13,13 @@ import pygame
 """
 
 
-# test function: prints the state of the board
+# helper function: prints the state of the board
 def testBoard(board):
-    print(board[0])
-    print(board[1])
-    print(board[2])
-    print(board[3])
-    print(board[4])
-    print(board[5])
-    print(board[6])
-    print(board[7])
+    x = 0
+    while x < 8:
+        print(board[x])
+        x += 1
+
     print("--------------------------------")
 
 
@@ -134,11 +131,8 @@ def drag(screen, selected, pSize, size):
 # gets the piece of the current mouse position
 def getPiece(board, pSize, size):
     x, y = getPos(pSize, size)
-    if x != 10:
-        if board[y][x] != 0:
-            return board[y][x], x, y
-        else:
-            return 10, 10, 10  # no piece
+    if x != 10 and board[y][x] != 0:
+        return board[y][x], x, y
     else:
         return 10, 10, 10  # no piece
 

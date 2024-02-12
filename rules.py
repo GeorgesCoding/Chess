@@ -14,7 +14,7 @@ from gui import *
 
 
 # determines if move is legal or not
-# if the new position is in the list of legal moves, return true
+# if the new position is in the lis t of legal moves, return true
 def move(piece, newY, newX, oldY, oldX, board):
 
     # lists for piece identification
@@ -34,7 +34,8 @@ def move(piece, newY, newX, oldY, oldX, board):
         return ((newY, newX) in moves)
 
     elif piece in knight:
-        return
+        moves = knightMove(piece, oldY, oldX, board)
+        return ((newY, newX) in moves)
 
     elif piece in bishop:
         return
@@ -47,47 +48,25 @@ def move(piece, newY, newX, oldY, oldX, board):
 
 
 # determines if a set of coordinates are in bounds
-def inBounds(x, y):
-    if x < 0 or x > 7 or y < 0 or y > 7:
+def inBounds(newX, newY):
+    if newX < 0 or newX > 7 or newY < 0 or newY > 7:
         return False
     else:
         return True
 
 
-# computes legal pawn moves
-def pawnMove(piece, y, x, board):
-
-    moves = [None]*3
-
-    if piece > 0:  # black piece
-        if board[y+1][x] == 0:
-            moves.append((y+1, x))  # forward one space
-
-        if board[y+2][x] == 0 and piece == 11:  # first move
-            moves.append((y+2, x))
-
-        if inBounds(y+1, x+1) and board[y+1][x+1] != 0:  # right capture
-            moves.append((y+1, x+1))
-
-        if inBounds(y+1, x-1) and board[y+1][x-1] != 0:  # left capture
-            moves.append((y+1, x-1))
-
-        return moves
-
-    else:  # white piece
-        if board[y-1][x] == 0:
-            moves.append((y-1, x))  # forward one space
-
-        if board[y-2][x] == 0 and piece == -11:  # first move
-            moves.append((y-2, x))
-
-        if inBounds(y-1, x+1) and board[y-1][x+1] != 0:  # right capture
-            moves.append((y-1, x+1))
-
-        if inBounds(y-1, x-1) and board[y-1][x-1] != 0:  # left capture
-            moves.append((y-1, x-1))
-
-        return moves
+# the default check for computing legal moves
+# True for valid space, false for invalid
+def spaceCheck(piece, board, newY, newX):
+    if inBounds(newX, newY):
+        if board[newY][newX] == 0:
+            return True
+        elif pieceColour(board[newY][newX]) == pieceColour(piece):
+            return False
+        else:
+            return True
+    else:
+        return False
 
 
 # toggles first move ability of pawn
@@ -108,62 +87,96 @@ def pieceColour(piece):
         return "White"
 
 
+# computes legal pawn moves
+def pawnMove(piece, y, x, board):
+
+    moves = [None]*3
+
+    if piece > 0:  # black piece
+        if board[y+1][x] == 0:
+            moves.append((y+1, x))  # forward one space
+
+        if board[y+2][x] == 0 and piece == 11:  # first move
+            moves.append((y+2, x))
+
+        if spaceCheck(piece, board, y + 1, x + 1):  # right capture
+            moves.append((y+1, x+1))
+
+        if spaceCheck(piece, board, y + 1, x - 1):  # left capture
+            moves.append((y+1, x-1))
+
+        return moves
+
+    else:  # white piece
+        if board[y-1][x] == 0:
+            moves.append((y-1, x))  # forward one space
+
+        if board[y-2][x] == 0 and piece == -11:  # first move
+            moves.append((y-2, x))
+
+        if spaceCheck(piece, board, y - 1, x + 1):  # right capture
+            moves.append((y-1, x+1))
+
+        if spaceCheck(piece, board, y - 1, x - 1):  # left capture
+            moves.append((y-1, x-1))
+
+        return moves
+
+
 # computes legal rook moves
 def rookMove(piece, y, x, board):
     moves = []
     tempY = y
     tempX = x
 
-    # gets opposite colour of the rook
-    colour = pieceColour(-piece)
-
     # current space
     moves.append((y, x))
 
     # up
-    while (inBounds(x, tempY + 1) and board[tempY + 1][x] == 0):
+    while (spaceCheck(piece, board, tempY + 1, x)):
         moves.append((tempY + 1, x))
         tempY += 1
-
-    # up capture
-    if inBounds(x, tempY+1) and pieceColour(board[tempY+1][x]) == colour:
-        moves.append((tempY+1, x))
 
     tempY = y
 
     # right
-    while (inBounds(y, tempX + 1) and board[y][tempX + 1] == 0):
+    while (spaceCheck(piece, board, y, tempX + 1)):
         moves.append((y, tempX + 1))
         tempX += 1
-
-    # rightwards capture
-    if inBounds(tempX + 1, y) and pieceColour(board[y][tempX + 1]) == colour:
-        moves.append((y, tempX + 1))
 
     tempX = x
 
     # down
-    while (inBounds(x, tempY - 1) and board[tempY - 1][x] == 0):
+    while (spaceCheck(piece, board, tempY - 1, x)):
         moves.append((tempY - 1, x))
         tempY += -1
 
-    # down capture
-    if inBounds(x, tempY-1) and pieceColour(board[tempY-1][x]) == colour:
-        moves.append((tempY - 1, x))
-
     # left
-    while (inBounds(y, tempX - 1) and board[y][tempX - 1] == 0):
+    while (spaceCheck(piece, board, y, tempX - 1)):
         moves.append((y, tempX - 1))
         tempX += -1
-
-    # leftwards capture
-    if inBounds(tempX - 1, y) and pieceColour(board[y][tempX - 1]) == colour:
-        moves.append((y, tempX - 1))
 
     return moves
 
 
+# computes legal knight moves
 def knightMove(piece, y, x, board):
     moves = []
-    tempY = y
-    tempX = x
+    i = 0
+    xMove = -2, -1, 1, 2
+    yMove = 1, 2, 2, 1
+
+    # current space
+    moves.append((y, x))
+
+    while i < 4:
+
+        if spaceCheck(piece, board, (y + yMove[i]), (x + xMove[i])):
+            moves.append(((y + yMove[i]), (x + xMove[i])))
+
+        if spaceCheck(piece, board, (y - yMove[i]), (x + xMove[i])):
+            moves.append(((y - yMove[i]), (x + xMove[i])))
+
+        i += 1
+
+    return moves
