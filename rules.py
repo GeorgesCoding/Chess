@@ -7,9 +7,6 @@ from gui import *
 ========================
 • All legal moves are computed in terms of a list
 • If the new position is in that list, then the move is legal
-
-• Saving the following cases after primary movements are completed:
-    - Switching turns, check, pawn at end of board, castle, checkmate
 """
 
 
@@ -38,13 +35,16 @@ def move(piece, newY, newX, oldY, oldX, board):
         return ((newY, newX) in moves)
 
     elif piece in bishop:
-        return
+        moves = bishopMove(piece, oldY, oldX, board)
+        return ((newY, newX) in moves)
 
     elif piece in queen:
-        return
+        moves = queenMove(piece, oldY, oldX, board)
+        return ((newY, newX) in moves)
 
     elif piece in king:
-        return
+        moves = kingMove(piece, oldY, oldX, board)
+        return ((newY, newX) in moves)
 
 
 # determines if a set of coordinates are in bounds
@@ -178,5 +178,72 @@ def knightMove(piece, y, x, board):
             moves.append(((y - yMove[i]), (x + xMove[i])))
 
         i += 1
+
+    return moves
+
+
+# computes legal bishop moves
+def bishopMove(piece, y, x, board):
+    moves = []
+    tempY = y
+    tempX = x
+
+    # current space
+    moves.append((y, x))
+
+    # up right
+    while (spaceCheck(piece, board, tempY + 1, tempX + 1)):
+        moves.append((tempY + 1, tempX + 1))
+        tempY += 1
+        tempX += 1
+
+    tempY = y
+    tempX = x
+
+    # up left
+    while (spaceCheck(piece, board, tempY + 1, tempX - 1)):
+        moves.append((tempY + 1, tempX - 1))
+        tempY += 1
+        tempX -= 1
+
+    tempY = y
+    tempX = x
+
+    # down right
+    while (spaceCheck(piece, board, tempY - 1, tempX + 1)):
+        moves.append((tempY - 1, tempX + 1))
+        tempY -= 1
+        tempX += 1
+
+    tempY = y
+    tempX = x
+
+    # down left
+    while (spaceCheck(piece, board, tempY - 1, tempX - 1)):
+        moves.append((tempY - 1, tempX - 1))
+        tempY -= 1
+        tempX -= 1
+
+    return moves
+
+
+# computes legal queen moves
+def queenMove(piece, y, x, board):
+    moves = []
+    moves = bishopMove(piece, y, x, board) + rookMove(piece, y, x, board)
+
+    return moves
+
+
+# computes legal king moves
+def kingMove(piece, y, x, board):
+    moves = []
+    moveX = 1, 0, -1
+    moveY = 1, 0, -1
+
+    for i in moveX:
+        for n in moveY:
+            if spaceCheck(piece, board, y + moveY[n], x + moveX[i]):
+                moves.append((y + moveY[n], x + moveX[i]))
 
     return moves
