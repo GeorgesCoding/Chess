@@ -71,7 +71,7 @@ def main():
                     main()
                     return
 
-                #  Two player mode
+                #  two player mode
                 elif button(2, twoPlayerInfo):
                     print("Two Player")
 
