@@ -35,6 +35,49 @@ def testBoard(board):
     print("--------------------------------")
 
 
+# helper function: prints the numbers of the board
+def numBoard(screen):
+
+    # font
+    font = pygame.font.SysFont('Comic Sans MS', 25)
+
+    # numbers
+    white = (255, 255, 255)
+    zero = font.render('0', False, white)
+    one = font.render('1', False, white)
+    two = font.render('2', False, white)
+    three = font.render('3', False, white)
+    four = font.render('4', False, white)
+    five = font.render('5', False, white)
+    six = font.render('6', False, white)
+    seven = font.render('7', False, white)
+
+    x = 5
+    a = 60
+    y = 930
+    b = 70
+
+    # left hand side
+    screen.blit(zero, (x, a))
+    screen.blit(one, (x, a + 120))
+    screen.blit(two, (x, a + 225))
+    screen.blit(three, (x, a + 340))
+    screen.blit(four, (x, a + 455))
+    screen.blit(five, (x, a + 570))
+    screen.blit(six, (x, a + 685))
+    screen.blit(seven, (x, a + 800))
+
+    # bottom
+    screen.blit(zero, (b, y))
+    screen.blit(one, (b + 120, y))
+    screen.blit(two, (b + 225, y))
+    screen.blit(three, (b + 340, y))
+    screen.blit(four, (b + 455, y))
+    screen.blit(five, (b + 570, y))
+    screen.blit(six, (b + 686, y))
+    screen.blit(seven, (b + 800, y))
+
+
 # gets the position of the mouse in terms of the board tile coordinates
 def getPos(pSize, size):
     mX, mY = pygame.mouse.get_pos()
@@ -88,26 +131,28 @@ def createBoard(size, pSize):
 
 
 # side window and button control
+# also returns the range of the button
 def buttons(tempBoard, size):
 
     # draw side window
     pygame.draw.rect(tempBoard, (33, 32, 29), (size, 25, (size/1.9)-25, size - 50), 0, 0, 12, 12, 12, 12)
 
-    buttonSize = ((size/1.9)-25 - 60)/3
+    buttonLength = ((size/1.9)-25 - 60)/3
+    buttonHeight = (size - 45)/6
     green = (104, 136, 80)
 
     # draw buttons
-    pygame.draw.rect(tempBoard, green, (size + 15, 45, buttonSize, (size - 45)/6), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(tempBoard, green, (size + 30 + buttonSize, 45, buttonSize, (size - 45)/6), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(tempBoard, green, (size + 45 + buttonSize * 2, 45, buttonSize, (size - 45)/6), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(tempBoard, green, (size + 15, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(tempBoard, green, (size + 30 + buttonLength, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(tempBoard, green, (size + 45 + buttonLength * 2, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
 
-    restart = pygame.transform.scale(pygame.image.load('Assets\Restart.png'), (buttonSize-15, buttonSize-15)).convert_alpha()
-    twoPlayer = pygame.transform.scale(pygame.image.load('Assets\TPlayer.png'), (buttonSize, buttonSize)).convert_alpha()
-    computer = pygame.transform.scale(pygame.image.load('Assets\Computer.png'), (buttonSize, buttonSize)).convert_alpha()
+    restart = pygame.transform.scale(pygame.image.load('Assets\Restart.png'), (buttonLength-15, buttonLength-15)).convert_alpha()
+    twoPlayer = pygame.transform.scale(pygame.image.load('Assets\TPlayer.png'), (buttonLength, buttonLength)).convert_alpha()
+    computer = pygame.transform.scale(pygame.image.load('Assets\Computer.png'), (buttonLength, buttonLength)).convert_alpha()
 
     tempBoard.blit(restart, (size + 15*1.5, 60))
-    tempBoard.blit(twoPlayer, (size + 30 + buttonSize, 45*1.175))
-    tempBoard.blit(computer, (size + 45 + buttonSize * 2, 45*1.1))
+    tempBoard.blit(twoPlayer, (size + 30 + buttonLength, 45*1.175))
+    tempBoard.blit(computer, (size + 45 + buttonLength * 2, 45*1.1))
 
     return tempBoard
 

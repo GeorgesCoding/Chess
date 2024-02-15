@@ -39,10 +39,17 @@ def main():
     boardSurface = buttons(boardSurface, size)
     piecesSurface = drawPieces(board, pSize, size)
 
-    # selected piece variable
+    # selected and turn variable
     selected = None
-    
     turn = 1
+
+    # button information
+    buttonLength = int(((size/1.9)-25 - 60)/3)
+    buttonHeight = int((size - 45)/6)
+    intSize = int(size)
+    restartInfo = (intSize + 15, 45, buttonLength, buttonHeight)
+    twoPlayerInfo = (intSize + 30 + buttonLength, 45, buttonLength, buttonHeight)
+    computerInfo = (intSize + 45 + buttonLength * 2, 45, buttonLength, buttonHeight)
 
     # starting position of piece being moved
     oldX, oldY = 0, 0
@@ -53,10 +60,29 @@ def main():
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
+                pygame.quit()
                 return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn):
+
+                # restarts program
+                if button(1, restartInfo):
+                    pygame.quit()
+                    main()
+                    return
+
+                #  two player mode
+                elif button(2, twoPlayerInfo):
+                    print("Two Player")
+
+                # vs Computer
+                elif button(3, computerInfo):
+                    print("Computer")
+
+                elif tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn):
+                    if tempPiece in {9, -9}:
+                        moveList = computeAll(tempPiece, board)
+
                     selected = tempPiece, x, y  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
                     pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * pSize) + 25, (y * pSize) + 25, pSize, pSize), 5)  # outline old space
@@ -68,12 +94,17 @@ def main():
                     piece = selected[0]
                     newX, newY = getPos(pSize, size)
 
-                    if newX != 10 and move(piece, newY, newX, oldY, oldX, board):  # mouse in bounds of board
+                    if piece in {9, -9} and (newY, newX) in moveList:
+                        print("A")
+                        board[oldY][oldX] = piece
+
+                    elif newX != 10 and move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):  # mouse in bounds of board
+                        print("B")
                         board[newY][newX] = piece
                         firstMove(piece, board, newY, newX)
                         turn = -turn
-
                     else:
+                        print("C")
                         board[oldY][oldX] = piece
 
                 boardSurface = createBoard(size, pSize)
@@ -85,12 +116,29 @@ def main():
         # add surfaces to screen
         screen.blit(boardSurface, (0, 0))
         screen.blit(piecesSurface, (0, 0))
+        numBoard(screen)
 
         # creates 'dragging' animation for pieces
         drag(screen, selected, pSize, size)
 
         # update display
         pygame.display.flip()
+
+
+# evaluates if a button is pressed
+def button(selection, info):
+
+    # Restart
+    if selection == 1:
+        return pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
+
+    # Two Player
+    elif selection == 2:
+        return pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
+
+    # Computer
+    elif selection == 3:
+        return pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
 
 
 if __name__ == '__main__':

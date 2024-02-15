@@ -79,7 +79,7 @@ def firstMove(tempPiece, board, newY, newX):
         board[newY][newX] = -1
 
 
-# finds the colour of the piece
+# finds the opposite colour of the piece
 def pieceColour(piece):
     if piece < 0:
         return "Black"
@@ -90,7 +90,7 @@ def pieceColour(piece):
 # computes legal pawn moves
 def pawnMove(piece, y, x, board):
 
-    moves = [None]*3
+    moves = []
 
     if piece > 0:  # black piece
         if board[y+1][x] == 0:
@@ -129,9 +129,6 @@ def rookMove(piece, y, x, board):
     tempY = y
     tempX = x
 
-    # current space
-    moves.append((y, x))
-
     # up
     while (spaceCheck(piece, board, tempY + 1, x)):
         moves.append((tempY + 1, x))
@@ -166,9 +163,6 @@ def knightMove(piece, y, x, board):
     xMove = -2, -1, 1, 2
     yMove = 1, 2, 2, 1
 
-    # current space
-    moves.append((y, x))
-
     while i < 4:
 
         if spaceCheck(piece, board, (y + yMove[i]), (x + xMove[i])):
@@ -187,9 +181,6 @@ def bishopMove(piece, y, x, board):
     moves = []
     tempY = y
     tempX = x
-
-    # current space
-    moves.append((y, x))
 
     # up right
     while (spaceCheck(piece, board, tempY + 1, tempX + 1)):
@@ -246,4 +237,46 @@ def kingMove(piece, y, x, board):
             if spaceCheck(piece, board, y + moveY[n], x + moveX[i]):
                 moves.append((y + moveY[n], x + moveX[i]))
 
+    return moves
+
+
+# computes all possible moves for pieces of opposite colour
+def computeAll(king, board):
+    moves = []
+    y = x = -1
+
+    colour = pieceColour(king)
+
+    for _ in board:
+        y += 1
+        for n in _:
+            x += 1
+
+            if pieceColour(-n) == colour:
+
+                if n in {-1, 1, 11, -11}:
+                    moves = moves + pawnMove(n, y, x, board)
+                    print((y, x), ":", pawnMove(n, y, x, board))
+
+                elif n in {5, -5}:
+                    moves = moves + rookMove(n, y, x, board)
+                    print((y, x), ":", rookMove(n, y, x, board))
+
+                elif n in {3, -3}:
+                    moves = moves + knightMove(n, y, x, board)
+                    print((y, x), ":", knightMove(n, y, x, board))
+
+                elif n in {4, -4}:
+                    moves = moves + bishopMove(n, y, x, board)
+                    print((y, x), ":", bishopMove(n, y, x, board))
+
+                elif n in {7, -7}:
+                    moves = moves + queenMove(n, y, x, board)
+                    print((y, x), ":", queenMove(n, y, x, board))
+
+                elif n in {9, -9}:
+                    moves = moves + kingMove(n, y, x, board)
+                    print((y, x), ":", kingMove(n, y, x, board))
+
+        x = -1
     return moves
