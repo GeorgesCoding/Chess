@@ -237,7 +237,7 @@ def getPiece(board, pSize, size):
 def drawPieces(board, pSize, size):
     # create default size and transparent surface for pieces
     dSize = (pSize, pSize)
-    pieces = pygame.Surface((size-50, size), pygame.SRCALPHA, 32).convert_alpha()
+    pieces = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
 
     # load & scale all pieces
     bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()

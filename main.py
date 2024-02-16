@@ -43,6 +43,11 @@ def main():
     selected = None
     turn = 1
 
+    # check variable
+    # 0 for no check, 1 for black check, -1 for white check
+    check = 0
+    moveList = []
+
     # button information
     buttonLength = int(((size/1.9)-25 - 60)/3)
     buttonHeight = int((size - 45)/6)
@@ -59,10 +64,12 @@ def main():
         tempPiece, x, y = getPiece(board, pSize, size)  # checks if there is a piece under the mouse
         for event in pygame.event.get():
 
+            # exit button pressed
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
 
+            # if left mouse button is pressed
             if event.type == pygame.MOUSEBUTTONDOWN:
 
                 # restarts program
@@ -79,34 +86,44 @@ def main():
                 elif button(3, computerInfo):
                     print("Computer")
 
+                # checks if a piece has been selected
                 elif tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn):
-                    if tempPiece in {9, -9}:
-                        moveList = computeAll(tempPiece, board)
-
                     selected = tempPiece, x, y  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
                     pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * pSize) + 25, (y * pSize) + 25, pSize, pSize), 5)  # outline old space
                     piecesSurface = drawPieces(board, pSize, size)
                     oldX, oldY = x, y
 
+            # mouse button is released
             if event.type == pygame.MOUSEBUTTONUP:
+
+                # A piece was selected
                 if selected != None:
                     piece = selected[0]
                     newX, newY = getPos(pSize, size)
 
-                    if piece in {9, -9} and (newY, newX) in moveList:
-                        print("A")
-                        board[oldY][oldX] = piece
+                    # piece is moved to a valid position
+                    if newX != 10 and move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):
+                        tempBoard = [row[:] for row in board]
+                        tempBoard[newY][newX] = piece
+                        firstMove(piece, tempBoard, newY, newX)
 
-                    elif newX != 10 and move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):  # mouse in bounds of board
-                        print("B")
-                        board[newY][newX] = piece
-                        firstMove(piece, board, newY, newX)
-                        turn = -turn
+                        moveList = computeAll(piece, tempBoard)
+
+                        # king is in check after move
+                        if kingCoord(piece, tempBoard) in moveList:
+                            board[oldY][oldX] = piece
+
+                        else:
+                            board[newY][newX] = piece
+                            firstMove(piece, board, newY, newX)
+                            turn = -turn
+
+                    # piece moved to invalid position
                     else:
-                        print("C")
                         board[oldY][oldX] = piece
 
+                # redraw surfaces, reset temp variables
                 boardSurface = createBoard(size, pSize)
                 boardSurface = buttons(boardSurface, size)
                 piecesSurface = drawPieces(board, pSize, size)

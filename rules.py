@@ -61,10 +61,10 @@ def spaceCheck(piece, board, newY, newX):
     if inBounds(newX, newY):
         if board[newY][newX] == 0:
             return True
-        elif pieceColour(board[newY][newX]) == pieceColour(piece):
-            return False
-        else:
+        elif pieceColour(board[newY][newX]) == pieceColour(-piece):
             return True
+        else:
+            return False
     else:
         return False
 
@@ -132,6 +132,8 @@ def rookMove(piece, y, x, board):
     # up
     while (spaceCheck(piece, board, tempY + 1, x)):
         moves.append((tempY + 1, x))
+        if board[tempY + 1][x] != 0:
+            break
         tempY += 1
 
     tempY = y
@@ -139,6 +141,8 @@ def rookMove(piece, y, x, board):
     # right
     while (spaceCheck(piece, board, y, tempX + 1)):
         moves.append((y, tempX + 1))
+        if board[y][tempX + 1] != 0:
+            break
         tempX += 1
 
     tempX = x
@@ -146,11 +150,15 @@ def rookMove(piece, y, x, board):
     # down
     while (spaceCheck(piece, board, tempY - 1, x)):
         moves.append((tempY - 1, x))
+        if board[tempY - 1][x] != 0:
+            break
         tempY += -1
 
     # left
     while (spaceCheck(piece, board, y, tempX - 1)):
         moves.append((y, tempX - 1))
+        if board[y][tempX - 1] != 0:
+            break
         tempX += -1
 
     return moves
@@ -185,6 +193,8 @@ def bishopMove(piece, y, x, board):
     # up right
     while (spaceCheck(piece, board, tempY + 1, tempX + 1)):
         moves.append((tempY + 1, tempX + 1))
+        if board[tempY + 1][tempX + 1] != 0:
+            break
         tempY += 1
         tempX += 1
 
@@ -194,6 +204,8 @@ def bishopMove(piece, y, x, board):
     # up left
     while (spaceCheck(piece, board, tempY + 1, tempX - 1)):
         moves.append((tempY + 1, tempX - 1))
+        if board[tempY + 1][tempX - 1] != 0:
+            break
         tempY += 1
         tempX -= 1
 
@@ -203,6 +215,8 @@ def bishopMove(piece, y, x, board):
     # down right
     while (spaceCheck(piece, board, tempY - 1, tempX + 1)):
         moves.append((tempY - 1, tempX + 1))
+        if board[tempY - 1][tempX + 1] != 0:
+            break
         tempY -= 1
         tempX += 1
 
@@ -212,6 +226,8 @@ def bishopMove(piece, y, x, board):
     # down left
     while (spaceCheck(piece, board, tempY - 1, tempX - 1)):
         moves.append((tempY - 1, tempX - 1))
+        if board[tempY - 1][tempX - 1] != 0:
+            break
         tempY -= 1
         tempX -= 1
 
@@ -240,11 +256,10 @@ def kingMove(piece, y, x, board):
     return moves
 
 
-# computes all possible moves for pieces of opposite colour
+# computes all possible moves the piece's colour
 def computeAll(king, board):
     moves = []
     y = x = -1
-
     colour = pieceColour(king)
 
     for _ in board:
@@ -280,3 +295,66 @@ def computeAll(king, board):
 
         x = -1
     return moves
+
+
+# returns true if the king is in check
+def isKingCheck(piece, y, x, board):
+
+    moves = []
+
+    colour = pieceColour(piece)
+
+    if piece in {-1, 1, 11, -11}:
+        moves = moves + pawnMove(piece, y, x, board)
+        # print((y, x), ":", pawnMove(piece, y, x, board))
+
+    elif piece in {5, -5}:
+        moves = moves + rookMove(piece, y, x, board)
+        # print((y, x), ":", rookMove(piece, y, x, board))
+
+    elif piece in {3, -3}:
+        moves = moves + knightMove(piece, y, x, board)
+        # print((y, x), ":", knightMove(piece, y, x, board))
+
+    elif piece in {4, -4}:
+        moves = moves + bishopMove(piece, y, x, board)
+        # print((y, x), ":", bishopMove(piece, y, x, board))
+
+    elif piece in {7, -7}:
+        moves = moves + queenMove(piece, y, x, board)
+        # print((y, x), ":", queenMove(piece, y, x, board))
+
+    elif piece in {9, -9}:
+        moves = moves + kingMove(piece, y, x, board)
+        # print((y, x), ":", kingMove(piece, y, x, board))
+
+    x = y = -1
+
+    for _ in board:
+        y += 1
+        for n in _:
+            x += 1
+            if pieceColour(-n) == colour and n in {9, -9}:
+                if (y, x) in moves:
+                    return True
+                else:
+                    return False
+        x = -1
+
+
+# returns the coordinates of the piece's colour king
+def kingCoord(piece, board):
+    y = x = -1
+
+    if piece < 0:
+        king = -9
+    else:
+        king = 9
+
+    for _ in board:
+        y += 1
+        for n in _:
+            x += 1
+            if (n == king):
+                return (y, x)
+        x = -1
