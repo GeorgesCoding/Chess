@@ -43,7 +43,7 @@ def numBoard(screen):
 
     # numbers
     white = (255, 255, 255)
-    zero = font.render('0', False, white)
+    zero = font.render('0', True, white)
     one = font.render('1', False, white)
     two = font.render('2', False, white)
     three = font.render('3', False, white)
@@ -130,20 +130,38 @@ def createBoard(size, pSize):
     return tempBoard
 
 
+# outlines the promotion buttons when pawn promotion is applicable
+def promoOutline(screen, size, toggle):
+
+    if toggle:
+        pSize = ((size/1.9)-25)/4 - 15
+        buttonHeight = (size - 45)/6
+
+        pygame.draw.rect(screen, (255, 0, 0, 50), (size + 15, 45 + pSize + buttonHeight, pSize, pSize), 5, 0, 12, 12, 12, 12)
+        pygame.draw.rect(screen, (255, 0, 0, 50), (size + 25 + pSize, 45 + pSize + buttonHeight, pSize, pSize), 5, 0, 12, 12, 12, 12)
+        pygame.draw.rect(screen, (255, 0, 0, 50), (size + 35 + pSize * 2, 45 + pSize + buttonHeight, pSize, pSize), 5, 0, 12, 12, 12, 12)
+        pygame.draw.rect(screen, (255, 0, 0, 50), (size + 45 + pSize * 3, 45 + pSize + buttonHeight, pSize, pSize), 5, 0, 12, 12, 12, 12)
+
+
 # side window and button control
-# also returns the range of the button
 def buttons(size):
 
+    # buttons surface, transparent background
     buttonSurface = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
 
     # draw side window
     pygame.draw.rect(buttonSurface, (33, 32, 29), (size, 25, (size/1.9)-25, size - 50), 0, 0, 12, 12, 12, 12)
 
+    # button attributes
     buttonLength = ((size/1.9)-25 - 60)/3
     buttonHeight = (size - 45)/6
     green = (104, 136, 80)
+    black = (0, 0, 0)
+    font = pygame.font.SysFont('Comic Sans MS', 25)
+    pSize = ((size/1.9)-25)/4 - 15
+    dSize = (pSize, pSize)
 
-    # draw buttons
+    # draw gamemode buttons
     pygame.draw.rect(buttonSurface, green, (size + 15, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
     pygame.draw.rect(buttonSurface, green, (size + 30 + buttonLength, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
     pygame.draw.rect(buttonSurface, green, (size + 45 + buttonLength * 2, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
@@ -152,9 +170,30 @@ def buttons(size):
     twoPlayer = pygame.transform.scale(pygame.image.load('Assets\TPlayer.png'), (buttonLength, buttonLength)).convert_alpha()
     computer = pygame.transform.scale(pygame.image.load('Assets\Computer.png'), (buttonLength, buttonLength)).convert_alpha()
 
+    # draw promotion buttons
+    pygame.draw.rect(buttonSurface, green, (size + 15, 90 + buttonHeight, buttonLength * 3 + 30, buttonHeight/3), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, green, (size + 15, 45 + pSize + buttonHeight, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, green, (size + 25 + pSize, 45 + pSize + buttonHeight, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, green, (size + 35 + pSize * 2, 45 + pSize + buttonHeight, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, green, (size + 45 + pSize * 3, 45 + pSize + buttonHeight, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    promotion = font.render('Pawn Promotion', True, black)
+    promotionRect = promotion.get_rect(center=(size + 15 + (buttonLength * 3 + 30)/2, 90 + buttonHeight + buttonHeight/6))
+
+    # icons
+    bishop = pygame.transform.scale(pygame.image.load('Assets\BishopIcon.png'), dSize).convert_alpha()
+    knight = pygame.transform.scale(pygame.image.load('Assets\KnightIcon.png'), dSize).convert_alpha()
+    rook = pygame.transform.scale(pygame.image.load('Assets\RookIcon.png'), dSize).convert_alpha()
+    queen = pygame.transform.scale(pygame.image.load('Assets\QueenIcon.png'), dSize).convert_alpha()
+
+    # add to surface
     buttonSurface.blit(restart, (size + 15*1.5, 60))
     buttonSurface.blit(twoPlayer, (size + 30 + buttonLength, 45*1.175))
     buttonSurface.blit(computer, (size + 45 + buttonLength * 2, 45*1.1))
+    buttonSurface.blit(promotion, promotionRect)
+    buttonSurface.blit(bishop, (size + 15, 45 + pSize + buttonHeight))
+    buttonSurface.blit(knight, (size + 25 + pSize, 45 + pSize + buttonHeight))
+    buttonSurface.blit(rook, (size + 35 + pSize * 2, 45 + pSize + buttonHeight))
+    buttonSurface.blit(queen, (size + 45 + pSize * 3, 45 + pSize + buttonHeight))
 
     return buttonSurface
 

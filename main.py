@@ -19,14 +19,14 @@ from rules import *
 # main control function
 def main():
 
-    # automatically changes game size according to monitor size
+    # automatically changes game SIZE according to monitor SIZE
     pygame.init()
     size = pygame.display.Info().current_h
-    size = size - 120
-    pSize = (size-50)/8
+    SIZE = size - 120
+    PSIZE = (SIZE-50)/8
 
     # initialize window
-    screen = pygame.display.set_mode((size + 500, size))
+    screen = pygame.display.set_mode((SIZE + 500, SIZE))
 
     # customize window
     pygame.display.set_caption("Chess")
@@ -36,36 +36,40 @@ def main():
     # 2D array to represent state of board
     board = [[5, 3, 4, 7, 9, 4, 3, 5], [11]*8, [0]*8, [0]*8, [0]*8, [0]*8, [-11]*8, [-5, -3, -4, -7, -9, -4, -3, -5]]
 
-    # selected and turn variable
+    # toggable variables
     selected = None
     turn = 1
+    outline = False
+    promotion = None, None, None
 
-    # draw board, pieces and side bar
-    buttonSurface = buttons(size)
-    boardSurface = createBoard(size, pSize)
-    piecesSurface = drawPieces(board, pSize, size, turn)
-
-    # check variable
-    # 0 for no check, 1 for black check, -1 for white check
-    check = 0
+    # list of all possible enemy piece moves
     moveList = []
 
-    selection = 0
+    # draw board, pieces and side bar
+    buttonSurface = buttons(SIZE)
+    boardSurface = createBoard(SIZE, PSIZE)
+    piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
 
     # button information
-    buttonLength = int(((size/1.9)-25 - 60)/3)
-    buttonHeight = int((size - 45)/6)
-    intSize = int(size)
-    restartInfo = (intSize + 15, 45, buttonLength, buttonHeight)
-    twoPlayerInfo = (intSize + 30 + buttonLength, 45, buttonLength, buttonHeight)
-    computerInfo = (intSize + 45 + buttonLength * 2, 45, buttonLength, buttonHeight)
+    BUTTONLENGTH = int(((SIZE/1.9)-25 - 60)/3)
+    BUTTONHEIGHT = int((SIZE - 45)/6)
+    INTSIZE = int(SIZE)
+    INTPSIZE = int(PSIZE)
+    restartInfo = (INTSIZE + 15, 45, BUTTONLENGTH, BUTTONHEIGHT)
+    twoPlayerInfo = (INTSIZE + 30 + BUTTONLENGTH, 45, BUTTONLENGTH, BUTTONHEIGHT)
+    computerInfo = (INTSIZE + 45 + BUTTONLENGTH * 2, 45, BUTTONLENGTH, BUTTONHEIGHT)
+    bishopInfo = (INTSIZE + 15, 45 + INTPSIZE + BUTTONHEIGHT, INTPSIZE, INTPSIZE)
+    knightInfo = (INTSIZE + 25 + INTPSIZE, 45 + INTPSIZE + BUTTONHEIGHT, INTPSIZE, INTPSIZE)
+    rookInfo = (INTSIZE + 35 + INTPSIZE * 2, 45 + INTPSIZE + BUTTONHEIGHT, INTPSIZE, INTPSIZE)
+    queenInfo = (INTSIZE + 45 + INTPSIZE * 3, 45 + INTPSIZE + BUTTONHEIGHT, INTPSIZE, INTPSIZE)
+    promoInfo = bishopInfo, knightInfo, rookInfo, queenInfo
 
     # starting position of piece being moved
     oldX, oldY = 0, 0
 
     # main loop
     while True:
-        tempPiece, x, y = getPiece(board, pSize, size)  # checks if there is a piece under the mouse
+        tempPiece, x, y = getPiece(board, PSIZE, SIZE)  # checks if there is a piece under the mouse
         for event in pygame.event.get():
 
             # exit button pressed
@@ -76,26 +80,35 @@ def main():
             # if left mouse button is pressed
             if event.type == pygame.MOUSEBUTTONDOWN:
 
+                # promotion buttons are outlined
+                if outline:
+                    i = 1
+                    for p in promoInfo:
+                        if button(i, p, promotion, board):
+                            outline = False
+                            break
+                        i += 1
+
                 # restarts program
-                if button(1, restartInfo):
+                elif button(0, restartInfo, None, None):
                     pygame.quit()
                     main()
                     return
 
                 #  two player mode
-                elif button(2, twoPlayerInfo):
+                elif button(0, twoPlayerInfo, None, None):
                     print("Two Player")
 
                 # vs Computer
-                elif button(3, computerInfo):
+                elif button(0, computerInfo, None, None):
                     print("Computer")
 
                 # checks if a piece has been selected
                 elif tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn):
                     selected = tempPiece, x, y  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
-                    pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * pSize) + 25, (y * pSize) + 25, pSize, pSize), 5)  # outline old space
-                    piecesSurface = drawPieces(board, pSize, size, turn)
+                    pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * PSIZE) + 25, (y * PSIZE) + 25, PSIZE, PSIZE), 5)  # outline old space
+                    piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
                     oldX, oldY = x, y
 
             # mouse button is released
@@ -103,13 +116,15 @@ def main():
                 # A piece was selected
                 if selected != None:
                     piece = selected[0]
-                    newX, newY = getPos(pSize, size)
+                    newX, newY = getPos(PSIZE, SIZE)
 
+                    # creates a board with the temporary state of the board with the moved piece
                     tempBoard = [row[:] for row in board]
                     tempBoard[newY][newX] = piece
                     moveList = computeAll(piece, tempBoard)
 
-                    if castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
+                    # king castles
+                    if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard):
                         turn = -turn
 
                     # piece is moved to a valid position
@@ -120,23 +135,32 @@ def main():
                         if kingCoord(piece, tempBoard) in moveList:
                             board[oldY][oldX] = piece
 
-                        else:
+                        else:  # legal move
                             board[newY][newX] = piece
+
+                            # pawn at end of board
+                            if endPawn(piece, board, newY, newX):
+                                outline = True
+                                promotion = piece, newY, newX
+                            else:
+                                outline = False
+                                promotion = None, None, None
+
                             firstMove(piece, board, newY, newX)
                             turn = -turn
 
                             # rotates the pieces on the board for 2 player mode
                             # problems with check case when rotation
+                            # will return after checkmate case is complete
                             # board = numpy.rot90(board, 2)
 
-                    # piece moved to invalid position
-                    else:
+                    else:  # piece moved to invalid position
                         board[oldY][oldX] = piece
 
                 # redraw surfaces, reset temp variables
-                boardSurface = createBoard(size, pSize)
-                buttonSurface = buttons(size)
-                piecesSurface = drawPieces(board, pSize, size, turn)
+                boardSurface = createBoard(SIZE, PSIZE)
+                buttonSurface = buttons(SIZE)
+                piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
                 selected = None
                 oldY, oldX = 0, 0
 
@@ -145,29 +169,17 @@ def main():
         screen.blit(buttonSurface, (0, 0))
         screen.blit(piecesSurface, (0, 0))
 
+        # outline promotion buttons
+        promoOutline(screen, SIZE, outline)
+
+        # numbers the board
         numBoard(screen)
 
         # creates 'dragging' animation for pieces
-        drag(screen, selected, pSize, size)
+        drag(screen, selected, PSIZE, SIZE)
 
         # update display
         pygame.display.flip()
-
-
-# evaluates if a button is pressed
-def button(selection, info):
-
-    # Restart
-    if selection == 1:
-        return pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
-
-    # Two Player
-    elif selection == 2:
-        return pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
-
-    # Computer
-    elif selection == 3:
-        return pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
 
 
 if __name__ == '__main__':

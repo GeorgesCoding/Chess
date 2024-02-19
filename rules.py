@@ -371,3 +371,50 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
                     board[mY][tempX] = 0
 
                     return True
+
+
+# determines end pawn promotion
+def endPawn(piece, board, newY, newX):
+    if piece == -1:
+        if newY == 0:
+            return True
+
+    elif piece == 1:
+        if newY == 7:
+            return True
+
+
+# evaluates if a button is pressed
+# also dictates pawn promotion behaviour
+def button(selection, info, promotedPiece, board):
+
+    pressed = pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
+
+    # promotion buttonss
+    if pressed:
+        piece, y, x = promotedPiece
+
+        # Bishop
+        if selection == 1:
+            newPiece = 4
+
+        # Knight
+        elif selection == 2:
+            newPiece = 3
+
+        # Rook
+        elif selection == 3:
+            newPiece = 55
+
+        # Queen
+        elif selection == 4:
+            newPiece = 7
+
+        if piece > 0:
+            pass
+        else:
+            newPiece = -newPiece
+
+        board[y][x] = newPiece
+
+    return pressed
