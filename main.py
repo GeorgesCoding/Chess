@@ -13,6 +13,7 @@ from rules import *
     - Using pip: pip install pygame
     - pip install numpy
     - Run file with terminal command: 'py main.py'
+• The game will resize according to the 'main' display in your computer settings
 """
 
 
@@ -26,7 +27,7 @@ def main():
     PSIZE = (SIZE-50)/8
 
     # initialize window
-    screen = pygame.display.set_mode((SIZE + 500, SIZE))
+    screen = pygame.display.set_mode((SIZE + SIZE/1.9, SIZE))
 
     # customize window
     pygame.display.set_caption("Chess")
@@ -49,6 +50,7 @@ def main():
     buttonSurface = buttons(SIZE)
     boardSurface = createBoard(SIZE, PSIZE)
     piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
+    dialougeSurf = dialouge(SIZE)
 
     # button information
     BUTTONLENGTH = int(((SIZE/1.9)-25 - 60)/3)
@@ -161,6 +163,7 @@ def main():
                 boardSurface = createBoard(SIZE, PSIZE)
                 buttonSurface = buttons(SIZE)
                 piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
+                dialougeSurf = dialouge(SIZE)
                 selected = None
                 oldY, oldX = 0, 0
 
@@ -168,12 +171,13 @@ def main():
         screen.blit(boardSurface, (0, 0))
         screen.blit(buttonSurface, (0, 0))
         screen.blit(piecesSurface, (0, 0))
+        screen.blit(dialougeSurf, (0, 0))
 
         # outline promotion buttons
         promoOutline(screen, SIZE, outline)
 
         # numbers the board
-        numBoard(screen)
+        numBoard(screen, PSIZE)
 
         # creates 'dragging' animation for pieces
         drag(screen, selected, PSIZE, SIZE)

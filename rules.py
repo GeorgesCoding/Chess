@@ -391,7 +391,7 @@ def button(selection, info, promotedPiece, board):
     pressed = pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
 
     # promotion buttonss
-    if pressed:
+    if pressed and selection != 0:
         piece, y, x = promotedPiece
 
         # Bishop

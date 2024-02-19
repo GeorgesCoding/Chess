@@ -35,15 +35,14 @@ def testBoard(board):
     print("--------------------------------")
 
 
-# helper function: prints the numbers of the board
-def numBoard(screen):
+# prints the numbers of the board
+def numBoard(screen, pSize):
 
     # font
-    font = pygame.font.SysFont('Comic Sans MS', 25)
+    font = pygame.font.SysFont('Comic Sans MS', 20)
 
     # numbers
     white = (255, 255, 255)
-    zero = font.render('0', True, white)
     one = font.render('1', False, white)
     two = font.render('2', False, white)
     three = font.render('3', False, white)
@@ -51,31 +50,40 @@ def numBoard(screen):
     five = font.render('5', False, white)
     six = font.render('6', False, white)
     seven = font.render('7', False, white)
+    eight = font.render('8', True, white)
+    A = font.render('a', False, white)
+    B = font.render('b', False, white)
+    c = font.render('c', False, white)
+    d = font.render('d', False, white)
+    e = font.render('e', False, white)
+    f = font.render('f', False, white)
+    g = font.render('g', False, white)
+    h = font.render('h', True, white)
 
     x = 5
-    a = 60
-    y = 930
-    b = 70
+    a = 10 + pSize/2
+    y = 20 + pSize * 8
+    b = 20 + pSize/2
 
     # left hand side
-    screen.blit(zero, (x, a))
-    screen.blit(one, (x, a + 120))
-    screen.blit(two, (x, a + 225))
-    screen.blit(three, (x, a + 340))
-    screen.blit(four, (x, a + 455))
-    screen.blit(five, (x, a + 570))
-    screen.blit(six, (x, a + 685))
-    screen.blit(seven, (x, a + 800))
+    screen.blit(one, (x, a))
+    screen.blit(two, (x, a + pSize))
+    screen.blit(three, (x, a + pSize * 2))
+    screen.blit(four, (x, a + pSize * 3))
+    screen.blit(five, (x, a + pSize * 4))
+    screen.blit(six, (x, a + pSize * 5))
+    screen.blit(seven, (x, a + pSize * 6))
+    screen.blit(eight, (x, a + pSize * 7))
 
     # bottom
-    screen.blit(zero, (b, y))
-    screen.blit(one, (b + 120, y))
-    screen.blit(two, (b + 225, y))
-    screen.blit(three, (b + 340, y))
-    screen.blit(four, (b + 455, y))
-    screen.blit(five, (b + 570, y))
-    screen.blit(six, (b + 686, y))
-    screen.blit(seven, (b + 800, y))
+    screen.blit(A, (b, y))
+    screen.blit(B, (b + pSize, y))
+    screen.blit(c, (b + pSize * 2, y))
+    screen.blit(d, (b + pSize * 3, y))
+    screen.blit(e, (b + pSize * 4, y))
+    screen.blit(f, (b + pSize * 5, y))
+    screen.blit(g, (b + pSize * 6, y))
+    screen.blit(h, (b + pSize * 7, y))
 
 
 # gets the position of the mouse in terms of the board tile coordinates
@@ -137,10 +145,24 @@ def promoOutline(screen, size, toggle):
         pSize = ((size/1.9)-25)/4 - 15
         buttonHeight = (size - 45)/6
 
-        pygame.draw.rect(screen, (255, 0, 0, 50), (size + 15, 45 + pSize + buttonHeight, pSize, pSize), 5, 0, 12, 12, 12, 12)
-        pygame.draw.rect(screen, (255, 0, 0, 50), (size + 25 + pSize, 45 + pSize + buttonHeight, pSize, pSize), 5, 0, 12, 12, 12, 12)
-        pygame.draw.rect(screen, (255, 0, 0, 50), (size + 35 + pSize * 2, 45 + pSize + buttonHeight, pSize, pSize), 5, 0, 12, 12, 12, 12)
-        pygame.draw.rect(screen, (255, 0, 0, 50), (size + 45 + pSize * 3, 45 + pSize + buttonHeight, pSize, pSize), 5, 0, 12, 12, 12, 12)
+        colour = (200, 0, 0, 50)
+        pygame.draw.rect(screen, colour, (size + 15, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 5, 0, 12, 12, 12, 12)
+        pygame.draw.rect(screen, colour, (size + 25 + pSize, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 5, 0, 12, 12, 12, 12)
+        pygame.draw.rect(screen, colour, (size + 35 + pSize * 2, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 5, 0, 12, 12, 12, 12)
+        pygame.draw.rect(screen, colour, (size + 45 + pSize * 3, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 5, 0, 12, 12, 12, 12)
+
+
+# states the move of the board
+# also display check, checkmate, castle and winner
+def dialouge(size):
+    # buttons surface, transparent background
+    dialougeSurf = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
+    buttonHeight = (size - 45)/6
+    black = (0, 0, 0)
+
+    pygame.draw.rect(dialougeSurf, black, (size + 15,  115 + 2 * buttonHeight + buttonHeight/3, (size/1.9)-55, size - (165 + 2 * buttonHeight + buttonHeight/3)), 0, 0, 12, 12, 12, 12)
+
+    return dialougeSurf
 
 
 # side window and button control
@@ -155,29 +177,32 @@ def buttons(size):
     # button attributes
     buttonLength = ((size/1.9)-25 - 60)/3
     buttonHeight = (size - 45)/6
-    green = (104, 136, 80)
+    brown = (129, 95, 71)
     black = (0, 0, 0)
     font = pygame.font.SysFont('Comic Sans MS', 25)
     pSize = ((size/1.9)-25)/4 - 15
     dSize = (pSize, pSize)
 
     # draw gamemode buttons
-    pygame.draw.rect(buttonSurface, green, (size + 15, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, green, (size + 30 + buttonLength, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, green, (size + 45 + buttonLength * 2, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, brown, (size + 15, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, brown, (size + 30 + buttonLength, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, brown, (size + 45 + buttonLength * 2, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
 
-    restart = pygame.transform.scale(pygame.image.load('Assets\Restart.png'), (buttonLength-15, buttonLength-15)).convert_alpha()
+    restart = pygame.transform.scale(pygame.image.load('Assets\Restart.png'), (buttonLength-45, buttonLength-45)).convert_alpha()
     twoPlayer = pygame.transform.scale(pygame.image.load('Assets\TPlayer.png'), (buttonLength, buttonLength)).convert_alpha()
     computer = pygame.transform.scale(pygame.image.load('Assets\Computer.png'), (buttonLength, buttonLength)).convert_alpha()
 
     # draw promotion buttons
-    pygame.draw.rect(buttonSurface, green, (size + 15, 90 + buttonHeight, buttonLength * 3 + 30, buttonHeight/3), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, green, (size + 15, 45 + pSize + buttonHeight, pSize, pSize), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, green, (size + 25 + pSize, 45 + pSize + buttonHeight, pSize, pSize), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, green, (size + 35 + pSize * 2, 45 + pSize + buttonHeight, pSize, pSize), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, green, (size + 45 + pSize * 3, 45 + pSize + buttonHeight, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, brown, (size + 15, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, brown, (size + 25 + pSize,  115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, brown, (size + 35 + pSize * 2, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    pygame.draw.rect(buttonSurface, brown, (size + 45 + pSize * 3, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
     promotion = font.render('Pawn Promotion', True, black)
-    promotionRect = promotion.get_rect(center=(size + 15 + (buttonLength * 3 + 30)/2, 90 + buttonHeight + buttonHeight/6))
+    promotionRect = promotion.get_rect(center=(size + 15 + (buttonLength * 3 + 30)/2, 105 + buttonHeight + buttonHeight/6))
+
+    s = pygame.Rect(size + 15, 105 + buttonHeight, promotionRect.width + 40, buttonHeight/3)
+    s.center = promotionRect.center
+    pygame.draw.rect(buttonSurface, brown, s, 0, 0, 12, 12, 12, 12)
 
     # icons
     bishop = pygame.transform.scale(pygame.image.load('Assets\BishopIcon.png'), dSize).convert_alpha()
@@ -186,14 +211,14 @@ def buttons(size):
     queen = pygame.transform.scale(pygame.image.load('Assets\QueenIcon.png'), dSize).convert_alpha()
 
     # add to surface
-    buttonSurface.blit(restart, (size + 15*1.5, 60))
+    buttonSurface.blit(restart, (size + 22.5*1.5, 75))
     buttonSurface.blit(twoPlayer, (size + 30 + buttonLength, 45*1.175))
     buttonSurface.blit(computer, (size + 45 + buttonLength * 2, 45*1.1))
     buttonSurface.blit(promotion, promotionRect)
-    buttonSurface.blit(bishop, (size + 15, 45 + pSize + buttonHeight))
-    buttonSurface.blit(knight, (size + 25 + pSize, 45 + pSize + buttonHeight))
-    buttonSurface.blit(rook, (size + 35 + pSize * 2, 45 + pSize + buttonHeight))
-    buttonSurface.blit(queen, (size + 45 + pSize * 3, 45 + pSize + buttonHeight))
+    buttonSurface.blit(bishop, (size + 15, 115 + buttonHeight + buttonHeight/3))
+    buttonSurface.blit(knight, (size + 25 + pSize, 115 + buttonHeight + buttonHeight/3))
+    buttonSurface.blit(rook, (size + 35 + pSize * 2, 115 + buttonHeight + buttonHeight/3))
+    buttonSurface.blit(queen, (size + 45 + pSize * 3, 115 + buttonHeight + buttonHeight/3))
 
     return buttonSurface
 
