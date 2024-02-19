@@ -1,4 +1,5 @@
 import pygame
+import numpy
 from gui import *
 from rules import *
 
@@ -8,8 +9,9 @@ from rules import *
 === NOTES FOR VIEWER ===
 ========================
 • This file is responsible for running the entire game
-• Make sure 'pygame' module is installed prior to running file
+• Make sure 'pygame' and 'numpy' modules are installed prior to running file
     - Using pip: pip install pygame
+    - pip install numpy
     - Run file with terminal command: 'py main.py'
 """
 
@@ -34,19 +36,21 @@ def main():
     # 2D array to represent state of board
     board = [[5, 3, 4, 7, 9, 4, 3, 5], [11]*8, [0]*8, [0]*8, [0]*8, [0]*8, [-11]*8, [-5, -3, -4, -7, -9, -4, -3, -5]]
 
-    # draw board, pieces and side bar
-    boardSurface = createBoard(size, pSize)
-    boardSurface = buttons(boardSurface, size)
-    piecesSurface = drawPieces(board, pSize, size)
-
     # selected and turn variable
     selected = None
     turn = 1
+
+    # draw board, pieces and side bar
+    buttonSurface = buttons(size)
+    boardSurface = createBoard(size, pSize)
+    piecesSurface = drawPieces(board, pSize, size, turn)
 
     # check variable
     # 0 for no check, 1 for black check, -1 for white check
     check = 0
     moveList = []
+
+    selection = 0
 
     # button information
     buttonLength = int(((size/1.9)-25 - 60)/3)
@@ -91,24 +95,26 @@ def main():
                     selected = tempPiece, x, y  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
                     pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * pSize) + 25, (y * pSize) + 25, pSize, pSize), 5)  # outline old space
-                    piecesSurface = drawPieces(board, pSize, size)
+                    piecesSurface = drawPieces(board, pSize, size, turn)
                     oldX, oldY = x, y
 
             # mouse button is released
             if event.type == pygame.MOUSEBUTTONUP:
-
                 # A piece was selected
                 if selected != None:
                     piece = selected[0]
                     newX, newY = getPos(pSize, size)
 
-                    # piece is moved to a valid position
-                    if newX != 10 and move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):
-                        tempBoard = [row[:] for row in board]
-                        tempBoard[newY][newX] = piece
-                        firstMove(piece, tempBoard, newY, newX)
+                    tempBoard = [row[:] for row in board]
+                    tempBoard[newY][newX] = piece
+                    moveList = computeAll(piece, tempBoard)
 
-                        moveList = computeAll(piece, tempBoard)
+                    if castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
+                        turn = -turn
+
+                    # piece is moved to a valid position
+                    elif newX != 10 and move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):
+                        firstMove(piece, tempBoard, newY, newX)
 
                         # king is in check after move
                         if kingCoord(piece, tempBoard) in moveList:
@@ -119,20 +125,26 @@ def main():
                             firstMove(piece, board, newY, newX)
                             turn = -turn
 
+                            # rotates the pieces on the board for 2 player mode
+                            # problems with check case when rotation
+                            # board = numpy.rot90(board, 2)
+
                     # piece moved to invalid position
                     else:
                         board[oldY][oldX] = piece
 
                 # redraw surfaces, reset temp variables
                 boardSurface = createBoard(size, pSize)
-                boardSurface = buttons(boardSurface, size)
-                piecesSurface = drawPieces(board, pSize, size)
+                buttonSurface = buttons(size)
+                piecesSurface = drawPieces(board, pSize, size, turn)
                 selected = None
                 oldY, oldX = 0, 0
 
         # add surfaces to screen
         screen.blit(boardSurface, (0, 0))
+        screen.blit(buttonSurface, (0, 0))
         screen.blit(piecesSurface, (0, 0))
+
         numBoard(screen)
 
         # creates 'dragging' animation for pieces

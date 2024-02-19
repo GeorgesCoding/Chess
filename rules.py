@@ -16,11 +16,11 @@ def move(piece, newY, newX, oldY, oldX, board):
 
     # lists for piece identification
     pawn = -11, 11, 1, -1
-    rook = 5, -5
+    rook = 5, -5, 55, -55
     knight = 3, -3
     bishop = 4, -4
     queen = 7, -7
-    king = 9, -9
+    king = 9, -9, -99, 99
 
     if piece in pawn:
         moves = pawnMove(piece, oldY, oldX, board)
@@ -70,13 +70,26 @@ def spaceCheck(piece, board, newY, newX):
 
 
 # toggles first move ability of pawn
+# also determines if king can castle
 def firstMove(tempPiece, board, newY, newX):
 
     if tempPiece == 11:
         board[newY][newX] = 1
 
-    if tempPiece == -11:
+    elif tempPiece == -11:
         board[newY][newX] = -1
+
+    elif tempPiece == -9:
+        board[newY][newX] = -99
+
+    elif tempPiece == 9:
+        board[newY][newX] = 99
+
+    elif tempPiece == -5:
+        board[newY][newX] = -55
+
+    elif tempPiece == 5:
+        board[newY][newX] = 55
 
 
 # finds the opposite colour of the piece
@@ -108,6 +121,7 @@ def pawnMove(piece, y, x, board):
         return moves
 
     else:  # white piece
+
         if board[y-1][x] == 0:
             moves.append((y-1, x))  # forward one space
 
@@ -256,7 +270,7 @@ def kingMove(piece, y, x, board):
     return moves
 
 
-# computes all possible moves the piece's colour
+# computes all possible moves for the piece's opposite colour
 def computeAll(king, board):
     moves = []
     y = x = -1
@@ -271,75 +285,30 @@ def computeAll(king, board):
 
                 if n in {-1, 1, 11, -11}:
                     moves = moves + pawnMove(n, y, x, board)
-                    print((y, x), ":", pawnMove(n, y, x, board))
+                    # print((y, x), ":", pawnMove(n, y, x, board))
 
                 elif n in {5, -5}:
                     moves = moves + rookMove(n, y, x, board)
-                    print((y, x), ":", rookMove(n, y, x, board))
+                    # print((y, x), ":", rookMove(n, y, x, board))
 
                 elif n in {3, -3}:
                     moves = moves + knightMove(n, y, x, board)
-                    print((y, x), ":", knightMove(n, y, x, board))
+                    # print((y, x), ":", knightMove(n, y, x, board))
 
                 elif n in {4, -4}:
                     moves = moves + bishopMove(n, y, x, board)
-                    print((y, x), ":", bishopMove(n, y, x, board))
+                    # print((y, x), ":", bishopMove(n, y, x, board))
 
                 elif n in {7, -7}:
                     moves = moves + queenMove(n, y, x, board)
-                    print((y, x), ":", queenMove(n, y, x, board))
+                    # print((y, x), ":", queenMove(n, y, x, board))
 
                 elif n in {9, -9}:
                     moves = moves + kingMove(n, y, x, board)
-                    print((y, x), ":", kingMove(n, y, x, board))
+                    # print((y, x), ":", kingMove(n, y, x, board))
 
         x = -1
     return moves
-
-
-# returns true if the king is in check
-def isKingCheck(piece, y, x, board):
-
-    moves = []
-
-    colour = pieceColour(piece)
-
-    if piece in {-1, 1, 11, -11}:
-        moves = moves + pawnMove(piece, y, x, board)
-        # print((y, x), ":", pawnMove(piece, y, x, board))
-
-    elif piece in {5, -5}:
-        moves = moves + rookMove(piece, y, x, board)
-        # print((y, x), ":", rookMove(piece, y, x, board))
-
-    elif piece in {3, -3}:
-        moves = moves + knightMove(piece, y, x, board)
-        # print((y, x), ":", knightMove(piece, y, x, board))
-
-    elif piece in {4, -4}:
-        moves = moves + bishopMove(piece, y, x, board)
-        # print((y, x), ":", bishopMove(piece, y, x, board))
-
-    elif piece in {7, -7}:
-        moves = moves + queenMove(piece, y, x, board)
-        # print((y, x), ":", queenMove(piece, y, x, board))
-
-    elif piece in {9, -9}:
-        moves = moves + kingMove(piece, y, x, board)
-        # print((y, x), ":", kingMove(piece, y, x, board))
-
-    x = y = -1
-
-    for _ in board:
-        y += 1
-        for n in _:
-            x += 1
-            if pieceColour(-n) == colour and n in {9, -9}:
-                if (y, x) in moves:
-                    return True
-                else:
-                    return False
-        x = -1
 
 
 # returns the coordinates of the piece's colour king
@@ -347,14 +316,58 @@ def kingCoord(piece, board):
     y = x = -1
 
     if piece < 0:
-        king = -9
+        king = -9, -99
     else:
-        king = 9
+        king = 9, 99
 
     for _ in board:
         y += 1
         for n in _:
             x += 1
-            if (n == king):
+            if (n in king):
                 return (y, x)
         x = -1
+
+
+# determines if the king can castle
+# returns true to castle the king
+def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
+    mX, mY = getPos(pSize, size)
+    tempX = mX
+    rook = getPiece(board, pSize, size)[0]
+
+    if piece in {9, -9}:  # king unmoved
+        if rook in {5, -5}:  # rook unmoved
+
+            if mX == 0:
+                kingX = oldX - 2
+                rookX = kingX + 1
+                while (mX != oldX):
+                    if board[oldY][mX + 1] == 0:
+                        empty = True
+                        mX += 1
+                    else:
+                        empty = False
+                        break
+            else:
+                kingX = oldX + 2
+                rookX = kingX - 1
+                while (mX != oldX):
+                    if board[oldY][mX - 1] == 0:
+                        empty = True
+                        mX -= 1
+                    else:
+                        empty = False
+                        break
+
+            if empty:  # empty inbetween spaces
+                if kingCoord(piece, tempBoard) in moveList:  # check if king in check
+                    return False
+                else:
+                    board[oldY][kingX] = piece
+                    board[oldY][rookX] = rook
+                    firstMove(piece, board, oldY, kingX)
+                    firstMove(rook, board, oldY, rookX)
+                    board[mY][tempX] = 0
+
+                    return True
