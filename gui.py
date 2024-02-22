@@ -13,18 +13,6 @@ import pygame
 """
 
 
-# toggles the turn
-def playerTurn(colour, turn):
-    if colour == "Black" and turn == 1:
-        return True
-    elif colour == "White" and turn == 1:
-        return False
-    elif colour == "Black" and turn == -1:
-        return False
-    elif colour == "White" and turn == -1:
-        return True
-
-
 # helper function: prints the state of the board
 def testBoard(board):
     x = 0

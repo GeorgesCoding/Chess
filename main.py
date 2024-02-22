@@ -42,6 +42,7 @@ def main():
     turn = 1
     outline = False
     promotion = None, None, None
+    pieceMoving = False
 
     # list of all possible enemy piece moves
     moveList = []
@@ -79,6 +80,15 @@ def main():
                 pygame.quit()
                 return
 
+            if (kingCoord(-turn, board) == None) or (pieceMoving):
+                pass
+            else:
+                kY, kX = kingCoord(-turn, board)
+                king = board[kY][kX]
+                if checkmate(king, board, kX, kY):
+                    print("Checkmate")
+                    return
+
             # if left mouse button is pressed
             if event.type == pygame.MOUSEBUTTONDOWN:
 
@@ -112,25 +122,27 @@ def main():
                     pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * PSIZE) + 25, (y * PSIZE) + 25, PSIZE, PSIZE), 5)  # outline old space
                     piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
                     oldX, oldY = x, y
+                    pieceMoving = True
 
             # mouse button is released
             if event.type == pygame.MOUSEBUTTONUP:
                 # A piece was selected
                 if selected != None:
+                    pieceMoving = False
                     piece = selected[0]
                     newX, newY = getPos(PSIZE, SIZE)
 
                     # creates a board with the temporary state of the board with the moved piece
                     tempBoard = [row[:] for row in board]
                     tempBoard[newY][newX] = piece
-                    moveList = computeAll(piece, tempBoard)
+                    moveList = computeAll(piece, tempBoard, 0)
 
                     # king castles
                     if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard):
                         turn = -turn
 
                     # piece is moved to a valid position
-                    elif newX != 10 and move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):
+                    elif move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):
                         firstMove(piece, tempBoard, newY, newX)
 
                         # king is in check after move

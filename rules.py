@@ -1,5 +1,6 @@
 import pygame
 from gui import *
+import sys
 
 """ 
 ========================
@@ -8,6 +9,18 @@ from gui import *
 • All legal moves are computed in terms of a list
 • If the new position is in that list, then the move is legal
 """
+
+
+# toggles the turn
+def playerTurn(colour, turn):
+    if colour == "Black" and turn == 1:
+        return True
+    elif colour == "White" and turn == 1:
+        return False
+    elif colour == "Black" and turn == -1:
+        return False
+    elif colour == "White" and turn == -1:
+        return True
 
 
 # determines if move is legal or not
@@ -256,7 +269,7 @@ def queenMove(piece, y, x, board):
     return moves
 
 
-# computes legal king moves
+# computes possible king moves
 def kingMove(piece, y, x, board):
     moves = []
     moveX = 1, 0, -1
@@ -271,7 +284,9 @@ def kingMove(piece, y, x, board):
 
 
 # computes all possible moves for the piece's opposite colour
-def computeAll(king, board):
+# kingPass is to ignore the kings movements
+# used when determining checkmate to avoid infinite recursion
+def computeAll(king, board, kingPass):
     moves = []
     y = x = -1
     colour = pieceColour(king)
@@ -287,7 +302,7 @@ def computeAll(king, board):
                     moves = moves + pawnMove(n, y, x, board)
                     # print((y, x), ":", pawnMove(n, y, x, board))
 
-                elif n in {5, -5}:
+                elif n in {5, -5, 55, -55}:
                     moves = moves + rookMove(n, y, x, board)
                     # print((y, x), ":", rookMove(n, y, x, board))
 
@@ -303,11 +318,15 @@ def computeAll(king, board):
                     moves = moves + queenMove(n, y, x, board)
                     # print((y, x), ":", queenMove(n, y, x, board))
 
-                elif n in {9, -9}:
-                    moves = moves + kingMove(n, y, x, board)
-                    # print((y, x), ":", kingMove(n, y, x, board))
+                elif n in {9, -9, 99, -99}:
+                    if kingPass == 1:
+                        pass
+                    else:
+                        moves = moves + kingMove(n, y, x, board)
+                        # print((y, x), ":", kingMove(n, y, x, board))
 
         x = -1
+    # print("-------------------------------------------------------------")
     return moves
 
 
@@ -418,3 +437,60 @@ def button(selection, info, promotedPiece, board):
         board[y][x] = newPiece
 
     return pressed
+
+
+# evaluates if king is in checkmate
+# False for no, true for yes
+def checkmate(king, board, x, y):
+    moveList = computeAll(king, board, 0)
+
+    # check if the king is the only piece and it cannot move
+
+    if kingCoord(king, board) in moveList:  # king in check
+        kingsList = kingMove(king, y, x, board)
+        tempBoard = [row[:] for row in board]
+        canMove = False
+
+        n = -1
+        for _ in kingsList:
+            n += 1
+            newY, newX = kingsList[n]
+            tempBoard[newY][newX] = king
+
+            if kingCoord(king, tempBoard) in moveList:  # king still in check after move
+                pass
+            else:  # king can move
+                canMove = True
+
+            # resets tempBoard
+            tempBoard = [row[:] for row in board]
+
+        if canMove:
+            return False
+        else:
+            moveList = computeAll(-king, board, 1)
+
+            if king < 0:
+                tempPiece = -1
+            else:
+                tempPiece = 1
+
+            n = -1
+            for _ in moveList:
+                n += 1
+                newY, newX = moveList[n]
+                tempBoard[newY][newX] = tempPiece
+                tempMoveList = computeAll(king, tempBoard, 0)
+
+                if kingCoord(king, tempBoard) in tempMoveList:  # king still in check after move
+                    pass
+                else:  # piece prevents check
+                    canMove = True
+
+                # resets tempBoard
+                tempBoard = [row[:] for row in board]
+
+            return not canMove
+
+    else:
+        return False
