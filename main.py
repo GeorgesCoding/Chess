@@ -1,5 +1,4 @@
 import pygame
-import numpy
 from gui import *
 from rules import *
 
@@ -17,10 +16,9 @@ from rules import *
 """
 
 
-# main control function
 def main():
 
-    # automatically changes game SIZE according to monitor SIZE
+    # automatically changes window dimensions according to monitor size
     pygame.init()
     size = pygame.display.Info().current_h
     SIZE = size - 120
@@ -50,10 +48,10 @@ def main():
     # draw board, pieces and side bar
     buttonSurface = buttons(SIZE)
     boardSurface = createBoard(SIZE, PSIZE)
-    piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
+    piecesSurface = drawPieces(board, PSIZE, SIZE)
     dialougeSurf = dialouge(SIZE)
 
-    # button information
+    # button dimensions
     BUTTONLENGTH = int(((SIZE/1.9)-25 - 60)/3)
     BUTTONHEIGHT = int((SIZE - 45)/6)
     INTSIZE = int(SIZE)
@@ -98,6 +96,7 @@ def main():
                     for p in promoInfo:
                         if button(i, p, promotion, board):
                             outline = False
+                            board = rotate(board)
                             break
                         i += 1
 
@@ -120,53 +119,55 @@ def main():
                     selected = tempPiece, x, y  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
                     pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * PSIZE) + 25, (y * PSIZE) + 25, PSIZE, PSIZE), 5)  # outline old space
-                    piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
+                    piecesSurface = drawPieces(board, PSIZE, SIZE)
                     oldX, oldY = x, y
                     pieceMoving = True
 
             # mouse button is released
             if event.type == pygame.MOUSEBUTTONUP:
                 # A piece was selected
+
                 if selected != None:
                     pieceMoving = False
                     piece = selected[0]
                     newX, newY = getPos(PSIZE, SIZE)
 
-                    # creates a board with the temporary state of the board with the moved piece
-                    tempBoard = [row[:] for row in board]
-                    tempBoard[newY][newX] = piece
-                    moveList = computeAll(piece, tempBoard, 0)
+                    if newX != 10:
+                        # creates a board with the temporary state of the board with the moved piece
+                        tempBoard = [row[:] for row in board]
+                        tempBoard[newY][newX] = piece
+                        moveList = computeAll(piece, tempBoard, 0)
 
-                    # king castles
-                    if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard):
-                        turn = -turn
-
-                    # piece is moved to a valid position
-                    elif move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):
-                        firstMove(piece, tempBoard, newY, newX)
-
-                        # king is in check after move
-                        if kingCoord(piece, tempBoard) in moveList:
-                            board[oldY][oldX] = piece
-
-                        else:  # legal move
-                            board[newY][newX] = piece
-
-                            # pawn at end of board
-                            if endPawn(piece, board, newY, newX):
-                                outline = True
-                                promotion = piece, newY, newX
-                            else:
-                                outline = False
-                                promotion = None, None, None
-
-                            firstMove(piece, board, newY, newX)
+                        # king castles
+                        if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard):
                             turn = -turn
+                            board = rotate(board)
 
-                            # rotates the pieces on the board for 2 player mode
-                            # problems with check case when rotation
-                            # will return after checkmate case is complete
-                            # board = numpy.rot90(board, 2)
+                        # piece is moved to a valid position
+                        elif move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):
+                            firstMove(piece, tempBoard, newY, newX)
+
+                            # king is in check after move
+                            if kingCoord(piece, tempBoard) in moveList:
+                                board[oldY][oldX] = piece
+
+                            else:  # legal move
+                                board[newY][newX] = piece
+                                firstMove(piece, board, newY, newX)
+                                turn = -turn
+                                board = rotate(board)
+
+                                # pawn at end of board
+                                if piece in {-1, 1} and newY == 0:
+                                    outline = True
+                                    promotion = piece, newY, newX
+                                    board = rotate(board)
+                                else:
+                                    outline = False
+                                    promotion = None, None, None
+
+                        else:
+                            board[oldY][oldX] = piece
 
                     else:  # piece moved to invalid position
                         board[oldY][oldX] = piece
@@ -174,7 +175,7 @@ def main():
                 # redraw surfaces, reset temp variables
                 boardSurface = createBoard(SIZE, PSIZE)
                 buttonSurface = buttons(SIZE)
-                piecesSurface = drawPieces(board, PSIZE, SIZE, turn)
+                piecesSurface = drawPieces(board, PSIZE, SIZE)
                 dialougeSurf = dialouge(SIZE)
                 selected = None
                 oldY, oldX = 0, 0

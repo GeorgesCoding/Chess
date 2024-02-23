@@ -1,6 +1,6 @@
 import pygame
 from gui import *
-import sys
+
 
 """ 
 ========================
@@ -118,36 +118,19 @@ def pawnMove(piece, y, x, board):
 
     moves = []
 
-    if piece > 0:  # black piece
-        if board[y+1][x] == 0:
-            moves.append((y+1, x))  # forward one space
+    if board[y-1][x] == 0:
+        moves.append((y-1, x))  # forward one space
 
-        if piece == 11 and board[y+2][x] == 0:  # first move
-            moves.append((y+2, x))
+    if piece in {-11, 11} and board[y-2][x] == 0:  # first move
+        moves.append((y-2, x))
 
-        if spaceCheck(piece, board, y + 1, x + 1) and board[y+1][x+1] != 0:  # right capture
-            moves.append((y+1, x+1))
+    if spaceCheck(piece, board, y - 1, x + 1) and board[y-1][x+1] != 0:  # right capture
+        moves.append((y-1, x+1))
 
-        if spaceCheck(piece, board, y + 1, x - 1) and board[y+1][x-1] != 0:  # left capture
-            moves.append((y+1, x-1))
+    if spaceCheck(piece, board, y - 1, x - 1) and board[y-1][x-1] != 0:  # left capture
+        moves.append((y-1, x-1))
 
-        return moves
-
-    else:  # white piece
-
-        if board[y-1][x] == 0:
-            moves.append((y-1, x))  # forward one space
-
-        if piece == -11 and board[y-2][x] == 0:  # first move
-            moves.append((y-2, x))
-
-        if spaceCheck(piece, board, y - 1, x + 1) and board[y-1][x+1] != 0:  # right capture
-            moves.append((y-1, x+1))
-
-        if spaceCheck(piece, board, y - 1, x - 1) and board[y-1][x-1] != 0:  # left capture
-            moves.append((y-1, x-1))
-
-        return moves
+    return moves
 
 
 # computes legal rook moves
@@ -390,17 +373,6 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
                     board[mY][tempX] = 0
 
                     return True
-
-
-# determines end pawn promotion
-def endPawn(piece, board, newY, newX):
-    if piece == -1:
-        if newY == 0:
-            return True
-
-    elif piece == 1:
-        if newY == 7:
-            return True
 
 
 # evaluates if a button is pressed

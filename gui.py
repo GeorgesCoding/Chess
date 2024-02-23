@@ -126,6 +126,12 @@ def createBoard(size, pSize):
     return tempBoard
 
 
+# toggles a tooltip at the mouse position when idle for 3 seconds
+def tooltip(screen):
+    x, y = pygame.mouse.get_pos()
+    pygame.draw.rect(screen, (200, 0, 0), (x, y, 200, 200))
+
+
 # outlines the promotion buttons when pawn promotion is applicable
 def promoOutline(screen, size, toggle):
 
@@ -216,6 +222,11 @@ def location(a, b, pSize):
     return (25 + (a*pSize), 25 + (b * pSize))
 
 
+# rotates board
+def rotate(board):
+    return [x[::-1] for x in board[::-1]]
+
+
 # creates a 'dragging' animation for the pieces
 def drag(screen, selected, pSize, size):
     if selected != None:
@@ -288,30 +299,25 @@ def getPiece(board, pSize, size):
 
 
 # draws the pieces in their positions according to the 2D board array
-def drawPieces(board, pSize, size, turn):
-
-    if turn == -1:
-        rotate = 0
-    else:
-        rotate = 0
+def drawPieces(board, pSize, size):
 
     # create default size and transparent surface for pieces
     dSize = (pSize, pSize)
     pieces = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
 
     # load & scale all pieces
-    bPawn = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha(), rotate)
-    bBishop = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), dSize).convert_alpha(), rotate)
-    bKnight = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\Knight.png'), dSize).convert_alpha(), rotate)
-    bRook = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\Rook.png'), dSize).convert_alpha(), rotate)
-    bQueen = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\Queen.png'), dSize).convert_alpha(), rotate)
-    bKing = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha(), rotate)
-    wPawn = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha(), rotate)
-    wBishop = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), dSize).convert_alpha(), rotate)
-    wKnight = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), dSize).convert_alpha(), rotate)
-    wRook = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\wRook.png'), dSize).convert_alpha(), rotate)
-    wQueen = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), dSize).convert_alpha(), rotate)
-    wKing = pygame.transform.rotate(pygame.transform.scale(pygame.image.load('Assets\wKing.png'), dSize).convert_alpha(), rotate)
+    bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()
+    bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), dSize).convert_alpha()
+    bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), dSize).convert_alpha()
+    bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), dSize).convert_alpha()
+    bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), dSize).convert_alpha()
+    bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha()
+    wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha()
+    wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), dSize).convert_alpha()
+    wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), dSize).convert_alpha()
+    wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), dSize).convert_alpha()
+    wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), dSize).convert_alpha()
+    wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), dSize).convert_alpha()
 
     # indexes of 2D array
     x = y = -1
@@ -362,4 +368,4 @@ def drawPieces(board, pSize, size, turn):
                 pass
         x = -1
 
-    return pygame.transform.rotate(pieces, rotate)
+    return pieces
