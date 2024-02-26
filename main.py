@@ -41,15 +41,20 @@ def main():
     outline = False
     promotion = None, None, None
     pieceMoving = False
+    choice = 0
+    oldChoice = 0
 
     # list of all possible enemy piece moves
     moveList = []
+
+    # an array that holds the dialouge to be displayed
+    text = ["a", 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
 
     # draw board, pieces and side bar
     buttonSurface = buttons(SIZE)
     boardSurface = createBoard(SIZE, PSIZE)
     piecesSurface = drawPieces(board, PSIZE, SIZE)
-    dialougeSurf = dialouge(SIZE)
+    dialougeSurf = dialouge(SIZE, text)
 
     # button dimensions
     BUTTONLENGTH = int(((SIZE/1.9)-25 - 60)/3)
@@ -108,10 +113,13 @@ def main():
 
                 #  two player mode
                 elif button(0, twoPlayerInfo, None, None):
-                    print("Two Player")
+                    oldChoice += 1
+                    choice = 1
 
                 # vs Computer
                 elif button(0, computerInfo, None, None):
+                    oldChoice += 2
+                    choice = 2
                     print("Computer")
 
                 # checks if a piece has been selected
@@ -176,21 +184,26 @@ def main():
                 boardSurface = createBoard(SIZE, PSIZE)
                 buttonSurface = buttons(SIZE)
                 piecesSurface = drawPieces(board, PSIZE, SIZE)
-                dialougeSurf = dialouge(SIZE)
+                dialougeSurf = dialouge(SIZE, text)
                 selected = None
                 oldY, oldX = 0, 0
 
         # add surfaces to screen
         screen.blit(boardSurface, (0, 0))
         screen.blit(buttonSurface, (0, 0))
-        screen.blit(piecesSurface, (0, 0))
         screen.blit(dialougeSurf, (0, 0))
+
+        if oldChoice != 0 and oldChoice != choice:
+            pass
+        elif choice != 0:
+            screen.blit(piecesSurface, (0, 0))
+        oldChoice = choice
 
         # outline promotion buttons
         promoOutline(screen, SIZE, outline)
 
         # numbers the board
-        numBoard(screen, PSIZE)
+        numBoard(screen, PSIZE, turn)
 
         # creates 'dragging' animation for pieces
         drag(screen, selected, PSIZE, SIZE)

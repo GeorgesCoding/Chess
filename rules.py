@@ -2,6 +2,10 @@ import pygame
 from gui import *
 
 
+BLACK = -1
+WHITE = 1
+
+
 """ 
 ========================
 === NOTES FOR VIEWER ===
@@ -13,255 +17,154 @@ from gui import *
 
 # toggles the turn
 def playerTurn(colour, turn):
-    if colour == "Black" and turn == 1:
-        return True
-    elif colour == "White" and turn == 1:
-        return False
-    elif colour == "Black" and turn == -1:
-        return False
-    elif colour == "White" and turn == -1:
-        return True
+    return (colour == BLACK) == (turn == 1)
 
 
 # determines if move is legal or not
-# if the new position is in the lis t of legal moves, return true
+# if the new position is in the list of legal moves, return true
 def move(piece, newY, newX, oldY, oldX, board):
 
-    # lists for piece identification
-    pawn = -11, 11, 1, -1
-    rook = 5, -5, 55, -55
-    knight = 3, -3
-    bishop = 4, -4
-    queen = 7, -7
-    king = 9, -9, -99, 99
+    if piece in {-11, 11, 1, -1}:
+        moves = pawnMove(piece, oldY, oldX, board, 0)
 
-    if piece in pawn:
-        moves = pawnMove(piece, oldY, oldX, board)
-        return ((newY, newX) in moves)
-
-    elif piece in rook:
+    elif piece in {5, -5, 55, -55}:
         moves = rookMove(piece, oldY, oldX, board)
-        return ((newY, newX) in moves)
 
-    elif piece in knight:
+    elif piece in {3, -3}:
         moves = knightMove(piece, oldY, oldX, board)
-        return ((newY, newX) in moves)
 
-    elif piece in bishop:
+    elif piece in {4, -4}:
         moves = bishopMove(piece, oldY, oldX, board)
-        return ((newY, newX) in moves)
 
-    elif piece in queen:
+    elif piece in {7, -7}:
         moves = queenMove(piece, oldY, oldX, board)
-        return ((newY, newX) in moves)
 
-    elif piece in king:
+    elif piece in {9, -9, -99, 99}:
         moves = kingMove(piece, oldY, oldX, board)
-        return ((newY, newX) in moves)
+
+    return ((newY, newX) in moves)
 
 
 # determines if a set of coordinates are in bounds
 def inBounds(newX, newY):
-    if newX < 0 or newX > 7 or newY < 0 or newY > 7:
-        return False
-    else:
-        return True
+    return 0 <= newX <= 7 and 0 <= newY <= 7
 
 
 # the default check for computing legal moves
 # True for valid space, false for invalid
 def spaceCheck(piece, board, newY, newX):
-    if inBounds(newX, newY):
-        if board[newY][newX] == 0:
-            return True
-        elif pieceColour(board[newY][newX]) == pieceColour(-piece):
-            return True
-        else:
-            return False
-    else:
-        return False
+    return inBounds(newX, newY) and (board[newY][newX] == 0 or pieceColour(board[newY][newX]) == pieceColour(-piece))
 
 
 # toggles first move ability of pawn
 # also determines if king can castle
 def firstMove(tempPiece, board, newY, newX):
 
-    if tempPiece == 11:
-        board[newY][newX] = 1
+    if tempPiece in {11, -11}:
+        board[newY][newX] = tempPiece / 11
 
-    elif tempPiece == -11:
-        board[newY][newX] = -1
+    elif tempPiece in {-9, 9, -5, 5}:
+        board[newY][newX] = tempPiece * 11
 
-    elif tempPiece == -9:
-        board[newY][newX] = -99
 
-    elif tempPiece == 9:
-        board[newY][newX] = 99
-
-    elif tempPiece == -5:
-        board[newY][newX] = -55
-
-    elif tempPiece == 5:
-        board[newY][newX] = 55
+# determines if en passant is a possible move
+def enPassant(piece, y, x, board):
+    if piece in {-11, 11}:
+        i = 0
+        while i < 8:
+            if board[y][i] in {-11, 11, 1, -1}:
+                board[y][i]
 
 
 # finds the opposite colour of the piece
 def pieceColour(piece):
-    if piece < 0:
-        return "Black"
-    else:
-        return "White"
+    return BLACK if piece < 0 else WHITE
 
 
 # computes legal pawn moves
-def pawnMove(piece, y, x, board):
+def pawnMove(piece, y, x, board, opposite):
 
-    moves = []
+    moves = set()
+    a = -1 if opposite == 1 else 1
+    b = -2 if opposite == 1 else 2
 
-    if board[y-1][x] == 0:
-        moves.append((y-1, x))  # forward one space
+    if board[y - a][x] == 0:
+        moves.add((y - a, x))  # forward one space
 
-    if piece in {-11, 11} and board[y-2][x] == 0:  # first move
-        moves.append((y-2, x))
+    if piece in {-11, 11} and board[y - b][x] == 0:  # first move
+        moves.add((y - b, x))
 
-    if spaceCheck(piece, board, y - 1, x + 1) and board[y-1][x+1] != 0:  # right capture
-        moves.append((y-1, x+1))
+    if spaceCheck(piece, board, y - a, x + 1) and board[y - a][x + 1] != 0:  # right capture
+        moves.add((y - a, x + 1))
 
-    if spaceCheck(piece, board, y - 1, x - 1) and board[y-1][x-1] != 0:  # left capture
-        moves.append((y-1, x-1))
-
-    return moves
-
-
-# computes legal rook moves
-def rookMove(piece, y, x, board):
-    moves = []
-    tempY = y
-    tempX = x
-
-    # up
-    while (spaceCheck(piece, board, tempY + 1, x)):
-        moves.append((tempY + 1, x))
-        if board[tempY + 1][x] != 0:
-            break
-        tempY += 1
-
-    tempY = y
-
-    # right
-    while (spaceCheck(piece, board, y, tempX + 1)):
-        moves.append((y, tempX + 1))
-        if board[y][tempX + 1] != 0:
-            break
-        tempX += 1
-
-    tempX = x
-
-    # down
-    while (spaceCheck(piece, board, tempY - 1, x)):
-        moves.append((tempY - 1, x))
-        if board[tempY - 1][x] != 0:
-            break
-        tempY += -1
-
-    # left
-    while (spaceCheck(piece, board, y, tempX - 1)):
-        moves.append((y, tempX - 1))
-        if board[y][tempX - 1] != 0:
-            break
-        tempX += -1
+    if spaceCheck(piece, board, y - a, x - 1) and board[y - a][x - 1] != 0:  # left capture
+        moves.add((y - a, x - 1))
 
     return moves
 
 
 # computes legal knight moves
 def knightMove(piece, y, x, board):
-    moves = []
-    i = 0
-    xMove = -2, -1, 1, 2
-    yMove = 1, 2, 2, 1
+    moves = set()
+    xMove = [-2, -1, 1, 2]
+    yMove = [1, 2, 2, 1]
 
-    while i < 4:
+    for a, b in zip(xMove, yMove):
+        if spaceCheck(piece, board, (y + b), (x + a)):
+            moves.add((y + b, x + a))
 
-        if spaceCheck(piece, board, (y + yMove[i]), (x + xMove[i])):
-            moves.append(((y + yMove[i]), (x + xMove[i])))
+        if spaceCheck(piece, board, (y - b), (x + a)):
+            moves.add((y - b, x + a))
 
-        if spaceCheck(piece, board, (y - yMove[i]), (x + xMove[i])):
-            moves.append(((y - yMove[i]), (x + xMove[i])))
+    return moves
 
-        i += 1
+
+# general move pattern for bishop & rook
+def bishopRookCompute(piece, y, x, board, xMove, yMove):
+    moves = set()
+
+    for a, b in zip(xMove, yMove):
+        tempX, tempY = x + a, y + b
+        while (spaceCheck(piece, board, tempY, tempX)):
+            moves.add((tempY, tempX))
+            if board[tempY][tempX] != 0:
+                break
+            tempY += b
+            tempX += a
 
     return moves
 
 
 # computes legal bishop moves
 def bishopMove(piece, y, x, board):
-    moves = []
-    tempY = y
-    tempX = x
+    xMove = [1, 1, -1, -1]
+    yMove = [1, -1, 1, -1]
 
-    # up right
-    while (spaceCheck(piece, board, tempY + 1, tempX + 1)):
-        moves.append((tempY + 1, tempX + 1))
-        if board[tempY + 1][tempX + 1] != 0:
-            break
-        tempY += 1
-        tempX += 1
+    return bishopRookCompute(piece, y, x, board, xMove, yMove)
 
-    tempY = y
-    tempX = x
 
-    # up left
-    while (spaceCheck(piece, board, tempY + 1, tempX - 1)):
-        moves.append((tempY + 1, tempX - 1))
-        if board[tempY + 1][tempX - 1] != 0:
-            break
-        tempY += 1
-        tempX -= 1
+# computes legal rook moves
+def rookMove(piece, y, x, board):
+    xMove = [-1, 1, 0, 0]
+    yMove = [0, 0, -1, 1]
 
-    tempY = y
-    tempX = x
-
-    # down right
-    while (spaceCheck(piece, board, tempY - 1, tempX + 1)):
-        moves.append((tempY - 1, tempX + 1))
-        if board[tempY - 1][tempX + 1] != 0:
-            break
-        tempY -= 1
-        tempX += 1
-
-    tempY = y
-    tempX = x
-
-    # down left
-    while (spaceCheck(piece, board, tempY - 1, tempX - 1)):
-        moves.append((tempY - 1, tempX - 1))
-        if board[tempY - 1][tempX - 1] != 0:
-            break
-        tempY -= 1
-        tempX -= 1
-
-    return moves
+    return bishopRookCompute(piece, y, x, board, xMove, yMove)
 
 
 # computes legal queen moves
 def queenMove(piece, y, x, board):
-    moves = []
-    moves = bishopMove(piece, y, x, board) + rookMove(piece, y, x, board)
-
-    return moves
+    return bishopMove(piece, y, x, board) | rookMove(piece, y, x, board)
 
 
 # computes possible king moves
 def kingMove(piece, y, x, board):
-    moves = []
-    moveX = 1, 0, -1
-    moveY = 1, 0, -1
+    moves = set()
+    moveX = [1, 0, -1]
+    moveY = [1, 0, -1]
 
-    for i in moveX:
-        for n in moveY:
-            if spaceCheck(piece, board, y + moveY[n], x + moveX[i]):
-                moves.append((y + moveY[n], x + moveX[i]))
+    for a, b in zip(moveX, moveY):
+        if spaceCheck(piece, board, b, x + a):
+            moves.add((y + b, x + a))
 
     return moves
 
@@ -270,46 +173,31 @@ def kingMove(piece, y, x, board):
 # kingPass is to ignore the kings movements
 # used when determining checkmate to avoid infinite recursion
 def computeAll(king, board, kingPass):
-    moves = []
-    y = x = -1
+    moves = set()
     colour = pieceColour(king)
 
-    for _ in board:
-        y += 1
-        for n in _:
-            x += 1
-
+    for y, row in enumerate(board):
+        for x, n in enumerate(row):
             if pieceColour(-n) == colour:
 
                 if n in {-1, 1, 11, -11}:
-                    moves = moves + pawnMove(n, y, x, board)
-                    # print((y, x), ":", pawnMove(n, y, x, board))
+                    moves |= pawnMove(n, y, x, board, 1)
 
                 elif n in {5, -5, 55, -55}:
-                    moves = moves + rookMove(n, y, x, board)
-                    # print((y, x), ":", rookMove(n, y, x, board))
+                    moves |= rookMove(n, y, x, board)
 
                 elif n in {3, -3}:
-                    moves = moves + knightMove(n, y, x, board)
-                    # print((y, x), ":", knightMove(n, y, x, board))
+                    moves |= knightMove(n, y, x, board)
 
                 elif n in {4, -4}:
-                    moves = moves + bishopMove(n, y, x, board)
-                    # print((y, x), ":", bishopMove(n, y, x, board))
+                    moves |= bishopMove(n, y, x, board)
 
                 elif n in {7, -7}:
-                    moves = moves + queenMove(n, y, x, board)
-                    # print((y, x), ":", queenMove(n, y, x, board))
+                    moves |= queenMove(n, y, x, board)
 
-                elif n in {9, -9, 99, -99}:
-                    if kingPass == 1:
-                        pass
-                    else:
-                        moves = moves + kingMove(n, y, x, board)
-                        # print((y, x), ":", kingMove(n, y, x, board))
+                elif n in {9, -9, 99, -99} and kingPass != 1:
+                    moves |= kingMove(n, y, x, board)
 
-        x = -1
-    # print("-------------------------------------------------------------")
     return moves
 
 
@@ -317,18 +205,12 @@ def computeAll(king, board, kingPass):
 def kingCoord(piece, board):
     y = x = -1
 
-    if piece < 0:
-        king = -9, -99
-    else:
-        king = 9, 99
+    king = {-9, -99} if piece < 0 else {9, 99}
 
-    for _ in board:
-        y += 1
-        for n in _:
-            x += 1
-            if (n in king):
-                return (y, x)
-        x = -1
+    for y, row in enumerate(board):
+        for x, z in enumerate(row):
+            if z in king:
+                return y, x
 
 
 # determines if the king can castle
@@ -338,41 +220,29 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
     tempX = mX
     rook = getPiece(board, pSize, size)[0]
 
-    if piece in {9, -9}:  # king unmoved
-        if rook in {5, -5}:  # rook unmoved
+    # pieces unmoved & determines LH or RH castle
+    if piece in {9, -9} and rook in {5, -5}:
+        temp = 1 if mX == 0 else -1
+        kingX = oldX - 2 * temp
+        rookX = kingX + temp
 
-            if mX == 0:
-                kingX = oldX - 2
-                rookX = kingX + 1
-                while (mX != oldX):
-                    if board[oldY][mX + 1] == 0:
-                        empty = True
-                        mX += 1
-                    else:
-                        empty = False
-                        break
-            else:
-                kingX = oldX + 2
-                rookX = kingX - 1
-                while (mX != oldX):
-                    if board[oldY][mX - 1] == 0:
-                        empty = True
-                        mX -= 1
-                    else:
-                        empty = False
-                        break
+        # empty inbetween spaces
+        while (mX != oldX):
+            if board[oldY][mX + temp] != 0:
+                return False
+            mX += temp
 
-            if empty:  # empty inbetween spaces
-                if kingCoord(piece, tempBoard) in moveList:  # check if king in check
-                    return False
-                else:
-                    board[oldY][kingX] = piece
-                    board[oldY][rookX] = rook
-                    firstMove(piece, board, oldY, kingX)
-                    firstMove(rook, board, oldY, rookX)
-                    board[mY][tempX] = 0
-
-                    return True
+        # check if king in check
+        if kingCoord(piece, tempBoard) in moveList:
+            return False
+        else:
+            board[oldY][kingX] = piece
+            board[oldY][rookX] = rook
+            firstMove(piece, board, oldY, kingX)
+            firstMove(rook, board, oldY, rookX)
+            board[mY][tempX] = 0
+            return True
+    return False
 
 
 # evaluates if a button is pressed
@@ -385,25 +255,11 @@ def button(selection, info, promotedPiece, board):
     if pressed and selection != 0:
         piece, y, x = promotedPiece
 
-        # Bishop
-        if selection == 1:
-            newPiece = 4
+        # map selection to newPiece type
+        pieceMap = {1: 4, 2: 3, 3: 55, 4: 7}
+        newPiece = pieceMap.get(selection, None)
 
-        # Knight
-        elif selection == 2:
-            newPiece = 3
-
-        # Rook
-        elif selection == 3:
-            newPiece = 55
-
-        # Queen
-        elif selection == 4:
-            newPiece = 7
-
-        if piece > 0:
-            pass
-        else:
+        if piece < 0:
             newPiece = -newPiece
 
         board[y][x] = newPiece
@@ -423,16 +279,12 @@ def checkmate(king, board, x, y):
         tempBoard = [row[:] for row in board]
         canMove = False
 
-        n = -1
-        for _ in kingsList:
-            n += 1
-            newY, newX = kingsList[n]
+        for (newY, newX) in kingsList:
             tempBoard[newY][newX] = king
 
-            if kingCoord(king, tempBoard) in moveList:  # king still in check after move
-                pass
-            else:  # king can move
+            if kingCoord(king, tempBoard) not in moveList:  # king still in check after move
                 canMove = True
+                break
 
             # resets tempBoard
             tempBoard = [row[:] for row in board]
@@ -441,23 +293,15 @@ def checkmate(king, board, x, y):
             return False
         else:
             moveList = computeAll(-king, board, 1)
+            tempPiece = -1 if king < 0 else 1
 
-            if king < 0:
-                tempPiece = -1
-            else:
-                tempPiece = 1
-
-            n = -1
-            for _ in moveList:
-                n += 1
-                newY, newX = moveList[n]
+            for (newY, newX) in moveList:
                 tempBoard[newY][newX] = tempPiece
                 tempMoveList = computeAll(king, tempBoard, 0)
 
-                if kingCoord(king, tempBoard) in tempMoveList:  # king still in check after move
-                    pass
-                else:  # piece prevents check
+                if kingCoord(king, tempBoard) not in tempMoveList:  # king still in check after move
                     canMove = True
+                    break
 
                 # resets tempBoard
                 tempBoard = [row[:] for row in board]

@@ -24,54 +24,34 @@ def testBoard(board):
 
 
 # prints the numbers of the board
-def numBoard(screen, pSize):
+def numBoard(screen, pSize, turn):
 
     # font
     font = pygame.font.SysFont('Comic Sans MS', 20)
 
-    # numbers
-    white = (255, 255, 255)
-    one = font.render('1', False, white)
-    two = font.render('2', False, white)
-    three = font.render('3', False, white)
-    four = font.render('4', False, white)
-    five = font.render('5', False, white)
-    six = font.render('6', False, white)
-    seven = font.render('7', False, white)
-    eight = font.render('8', True, white)
-    A = font.render('a', False, white)
-    B = font.render('b', False, white)
-    c = font.render('c', False, white)
-    d = font.render('d', False, white)
-    e = font.render('e', False, white)
-    f = font.render('f', False, white)
-    g = font.render('g', False, white)
-    h = font.render('h', True, white)
-
+    # coordinates
+    w = 10 + pSize/2
     x = 5
-    a = 10 + pSize/2
     y = 20 + pSize * 8
-    b = 20 + pSize/2
+    z = 20 + pSize/2
 
-    # left hand side
-    screen.blit(one, (x, a))
-    screen.blit(two, (x, a + pSize))
-    screen.blit(three, (x, a + pSize * 2))
-    screen.blit(four, (x, a + pSize * 3))
-    screen.blit(five, (x, a + pSize * 4))
-    screen.blit(six, (x, a + pSize * 5))
-    screen.blit(seven, (x, a + pSize * 6))
-    screen.blit(eight, (x, a + pSize * 7))
+    # coordinate, number and letter lists
+    num = ['8', '7', '6', '5', '4', '3', '2', '1']
+    alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    numCoord = [w, w + pSize, w + pSize * 2, w + pSize * 3, w + pSize * 4, w + pSize * 5, w + pSize * 6, w + pSize * 7]
+    alphaCoord = [z, z + pSize, z + pSize * 2, z + pSize * 3, z + pSize * 4, z + pSize * 5, z + pSize * 6, z + pSize * 7]
 
-    # bottom
-    screen.blit(A, (b, y))
-    screen.blit(B, (b + pSize, y))
-    screen.blit(c, (b + pSize * 2, y))
-    screen.blit(d, (b + pSize * 3, y))
-    screen.blit(e, (b + pSize * 4, y))
-    screen.blit(f, (b + pSize * 5, y))
-    screen.blit(g, (b + pSize * 6, y))
-    screen.blit(h, (b + pSize * 7, y))
+    # turn switch
+    if turn == -1:
+        numCoord.reverse()
+        alphaCoord.reverse()
+
+    # blit to screen
+    n = -1
+    while n < 7:
+        screen.blit(font.render(num[n], False, (255, 255, 255)), (x, numCoord[n]))
+        screen.blit(font.render(alpha[n], False, (255, 255, 255)), (alphaCoord[n], y))
+        n += 1
 
 
 # gets the position of the mouse in terms of the board tile coordinates
@@ -82,9 +62,7 @@ def getPos(pSize, size):
         return 10, 10  # out of bounds
 
     else:
-        x = int((mX-25) / pSize)
-        y = int((mY-25) / pSize)
-        return x, y
+        return int((mX-25) / pSize), int((mY-25) / pSize)
 
 
 # creates board surface
@@ -110,10 +88,8 @@ def createBoard(size, pSize):
     for i in range(1, 7, 2):
         pygame.draw.rect(tempBoard, white, (25 + pSize * (i + 1), 25, pSize, pSize))
         pygame.draw.rect(tempBoard, green, (25 + pSize * i, 25, pSize, pSize))
-
-    for n in range(1, 7, 2):
-        pygame.draw.rect(tempBoard, green, (25 + pSize * (n + 1), pSize * 7 + 25, pSize, pSize))
-        pygame.draw.rect(tempBoard, white, (25 + pSize * n, pSize * 7 + 25, pSize, pSize))
+        pygame.draw.rect(tempBoard, green, (25 + pSize * (i + 1), pSize * 7 + 25, pSize, pSize))
+        pygame.draw.rect(tempBoard, white, (25 + pSize * i, pSize * 7 + 25, pSize, pSize))
 
     # draw middle of board
     for y in range(1, 6, 2):
@@ -146,15 +122,48 @@ def promoOutline(screen, size, toggle):
         pygame.draw.rect(screen, colour, (size + 45 + pSize * 3, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 5, 0, 12, 12, 12, 12)
 
 
+# adds additional dialouge into the array
+def addText(array, text):
+    x = 0
+    isAdd = False
+    for n in array:
+        if n == "":
+            array[x] = text
+            isAdd = True
+        x += 1
+
+    if isAdd:
+        pass
+    else:
+        array.pop(0)
+        array.append(text)
+
+
+def removeText(array, text):
+    x = 0
+    for n in array:
+        if n == text:
+            array[x] = ""
+        x += 1
+
+
 # states the move of the board
 # also display check, checkmate, castle and winner
-def dialouge(size):
+def dialouge(size, text):
     # buttons surface, transparent background
     dialougeSurf = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
     buttonHeight = (size - 45)/6
     black = (0, 0, 0)
-
+    font = pygame.font.SysFont('Comic Sans MS', 27)
+    white = (255, 255, 255)
     pygame.draw.rect(dialougeSurf, black, (size + 15,  115 + 2 * buttonHeight + buttonHeight/3, (size/1.9)-55, size - (165 + 2 * buttonHeight + buttonHeight/3)), 0, 0, 12, 12, 12, 12)
+
+    text.reverse()
+
+    n = 8
+    while n > -1:
+        dialougeSurf.blit(font.render(text[n], False, white), (size + 30,  130 + 2 * buttonHeight + buttonHeight/3 + 45 * n, (size/1.9)-55, size - (165 + 2 * buttonHeight + buttonHeight/3)))
+        n -= 1
 
     return dialougeSurf
 
@@ -230,11 +239,10 @@ def rotate(board):
 # creates a 'dragging' animation for the pieces
 def drag(screen, selected, pSize, size):
     if selected != None:
-        half = pSize/2
         piece = selected[0]
         dSize = (pSize, pSize)
         mX, mY = pygame.mouse.get_pos()
-        mouseLocation = (mX - half, mY - half)
+        mouseLocation = (mX - pSize/2, mY - pSize/2)
         x, y = getPos(pSize, size)
 
         # draw where piece will land according to mouse location
