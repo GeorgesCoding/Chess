@@ -8,11 +8,11 @@ from rules import *
 === NOTES FOR VIEWER ===
 ========================
 • This file is responsible for running the entire game
-• Make sure 'pygame' and 'numpy' modules are installed prior to running file
+• Make sure 'pygame' modules is installed prior to running file
     - Using pip: pip install pygame
-    - pip install numpy
     - Run file with terminal command: 'py main.py'
-• The game will resize according to the 'main' display in your computer settings
+• The game window will resize according to the 'main' display in your computer settings
+• main() triggers game activiation and contains all applicable event handlers
 """
 
 
@@ -33,7 +33,14 @@ def main():
     pygame.display.set_icon(icon)
 
     # 2D array to represent state of board
-    board = [[5, 3, 4, 7, 9, 4, 3, 5], [11]*8, [0]*8, [0]*8, [0]*8, [0]*8, [-11]*8, [-5, -3, -4, -7, -9, -4, -3, -5]]
+    board = [[5, 3, 4, 7, 9, 4, 3, 5],
+             [11] * 8,
+             [0] * 8,
+             [0] * 8,
+             [0] * 8,
+             [0] * 8,
+             [-11] * 8,
+             [-5, -3, -4, -7, -9, -4, -3, -5]]
 
     # toggable variables
     selected = None
@@ -45,7 +52,7 @@ def main():
     oldChoice = 0
 
     # list of all possible enemy piece moves
-    moveList = []
+    moveList = set()
 
     # an array that holds the dialouge to be displayed
     text = ["a", 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
@@ -97,13 +104,11 @@ def main():
 
                 # promotion buttons are outlined
                 if outline:
-                    i = 1
-                    for p in promoInfo:
-                        if button(i, p, promotion, board):
+                    for i, p in enumerate(promoInfo):
+                        if button(i + 1, p, promotion, board):
                             outline = False
                             board = rotate(board)
                             break
-                        i += 1
 
                 # restarts program
                 elif button(0, restartInfo, None, None):
@@ -144,7 +149,7 @@ def main():
                         # creates a board with the temporary state of the board with the moved piece
                         tempBoard = [row[:] for row in board]
                         tempBoard[newY][newX] = piece
-                        moveList = computeAll(piece, tempBoard, 0)
+                        moveList = computeAll(piece, tempBoard, 0, 1)
 
                         # king castles
                         if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard):

@@ -13,13 +13,33 @@ import pygame
 """
 
 
+# map constant of the paths of the image of the pieces
+IMAGEPATH = {
+    1: 'Assets\Pawn.png',
+    11: 'Assets\Pawn.png',
+    3: 'Assets\Knight.png',
+    4: 'Assets\Bishop.png',
+    5: 'Assets\Rook.png',
+    55: 'Assets\Rook.png',
+    7: 'Assets\Queen.png',
+    9: 'Assets\King.png',
+    99: 'Assets\King.png',
+    -1: 'Assets\wPawn.png',
+    -11: 'Assets\wPawn.png',
+    -3: 'Assets\wKnight.png',
+    -4: 'Assets\wBishop.png',
+    -5: 'Assets\wRook.png',
+    -55: 'Assets\wRook.png',
+    -7: 'Assets\wQueen.png',
+    -9: 'Assets\wKing.png',
+    -99: 'Assets\wKing.png'
+}
+
+
 # helper function: prints the state of the board
 def testBoard(board):
-    x = 0
-    while x < 8:
-        print(board[x])
-        x += 1
-
+    for row in board:
+        print(row)
     print("--------------------------------")
 
 
@@ -35,11 +55,9 @@ def numBoard(screen, pSize, turn):
     y = 20 + pSize * 8
     z = 20 + pSize/2
 
-    # coordinate, number and letter lists
-    num = ['8', '7', '6', '5', '4', '3', '2', '1']
-    alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    numCoord = [w, w + pSize, w + pSize * 2, w + pSize * 3, w + pSize * 4, w + pSize * 5, w + pSize * 6, w + pSize * 7]
-    alphaCoord = [z, z + pSize, z + pSize * 2, z + pSize * 3, z + pSize * 4, z + pSize * 5, z + pSize * 6, z + pSize * 7]
+    # coordinate lists
+    numCoord = [w + i * pSize for i in range(8)]
+    alphaCoord = [z + i * pSize for i in range(8)]
 
     # turn switch
     if turn == -1:
@@ -47,22 +65,20 @@ def numBoard(screen, pSize, turn):
         alphaCoord.reverse()
 
     # blit to screen
-    n = -1
-    while n < 7:
-        screen.blit(font.render(num[n], False, (255, 255, 255)), (x, numCoord[n]))
-        screen.blit(font.render(alpha[n], False, (255, 255, 255)), (alphaCoord[n], y))
-        n += 1
+    for i, (num, alpha) in enumerate(zip(['8', '7', '6', '5', '4', '3', '2', '1'], ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])):
+        screen.blit(font.render(num, False, (255, 255, 255)), (x, numCoord[i]))
+        screen.blit(font.render(alpha, False, (255, 255, 255)), (alphaCoord[i], y))
 
 
 # gets the position of the mouse in terms of the board tile coordinates
 def getPos(pSize, size):
     mX, mY = pygame.mouse.get_pos()
 
-    if mX >= (size-25) or mY >= (size-25) or mX < 25 or mY < 25:
+    if not (25 <= mX < size - 25) or not (25 <= mY < size - 25):
         return 10, 10  # out of bounds
 
     else:
-        return int((mX-25) / pSize), int((mY-25) / pSize)
+        return int((mX - 25) / pSize), int((mY - 25) / pSize)
 
 
 # creates board surface
@@ -77,7 +93,7 @@ def createBoard(size, pSize):
     gray = (48, 46, 43)
 
     # draw background
-    pygame.draw.rect(tempBoard, gray, (0, 0, size + size/1.9, size))
+    tempBoard.fill(gray)
 
     # draw rounded corners
     pygame.draw.rect(tempBoard, white, (25, 25, pSize, pSize), 0, 0, 12)
@@ -85,19 +101,11 @@ def createBoard(size, pSize):
     pygame.draw.rect(tempBoard, green, (25, pSize*7 + 25, pSize, pSize), 0, 0, 0, 0, 12)
     pygame.draw.rect(tempBoard, white, (pSize*7 + 25, pSize*7 + 25, pSize, pSize), 0, 0, 0, 0, 0, 12)
 
-    for i in range(1, 7, 2):
-        pygame.draw.rect(tempBoard, white, (25 + pSize * (i + 1), 25, pSize, pSize))
-        pygame.draw.rect(tempBoard, green, (25 + pSize * i, 25, pSize, pSize))
-        pygame.draw.rect(tempBoard, green, (25 + pSize * (i + 1), pSize * 7 + 25, pSize, pSize))
-        pygame.draw.rect(tempBoard, white, (25 + pSize * i, pSize * 7 + 25, pSize, pSize))
-
-    # draw middle of board
-    for y in range(1, 6, 2):
-        for x in range(0, 8, 2):
-            pygame.draw.rect(tempBoard, green, (25 + pSize * x, pSize * y + 25, pSize, pSize))
-            pygame.draw.rect(tempBoard, white, (25 + pSize * (x + 1), pSize * y + 25, pSize, pSize))
-            pygame.draw.rect(tempBoard, green, (25 + pSize * (x + 1), pSize * (y + 1) + 25, pSize, pSize))
-            pygame.draw.rect(tempBoard, white, (25 + pSize * x, pSize * (y + 1) + 25, pSize, pSize))
+# Draw squares and rounded corners
+    for y in range(8):
+        for x in range(8):
+            rect_color = white if (x + y) % 2 == 0 else green
+            pygame.draw.rect(tempBoard, rect_color, (25 + x * pSize, 25 + y * pSize, pSize, pSize))
 
     return tempBoard
 
@@ -124,17 +132,10 @@ def promoOutline(screen, size, toggle):
 
 # adds additional dialouge into the array
 def addText(array, text):
-    x = 0
-    isAdd = False
-    for n in array:
-        if n == "":
-            array[x] = text
-            isAdd = True
-        x += 1
-
-    if isAdd:
-        pass
-    else:
+    try:
+        index = array.index("")
+        array[index] = text
+    except ValueError:
         array.pop(0)
         array.append(text)
 
@@ -156,14 +157,22 @@ def dialouge(size, text):
     black = (0, 0, 0)
     font = pygame.font.SysFont('Comic Sans MS', 27)
     white = (255, 255, 255)
-    pygame.draw.rect(dialougeSurf, black, (size + 15,  115 + 2 * buttonHeight + buttonHeight/3, (size/1.9)-55, size - (165 + 2 * buttonHeight + buttonHeight/3)), 0, 0, 12, 12, 12, 12)
 
+    # Calculate dimensions for the rectangle
+    x = size + 15
+    y = 115 + 2 * buttonHeight + buttonHeight/3
+    w = (size/1.9) - 55
+    h = size - (165 + 2 * buttonHeight + buttonHeight/3)
+
+    # Draw the rectangle
+    pygame.draw.rect(dialougeSurf, black, (x, y, w, h), 0, 0, 12, 12, 12, 12)
     text.reverse()
 
-    n = 8
-    while n > -1:
-        dialougeSurf.blit(font.render(text[n], False, white), (size + 30,  130 + 2 * buttonHeight + buttonHeight/3 + 45 * n, (size/1.9)-55, size - (165 + 2 * buttonHeight + buttonHeight/3)))
-        n -= 1
+    # Render and blit text
+    for i, txt in enumerate(text):
+        render = font.render(txt, False, white)
+        height = 130 + 2 * buttonHeight + buttonHeight/3 + 45 * i
+        dialougeSurf.blit(render, (size + 30, height))
 
     return dialougeSurf
 
@@ -187,19 +196,17 @@ def buttons(size):
     dSize = (pSize, pSize)
 
     # draw gamemode buttons
-    pygame.draw.rect(buttonSurface, brown, (size + 15, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, brown, (size + 30 + buttonLength, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, brown, (size + 45 + buttonLength * 2, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
+    for i in range(3):
+        pygame.draw.rect(buttonSurface, brown, (size + 15 + (buttonLength + 15) * i, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
 
     restart = pygame.transform.scale(pygame.image.load('Assets\Restart.png'), (buttonLength-45, buttonLength-45)).convert_alpha()
     twoPlayer = pygame.transform.scale(pygame.image.load('Assets\TPlayer.png'), (buttonLength, buttonLength)).convert_alpha()
     computer = pygame.transform.scale(pygame.image.load('Assets\Computer.png'), (buttonLength, buttonLength)).convert_alpha()
 
     # draw promotion buttons
-    pygame.draw.rect(buttonSurface, brown, (size + 15, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, brown, (size + 25 + pSize,  115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, brown, (size + 35 + pSize * 2, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
-    pygame.draw.rect(buttonSurface, brown, (size + 45 + pSize * 3, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
+    for i in range(4):
+        pygame.draw.rect(buttonSurface, brown, (size + 15 + (pSize + 10) * i, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
+
     promotion = font.render('Pawn Promotion', True, black)
     promotionRect = promotion.get_rect(center=(size + 15 + (buttonLength * 3 + 30)/2, 105 + buttonHeight + buttonHeight/6))
 
@@ -248,53 +255,10 @@ def drag(screen, selected, pSize, size):
         # draw where piece will land according to mouse location
         pygame.draw.rect(screen, (3, 80, 200, 50), ((x * pSize)+25, (y * pSize)+25, pSize, pSize), 5)
 
-        if piece in {1, 11}:  # black pawn
-            bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()
-            screen.blit(bPawn, mouseLocation)
-
-        elif piece == 3:  # black knight
-            bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), dSize).convert_alpha()
-            screen.blit(bKnight, mouseLocation)
-
-        elif piece == 4:  # black bishop
-            bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), dSize).convert_alpha()
-            screen.blit(bBishop, mouseLocation)
-
-        elif piece in {5, 55}:  # black rook
-            bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), dSize).convert_alpha()
-            screen.blit(bRook, mouseLocation)
-
-        elif piece == 7:  # black queen
-            bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), dSize).convert_alpha()
-            screen.blit(bQueen, mouseLocation)
-
-        elif piece in {9, 99}:  # black king
-            bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha()
-            screen.blit(bKing, mouseLocation)
-
-        elif piece in {-1, -11}:  # white pawn
-            wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha()
-            screen.blit(wPawn, mouseLocation)
-
-        elif piece == -3:  # white knight
-            wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), dSize).convert_alpha()
-            screen.blit(wKnight, mouseLocation)
-
-        elif piece == -4:  # white bishop
-            wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), dSize).convert_alpha()
-            screen.blit(wBishop, mouseLocation)
-
-        elif piece in {-5, -55}:  # white rook
-            wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), dSize).convert_alpha()
-            screen.blit(wRook, mouseLocation)
-
-        elif piece == -7:  # white queen
-            wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), dSize).convert_alpha()
-            screen.blit(wQueen, mouseLocation)
-
-        elif piece in {-9, -99}:  # white king
-            wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), dSize).convert_alpha()
-            screen.blit(wKing, mouseLocation)
+        # Load and scale piece images
+        path = IMAGEPATH[piece]
+        image = pygame.transform.scale(pygame.image.load(path), dSize).convert_alpha()
+        screen.blit(image, mouseLocation)
 
 
 # gets the piece of the current mouse position
@@ -313,67 +277,19 @@ def drawPieces(board, pSize, size):
     dSize = (pSize, pSize)
     pieces = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
 
-    # load & scale all pieces
-    bPawn = pygame.transform.scale(pygame.image.load('Assets\Pawn.png'), dSize).convert_alpha()
-    bBishop = pygame.transform.scale(pygame.image.load('Assets\Bishop.png'), dSize).convert_alpha()
-    bKnight = pygame.transform.scale(pygame.image.load('Assets\Knight.png'), dSize).convert_alpha()
-    bRook = pygame.transform.scale(pygame.image.load('Assets\Rook.png'), dSize).convert_alpha()
-    bQueen = pygame.transform.scale(pygame.image.load('Assets\Queen.png'), dSize).convert_alpha()
-    bKing = pygame.transform.scale(pygame.image.load('Assets\King.png'), dSize).convert_alpha()
-    wPawn = pygame.transform.scale(pygame.image.load('Assets\wPawn.png'), dSize).convert_alpha()
-    wBishop = pygame.transform.scale(pygame.image.load('Assets\wBishop.png'), dSize).convert_alpha()
-    wKnight = pygame.transform.scale(pygame.image.load('Assets\wKnight.png'), dSize).convert_alpha()
-    wRook = pygame.transform.scale(pygame.image.load('Assets\wRook.png'), dSize).convert_alpha()
-    wQueen = pygame.transform.scale(pygame.image.load('Assets\wQueen.png'), dSize).convert_alpha()
-    wKing = pygame.transform.scale(pygame.image.load('Assets\wKing.png'), dSize).convert_alpha()
+    # Load and scale piece images
+    image = {key: pygame.transform.scale(pygame.image.load(path), dSize).convert_alpha() for key, path in IMAGEPATH.items()}
 
     # indexes of 2D array
     x = y = -1
 
     # loop through the 2D array, '_' is each item in the board array (A.K.A each sub array)
-    for _ in board:
+    for row in board:
         y += 1
-        for n in _:
+        for piece in row:
             x += 1
-
-            if n in {1, 11}:  # black pawn
-                pieces.blit(bPawn, location(x, y, pSize))
-
-            elif n == 3:  # black knight
-                pieces.blit(bKnight, location(x, y, pSize))
-
-            elif n == 4:  # black bishop
-                pieces.blit(bBishop, location(x, y, pSize))
-
-            elif n in {5, 55}:  # black rook
-                pieces.blit(bRook, location(x, y, pSize))
-
-            elif n == 7:  # black queen
-                pieces.blit(bQueen, location(x, y, pSize))
-
-            elif n in {9, 99}:  # black king
-                pieces.blit(bKing, location(x, y, pSize))
-
-            elif n in {-1, -11}:  # white pawn
-                pieces.blit(wPawn, location(x, y, pSize))
-
-            elif n == -3:  # white knight
-                pieces.blit(wKnight, location(x, y, pSize))
-
-            elif n == -4:  # white bishop
-                pieces.blit(wBishop, location(x, y, pSize))
-
-            elif n in {-5, -55}:  # white rook
-                pieces.blit(wRook, location(x, y, pSize))
-
-            elif n == -7:  # white queen
-                pieces.blit(wQueen, location(x, y, pSize))
-
-            elif n in {-9, -99}:  # white king
-                pieces.blit(wKing, location(x, y, pSize))
-
-            else:  # empty space
-                pass
+            if piece in image:
+                pieces.blit(image[piece], location(x, y, pSize))
         x = -1
 
     return pieces

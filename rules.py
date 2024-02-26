@@ -2,20 +2,28 @@ import pygame
 from gui import *
 
 
-BLACK = -1
-WHITE = 1
-
-
 """ 
 ========================
 === NOTES FOR VIEWER ===
 ========================
-• All legal moves are computed in terms of a list
-• If the new position is in that list, then the move is legal
+• All legal moves are computed in terms of a set()
+• Sets are used instead of lists because of faster search times
+• If the new position is in that set, then the move is legal
+• King, rook and pawn change values after moving for the first time
+    - This is used to dictate castling and moving two spaces for pawn
+• Computations for bishop and rook are grouped together due to similarity
+• Constants BLACK and WHITE represent player turns
+
+• Used functional programming is used as opposed to OOP as many functions are  
+    required to perform various checks, meaning very little will change in complexity
 """
 
+BLACK = -1
+WHITE = 1
 
 # toggles the turn
+
+
 def playerTurn(colour, turn):
     return (colour == BLACK) == (turn == 1)
 
@@ -162,9 +170,10 @@ def kingMove(piece, y, x, board):
     moveX = [1, 0, -1]
     moveY = [1, 0, -1]
 
-    for a, b in zip(moveX, moveY):
-        if spaceCheck(piece, board, b, x + a):
-            moves.add((y + b, x + a))
+    for b in moveY:
+        for a in moveX:
+            if spaceCheck(piece, board, y + b, x + a):
+                moves.add((y + b, x + a))
 
     return moves
 
@@ -172,7 +181,7 @@ def kingMove(piece, y, x, board):
 # computes all possible moves for the piece's opposite colour
 # kingPass is to ignore the kings movements
 # used when determining checkmate to avoid infinite recursion
-def computeAll(king, board, kingPass):
+def computeAll(king, board, kingPass, opposite):
     moves = set()
     colour = pieceColour(king)
 
@@ -181,7 +190,7 @@ def computeAll(king, board, kingPass):
             if pieceColour(-n) == colour:
 
                 if n in {-1, 1, 11, -11}:
-                    moves |= pawnMove(n, y, x, board, 1)
+                    moves |= pawnMove(n, y, x, board, opposite)
 
                 elif n in {5, -5, 55, -55}:
                     moves |= rookMove(n, y, x, board)
@@ -270,36 +279,29 @@ def button(selection, info, promotedPiece, board):
 # evaluates if king is in checkmate
 # False for no, true for yes
 def checkmate(king, board, x, y):
-    moveList = computeAll(king, board, 0)
+    moveList = computeAll(king, board, 0, 1)
 
     # check if the king is the only piece and it cannot move
-
     if kingCoord(king, board) in moveList:  # king in check
         kingsList = kingMove(king, y, x, board)
         tempBoard = [row[:] for row in board]
         canMove = False
-
         for (newY, newX) in kingsList:
-            tempBoard[newY][newX] = king
-
-            if kingCoord(king, tempBoard) not in moveList:  # king still in check after move
+            if (newY, newX) not in moveList:  # king still in check after move
                 canMove = True
                 break
-
-            # resets tempBoard
-            tempBoard = [row[:] for row in board]
 
         if canMove:
             return False
         else:
-            moveList = computeAll(-king, board, 1)
+            moveList = computeAll(-king, board, 1, 0)
             tempPiece = -1 if king < 0 else 1
 
             for (newY, newX) in moveList:
                 tempBoard[newY][newX] = tempPiece
-                tempMoveList = computeAll(king, tempBoard, 0)
+                tempMoveList = computeAll(king, tempBoard, 0, 1)
 
-                if kingCoord(king, tempBoard) not in tempMoveList:  # king still in check after move
+                if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
                     canMove = True
                     break
 
