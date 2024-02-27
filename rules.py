@@ -21,19 +21,18 @@ from gui import *
 BLACK = -1
 WHITE = 1
 
+
 # toggles the turn
-
-
 def playerTurn(colour, turn):
     return (colour == BLACK) == (turn == 1)
 
 
 # determines if move is legal or not
 # if the new position is in the list of legal moves, return true
-def move(piece, newY, newX, oldY, oldX, board):
+def move(piece, newY, newX, oldY, oldX, board, canPassant):
 
     if piece in {-11, 11, 1, -1}:
-        moves = pawnMove(piece, oldY, oldX, board, 0)
+        moves = pawnMove(piece, oldY, oldX, board, 0, canPassant)
 
     elif piece in {5, -5, 55, -55}:
         moves = rookMove(piece, oldY, oldX, board)
@@ -58,6 +57,19 @@ def inBounds(newX, newY):
     return 0 <= newX <= 7 and 0 <= newY <= 7
 
 
+# determines if the pawn moved two spaces in first turn
+# used for en passant computations
+def pawnFirst(piece, newY, newX, oldY, oldX):
+    return piece in {-11, 11} and newX == oldX and newY == oldY - 2
+
+
+# removes the pawn captured through en passant
+# special because the pawn doesn't overtake the captured pawn's space
+def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant):
+    if isPawn and (7 - oldY, 7 - oldX) in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX):
+        board[newY + 1][newX] = 0
+
+
 # the default check for computing legal moves
 # True for valid space, false for invalid
 def spaceCheck(piece, board, newY, newX):
@@ -66,6 +78,7 @@ def spaceCheck(piece, board, newY, newX):
 
 # toggles first move ability of pawn
 # also determines if king can castle
+# returns true if it is a pawn that moved
 def firstMove(tempPiece, board, newY, newX):
 
     if tempPiece in {11, -11}:
@@ -76,21 +89,33 @@ def firstMove(tempPiece, board, newY, newX):
 
 
 # determines if en passant is a possible move
-def enPassant(piece, y, x, board):
-    if piece in {-11, 11}:
-        i = 0
-        while i < 8:
-            if board[y][i] in {-11, 11, 1, -1}:
-                board[y][i]
+# checks when a pawn moves two spaces
+def enPassant(piece, y, x, board, isPawn):
+    colour = pieceColour(-piece)
+    canPassant = []
+
+    if isPawn:
+        canPassant.append((y, x))
+        if inBounds(x - 1, y) and pieceColour(board[y][x - 1]) == colour:
+            canPassant.append((y, x - 1))
+        if inBounds(x + 1, y) and pieceColour(board[y][x + 1]) == colour:
+            canPassant.append((y, x + 1))
+
+    return canPassant
 
 
 # finds the opposite colour of the piece
 def pieceColour(piece):
-    return BLACK if piece < 0 else WHITE
+    if piece < 0:
+        return BLACK
+    elif piece == 0:
+        return 0
+    else:
+        return WHITE
 
 
 # computes legal pawn moves
-def pawnMove(piece, y, x, board, opposite):
+def pawnMove(piece, y, x, board, opposite, canPassant):
 
     moves = set()
     a = -1 if opposite == 1 else 1
@@ -107,6 +132,12 @@ def pawnMove(piece, y, x, board, opposite):
 
     if spaceCheck(piece, board, y - a, x - 1) and board[y - a][x - 1] != 0:  # left capture
         moves.add((y - a, x - 1))
+
+    if (7 - y, 7 - x) in canPassant:
+        if 7 - canPassant[0][1] - x == 1:
+            moves.add((y - a, x + 1))
+        else:
+            moves.add((y - a, x - 1))
 
     return moves
 
@@ -181,7 +212,7 @@ def kingMove(piece, y, x, board):
 # computes all possible moves for the piece's opposite colour
 # kingPass is to ignore the kings movements
 # used when determining checkmate to avoid infinite recursion
-def computeAll(king, board, kingPass, opposite):
+def computeAll(king, board, kingPass, opposite, canPassant):
     moves = set()
     colour = pieceColour(king)
 
@@ -190,7 +221,7 @@ def computeAll(king, board, kingPass, opposite):
             if pieceColour(-n) == colour:
 
                 if n in {-1, 1, 11, -11}:
-                    moves |= pawnMove(n, y, x, board, opposite)
+                    moves |= pawnMove(n, y, x, board, opposite, canPassant)
 
                 elif n in {5, -5, 55, -55}:
                     moves |= rookMove(n, y, x, board)
@@ -278,8 +309,8 @@ def button(selection, info, promotedPiece, board):
 
 # evaluates if king is in checkmate
 # False for no, true for yes
-def checkmate(king, board, x, y):
-    moveList = computeAll(king, board, 0, 1)
+def checkmate(king, board, x, y, canPassant):
+    moveList = computeAll(king, board, 0, 1, canPassant)
 
     # check if the king is the only piece and it cannot move
     if kingCoord(king, board) in moveList:  # king in check
@@ -294,12 +325,12 @@ def checkmate(king, board, x, y):
         if canMove:
             return False
         else:
-            moveList = computeAll(-king, board, 1, 0)
+            moveList = computeAll(-king, board, 1, 0, canPassant)
             tempPiece = -1 if king < 0 else 1
 
             for (newY, newX) in moveList:
                 tempBoard[newY][newX] = tempPiece
-                tempMoveList = computeAll(king, tempBoard, 0, 1)
+                tempMoveList = computeAll(king, tempBoard, 0, 1, canPassant)
 
                 if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
                     canMove = True

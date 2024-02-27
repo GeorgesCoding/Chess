@@ -53,6 +53,8 @@ def main():
 
     # list of all possible enemy piece moves
     moveList = set()
+    canPassant = []
+    isPawn = False
 
     # an array that holds the dialouge to be displayed
     text = ["a", 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
@@ -95,7 +97,7 @@ def main():
             else:
                 kY, kX = kingCoord(-turn, board)
                 king = board[kY][kX]
-                if checkmate(king, board, kX, kY):
+                if checkmate(king, board, kX, kY, canPassant):
                     print("Checkmate")
                     return
 
@@ -149,7 +151,7 @@ def main():
                         # creates a board with the temporary state of the board with the moved piece
                         tempBoard = [row[:] for row in board]
                         tempBoard[newY][newX] = piece
-                        moveList = computeAll(piece, tempBoard, 0, 1)
+                        moveList = computeAll(piece, tempBoard, 0, 1, canPassant)
 
                         # king castles
                         if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard):
@@ -157,7 +159,7 @@ def main():
                             board = rotate(board)
 
                         # piece is moved to a valid position
-                        elif move(piece, newY, newX, oldY, oldX, board) and (newY, newX) != (oldY, oldX):
+                        elif move(piece, newY, newX, oldY, oldX, board, canPassant) and (newY, newX) != (oldY, oldX):
                             firstMove(piece, tempBoard, newY, newX)
 
                             # king is in check after move
@@ -165,8 +167,11 @@ def main():
                                 board[oldY][oldX] = piece
 
                             else:  # legal move
+                                enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant)
                                 board[newY][newX] = piece
+                                isPawn = pawnFirst(piece, newY, newX, oldY, oldX)
                                 firstMove(piece, board, newY, newX)
+                                canPassant = enPassant(piece, newY, newX, board, isPawn)
                                 turn = -turn
                                 board = rotate(board)
 
