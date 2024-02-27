@@ -1,10 +1,6 @@
 Note: Will update README later with a more clean version, this is just a placeholder with general notes
 
-
-
-#                              ========================
-#                              ===== Introduction =====
-#                              ========================
+# Introduction
                               
 • I decided to learn Python by creating a chess game 
 • Used a low-level module, PyGame because chess doesn't require much processing, 
@@ -16,13 +12,10 @@ Note: Will update README later with a more clean version, this is just a placeho
   - I go around not using attributes from OOP by changing the values of certain pieces to dictate their states (see 'Game Structure')
   - The focus of this project is to gain basic Python skills and create a chess AI
   - Using OOP would've made the structure of the code more complicated and taken away from the main purpose
+
+
     
-
-
-
-#                    ===============================================
-#                    ===== PyGame Install and Running the Game =====
-#                    ===============================================
+# PyGame Install and Running the Game
 
 •  'main.py' is responsible for running the entire game
 • Make sure that the PyGame module is installed before running 'main.py'
@@ -32,9 +25,7 @@ Note: Will update README later with a more clean version, this is just a placeho
 
 
 
-#                            =============================
-#                            ===== File Organization =====
-#                            =============================
+# File Orginization
 
 • main.py: contains the main() method that triggers game activation and contains all applicable event handlers
   - Is responsible for dictating how the game behaves by checking the event detected by PyGame
@@ -56,9 +47,7 @@ Note: Will update README later with a more clean version, this is just a placeho
 
 
 
-#                                  ==========================
-#                                  ===== Game Structure =====
-#                                  ==========================
+# Game Structure
 
 • The chess board is represented through a 2D array
 • Each space is an index in the array with a sub-array in the board array being a row in the board
