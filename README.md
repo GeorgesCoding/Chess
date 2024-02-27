@@ -1,7 +1,6 @@
 # **Introduction**                       
 - I decided to learn Python by creating a chess game 
-- Used a low-level module, PyGame because chess doesn't require much processing, 
-    so a simple module was sufficient
+- Used a low-level module, PyGame because chess doesn't require much processing, so a simple module was sufficient
 - Also allowed me to learn some basic skills in front-end development
 - Only runnable on a desktop, preferably through an IDE
 - Functional programming is used as opposed to OOP as I require functions to perform various checks and computations. 
@@ -21,10 +20,10 @@
 #
 # File Organization
 - _main.py_: contains the _main()_ method that triggers game activation and contains all applicable event handlers
-  - Is responsible for dictating how the game behaves by checking the event detected by PyGame
-  - Uses methods from rules.py to determine how to draw the state of the board, or handle button presses
-  - Three main buttons are restart, two-player mode and computer
-  - Currently, only two-player mode is available
+	- Is responsible for dictating how the game behaves by checking the event detected by PyGame
+	- Uses methods from rules.py to determine how to draw the state of the board, or handle button presses
+	- Three main buttons are restart, two-player mode and computer
+	- Currently, only two-player mode is available
 
 - _gui.py_: responsible for all frontend tasks
    - Includes the dragging animation for moving pieces
@@ -39,7 +38,7 @@
   - The majority of the functions rely on array computations
 
 #
-# Game Structure
+# **Game Structure**
 - The chess board is represented through a 2D array
 - Each space is an index in the array with a sub-array in the board array being a row in the board
 - Index starts at [0][0], in the following format: [y][x]
@@ -55,12 +54,11 @@
   - Queen: 7
   - King: 9 when unmoved, 99 when moved
 - King, rook and pawn change values after moving for the first time
-    - This is used to dictate castling and moving two spaces for pawn
+  - This is used to dictate castling and moving two spaces for pawn
 
 - All legal moves are computed in terms of a set()
   - If the space moved to is within the set, the move is valid
-  - Because all the legal moves of the piece are computed and compiled together, to test move validity,
-    you just need to check if the space the piece moved to is within this list
+  - Because all the legal moves of the piece are computed and compiled together, to test move validity, you just need to check if the space the piece moved to is within this list
   - When testing for membership, lists have O(n) efficiency while sets have O(1), making sets more faster
   - Furthermore, I don't access the values within, just check for membership
   - Also these lists require uniqueness for more efficiency, making set the ideal choice
