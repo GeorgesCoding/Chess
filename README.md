@@ -6,7 +6,7 @@
 - Only runnable on a desktop, preferably through an IDE
 - Functional programming is used as opposed to OOP as I require functions to perform various checks and computations. 
   - Even if OOP was used, these functions must exist to perform checks
-  - I go around not using attributes from OOP by changing the values of certain pieces to dictate their states (see [Game Structure)](https://github.com/GeorgesCoding/Chess/edit/main/README.md#game-structure)
+  - I go around not using attributes from OOP by changing the values of certain pieces to dictate their states (see [Game Structure)](https://github.com/GeorgesCoding/Chess?tab=readme-ov-file#game-structure)
   - The focus of this project is to gain basic Python skills and create a chess AI
   - Using OOP would've made the structure of the code more complicated and taken away from the main purpose
   
