@@ -1,5 +1,5 @@
 import pygame
-from gui import *
+from gui import getPiece, getPos
 
 
 BLACK = -1
