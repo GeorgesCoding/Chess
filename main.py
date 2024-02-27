@@ -3,19 +3,6 @@ from gui import *
 from rules import *
 
 
-""" 
-========================
-=== NOTES FOR VIEWER ===
-========================
-• This file is responsible for running the entire game
-• Make sure 'pygame' modules is installed prior to running file
-    - Using pip: pip install pygame
-    - Run file with terminal command: 'py main.py'
-• The game window will resize according to the 'main' display in your computer settings
-• main() triggers game activiation and contains all applicable event handlers
-"""
-
-
 def main():
 
     # automatically changes window dimensions according to monitor size

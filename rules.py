@@ -2,22 +2,6 @@ import pygame
 from gui import *
 
 
-""" 
-========================
-=== NOTES FOR VIEWER ===
-========================
-• All legal moves are computed in terms of a set()
-• Sets are used instead of lists because of faster search times
-• If the new position is in that set, then the move is legal
-• King, rook and pawn change values after moving for the first time
-    - This is used to dictate castling and moving two spaces for pawn
-• Computations for bishop and rook are grouped together due to similarity
-• Constants BLACK and WHITE represent player turns
-
-• Used functional programming is used as opposed to OOP as many functions are  
-    required to perform various checks, meaning very little will change in complexity
-"""
-
 BLACK = -1
 WHITE = 1
 

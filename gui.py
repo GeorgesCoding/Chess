@@ -1,17 +1,5 @@
 import pygame
 
-"""
-========================
-=== NOTES FOR VIEWER ===
-========================
-• Each sub array in the board array is a row in the board
-• The elements in each sub array are the individual spaces on the board in that row
-• Initialized to the starting position of the board
-• Black is positive, white is negative, 10 is an empty space
-• Index starts at [0][0], in the following format: [y][x]
-• Values '10' or 'None' is used for null cases
-"""
-
 
 # map constant of the paths of the image of the pieces
 IMAGEPATH = {
