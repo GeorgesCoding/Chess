@@ -3,8 +3,9 @@
 - Used a low-level module, PyGame because chess doesn't require much processing, so a simple module was sufficient
 - Also allowed me to learn some basic skills in front-end development
 - Only runnable on a desktop, preferably through an IDE
-- Functional programming is used as opposed to OOP as I require functions to perform various checks and computations. 
-  - Even if OOP was used, these functions must exist to perform checks
+- Functional programming is used instead of OOP as I require functions to perform various checks and computations. 
+  - May separate some aspects of the game into classes where appropriate (thinking about the board and other surfaces)
+  - After creating a random moving bot, might experiment by transforming more components into classes (pieces, etc)
   - I go around not using attributes from OOP by changing the values of certain pieces to dictate their states (see [Game Structure)](https://github.com/GeorgesCoding/Chess?tab=readme-ov-file#game-structure)
   - The focus of this project is to gain basic Python skills and create a chess AI
   - Using OOP would've made the structure of the code more complicated and taken away from the main purpose
@@ -58,7 +59,7 @@
 
 - All legal moves are computed in terms of a set()
   - If the space moved to is within the set, the move is valid
-  - Because all the legal moves of the piece are computed and compiled together, to test move validity, you just need to check if the space the piece moved to is within this list
+  - Because all the legal moves of the piece are computed and compiled together, to test move validity, you need to check if the space the piece moved to is within this list
   - When testing for membership, lists have O(n) efficiency while sets have O(1), making sets more faster
   - Furthermore, I don't access the values within, just check for membership
   - Also these lists require uniqueness for more efficiency, making set the ideal choice
