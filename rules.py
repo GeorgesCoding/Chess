@@ -1,5 +1,7 @@
 import pygame
-from gui import getPiece, getPos
+import random
+from gui import getPiece, getPos, addText
+from main import PIECE
 
 
 BLACK = -1
@@ -66,7 +68,7 @@ def spaceCheck(piece, board, newY, newX):
 def firstMove(tempPiece, board, newY, newX):
 
     if tempPiece in {11, -11}:
-        board[newY][newX] = tempPiece / 11
+        board[newY][newX] = tempPiece // 11
 
     elif tempPiece in {-9, 9, -5, 5}:
         board[newY][newX] = tempPiece * 11
@@ -108,8 +110,9 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
     if board[y - a][x] == 0:
         moves.add((y - a, x))  # forward one space
 
-    if piece in {-11, 11} and board[y - b][x] == 0:  # first move
-        moves.add((y - b, x))
+    if piece in {-11, 11}:
+        if board[y - b][x] == 0:  # first move
+            moves.add((y - b, x))
 
     if spaceCheck(piece, board, y - a, x + 1) and board[y - a][x + 1] != 0:  # right capture
         moves.add((y - a, x + 1))
@@ -124,6 +127,42 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
             moves.add((y - a, x - 1))
 
     return moves
+
+
+# in first array, each index is a seperate array for each piece
+# first index in subarray is the piece
+# second is the location
+# third index is the set of the legal moves
+def moveChoose(piece, y, x, board, opposite, canPassant, kingPass):
+    specificMoves = []
+    colour = pieceColour(piece)
+    x = 0
+
+    for b, row in enumerate(board):
+        for a, n in enumerate(row):
+            if pieceColour(-n) == colour:
+
+                if n in {-1, 1, 11, -11}:
+                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
+
+                elif n in {5, -5, 55, -55}:
+                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
+
+                elif n in {3, -3}:
+                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
+
+                elif n in {4, -4}:
+                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
+
+                elif n in {7, -7}:
+                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
+
+                elif n in {9, -9, 99, -99} and kingPass != 1:
+                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
+
+                specificMoves[x][0] = n
+                specificMoves[x][1] = (b, a)
+                x += 1
 
 
 # computes legal knight moves
@@ -203,7 +242,6 @@ def computeAll(king, board, kingPass, opposite, canPassant):
     for y, row in enumerate(board):
         for x, n in enumerate(row):
             if pieceColour(-n) == colour:
-
                 if n in {-1, 1, 11, -11}:
                     moves |= pawnMove(n, y, x, board, opposite, canPassant)
 
@@ -239,7 +277,7 @@ def kingCoord(piece, board):
 
 # determines if the king can castle
 # returns true to castle the king
-def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
+def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text):
     mX, mY = getPos(pSize, size)
     tempX = mX
     rook = getPiece(board, pSize, size)[0]
@@ -249,6 +287,7 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
         temp = 1 if mX == 0 else -1
         kingX = oldX - 2 * temp
         rookX = kingX + temp
+        side = " leftwards castle" if temp == 1 else " rightwards castle"
 
         # empty inbetween spaces
         while (mX != oldX):
@@ -265,6 +304,7 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
             firstMove(piece, board, oldY, kingX)
             firstMove(rook, board, oldY, rookX)
             board[mY][tempX] = 0
+            addText(text, str(PIECE[piece]) + str(side))
             return True
     return False
 
@@ -274,6 +314,7 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard):
 def button(selection, info, promotedPiece, board):
 
     pressed = pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
+    pawn = "Black"
 
     # promotion buttonss
     if pressed and selection != 0:
@@ -285,16 +326,19 @@ def button(selection, info, promotedPiece, board):
 
         if piece < 0:
             newPiece = -newPiece
+            pawn = "White"
 
         board[y][x] = newPiece
+
+        print(pawn + " pawn promoted to " + PIECE[newPiece])
 
     return pressed
 
 
 # evaluates if king is in checkmate
 # False for no, true for yes
-def checkmate(king, board, x, y, canPassant):
-    moveList = computeAll(king, board, 0, 1, canPassant)
+def checkmate(king, board, x, y, canPassant, opposite):
+    moveList = computeAll(king, board, 0, opposite, canPassant)
 
     # check if the king is the only piece and it cannot move
     if kingCoord(king, board) in moveList:  # king in check
@@ -305,16 +349,18 @@ def checkmate(king, board, x, y, canPassant):
             if (newY, newX) not in moveList:  # king still in check after move
                 canMove = True
                 break
-
+            opposite = 0 if opposite == 1 else 1
         if canMove:
             return False
         else:
-            moveList = computeAll(-king, board, 1, 0, canPassant)
+            moveList = computeAll(-king, board, 1, opposite, canPassant)
             tempPiece = -1 if king < 0 else 1
+
+            opposite = 0 if opposite == 1 else 1
 
             for (newY, newX) in moveList:
                 tempBoard[newY][newX] = tempPiece
-                tempMoveList = computeAll(king, tempBoard, 0, 1, canPassant)
+                tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant)
 
                 if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
                     canMove = True
@@ -327,3 +373,28 @@ def checkmate(king, board, x, y, canPassant):
 
     else:
         return False
+
+
+# determines if the game has ended through checkmate
+def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text):
+    if outline or (not start and (kingCoord(-turn, board) == None)) or (pieceMoving):
+        pass
+    else:
+        kY, kX = kingCoord(-turn, board)
+        king = board[kY][kX]
+        if checkmate(king, board, kX, kY, canPassant, opposite):
+            winner = "Black" if pieceColour(king) < 0 else "White"
+            addText(text, "Checkmate: " + str(winner) + " won!")
+            addText(text, "Press restart or exit the game.")
+            return True
+
+
+# temporary function
+# randomly decides moves for the computer
+def randomMove(king, board, canPassant):
+    return
+
+
+# returns a random turn for the user
+def randomTurn():
+    return random.choice((BLACK, WHITE))

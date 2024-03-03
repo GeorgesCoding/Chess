@@ -3,6 +3,18 @@ from gui import *
 from rules import *
 
 
+# Dictionary constant of the names of pieces according to their integer representation
+PIECE = {1: 'Black pawn', 11: 'Black pawn', 3: 'Black knight', 4: 'Black bishop',
+         5: 'Black rook', 55: 'Black rook', 7: 'Black queen', 9: 'Black king',
+         99: 'Black king', -1: 'White pawn', -11: 'White pawn', -3: 'White knight',
+         -4: 'White bishop', -5: 'White rook', -55: 'White rook', -7: 'White queen',
+         -9: 'White king', -99: 'White king'
+         }
+
+# Dictionary constant of the letters used to represent piece moves
+ALPH = {1: "a", 2: "b", 3: "c", 4: "d", 5: "e", 6: "f", 7: "g", 8: "h"}
+
+
 def main():
 
     # automatically changes window dimensions according to monitor size
@@ -35,22 +47,28 @@ def main():
     outline = False
     promotion = None, None, None
     pieceMoving = False
-    choice = 0
-    oldChoice = 0
+    colourChoose = False
+    computer = None
+    start = False
+    isPawn = False
+    opposite = 1
+    switch = True
+    end = False  # if true, freezes the game except restart and quit
 
     # list of all possible enemy piece moves
     moveList = set()
+
+    # list of all pawns that can perform en passant
     canPassant = []
-    isPawn = False
 
     # an array that holds the dialouge to be displayed
-    text = ["a", 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+    text = ["", '', '', '', '', '', '', '', '']
 
     # draw board, pieces and side bar
     buttonSurface = buttons(SIZE)
     boardSurface = createBoard(SIZE, PSIZE)
-    piecesSurface = drawPieces(board, PSIZE, SIZE)
     dialougeSurf = dialouge(SIZE, text)
+    piecesSurface = drawPieces(board, PSIZE, SIZE)
 
     # button dimensions
     BUTTONLENGTH = int(((SIZE/1.9)-25 - 60)/3)
@@ -79,14 +97,29 @@ def main():
                 pygame.quit()
                 return
 
-            if (kingCoord(-turn, board) == None) or (pieceMoving):
+            end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
+
+            # Checks for turn selection
+            if colourChoose and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w:
+                    computer = BLACK
+                    player = WHITE
+                    clearText(text)
+                elif event.key == pygame.K_b:
+                    player = BLACK
+                    computer = WHITE
+                    clearText(text)
+                elif event.key == pygame.K_r:
+                    computer = randomTurn()
+                    player = -computer
+                    clearText(text)
+                dialougeSurf = dialouge(SIZE, text)
+
+            if start and computer != None and turn == computer:
                 pass
-            else:
-                kY, kX = kingCoord(-turn, board)
-                king = board[kY][kX]
-                if checkmate(king, board, kX, kY, canPassant):
-                    print("Checkmate")
-                    return
+                # cY, cX = random.choice(list(computeAll(computer, board, 0, 1, canPassant)))
+                # need piece, old and new coordinates
+                # for promotion, promotes to random
 
             # if left mouse button is pressed
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -96,7 +129,8 @@ def main():
                     for i, p in enumerate(promoInfo):
                         if button(i + 1, p, promotion, board):
                             outline = False
-                            board = rotate(board)
+                            board = rotate(board, computer)
+                            turn = -turn
                             break
 
                 # restarts program
@@ -106,18 +140,19 @@ def main():
                     return
 
                 #  two player mode
-                elif button(0, twoPlayerInfo, None, None):
-                    oldChoice += 1
-                    choice = 1
+                elif not colourChoose and button(0, twoPlayerInfo, None, None):
+                    start = True
 
                 # vs Computer
-                elif button(0, computerInfo, None, None):
-                    oldChoice += 2
-                    choice = 2
-                    print("Computer")
+                elif not start and button(0, computerInfo, None, None):
+                    addText(text, "Press the Key to Choose a Colour:")
+                    addText(text, "W for White")
+                    addText(text, "B for Black")
+                    addText(text, "R for Random")
+                    colourChoose = True
 
                 # checks if a piece has been selected
-                elif tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn):
+                elif start and tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn) and not end:
                     selected = tempPiece, x, y  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
                     pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * PSIZE) + 25, (y * PSIZE) + 25, PSIZE, PSIZE), 5)  # outline old space
@@ -126,9 +161,9 @@ def main():
                     pieceMoving = True
 
             # mouse button is released
-            if event.type == pygame.MOUSEBUTTONUP:
-                # A piece was selected
+            if event.type == pygame.MOUSEBUTTONUP and not outline and not end:
 
+                # A piece was selected
                 if selected != None:
                     pieceMoving = False
                     piece = selected[0]
@@ -138,20 +173,22 @@ def main():
                         # creates a board with the temporary state of the board with the moved piece
                         tempBoard = [row[:] for row in board]
                         tempBoard[newY][newX] = piece
-                        moveList = computeAll(piece, tempBoard, 0, 1, canPassant)
+                        moveList = computeAll(piece, tempBoard, 0, opposite, canPassant)
 
                         # king castles
-                        if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard):
+                        if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard, text):
                             turn = -turn
-                            board = rotate(board)
+                            board = rotate(board, computer)
 
                         # piece is moved to a valid position
                         elif move(piece, newY, newX, oldY, oldX, board, canPassant) and (newY, newX) != (oldY, oldX):
                             firstMove(piece, tempBoard, newY, newX)
 
                             # king is in check after move
-                            if kingCoord(piece, tempBoard) in moveList:
+                            if kingCoord(piece, board) in moveList:
                                 board[oldY][oldX] = piece
+                                inCheck = "White king in check" if piece < 0 else "Black king in check"
+                                addText(text, "Invalid move: " + str(inCheck))
 
                             else:  # legal move
                                 enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant)
@@ -160,22 +197,38 @@ def main():
                                 firstMove(piece, board, newY, newX)
                                 canPassant = enPassant(piece, newY, newX, board, isPawn)
                                 turn = -turn
-                                board = rotate(board)
+                                board = rotate(board, computer)
 
-                                # pawn at end of board
-                                if piece in {-1, 1} and newY == 0:
-                                    outline = True
-                                    promotion = piece, newY, newX
-                                    board = rotate(board)
+                                if (pieceColour(-piece) == BLACK and computer is None) or (computer == 1 and player == -1):
+                                    num = newY + 1
+                                    alph = 8 - newX
                                 else:
-                                    outline = False
-                                    promotion = None, None, None
+                                    num = 8 - newY
+                                    alph = newX + 1
+                                addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num))
+
+                                end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
+
+                                if not end:
+                                    moveList = computeAll(-piece, board, 0, opposite, canPassant)
+                                    if kingCoord(-piece, board) in moveList:
+                                        inCheck = "White king in check" if -piece < 0 else "Black king in check"
+                                        addText(text, inCheck)
+
+                                    # pawn at end of board
+                                    if piece in {-1, 1} and newY == 0:
+                                        outline = True
+                                        promotion = piece, newY, newX
+                                        board = rotate(board, computer)
+                                        turn = -turn
+                                    else:
+                                        outline = False
+                                        promotion = None, None, None
 
                         else:
                             board[oldY][oldX] = piece
-
-                    else:  # piece moved to invalid position
-                        board[oldY][oldX] = piece
+                            if not (newY == oldY and newX == oldX):
+                                addText(text, "Invalid Move")
 
                 # redraw surfaces, reset temp variables
                 boardSurface = createBoard(SIZE, PSIZE)
@@ -190,17 +243,22 @@ def main():
         screen.blit(buttonSurface, (0, 0))
         screen.blit(dialougeSurf, (0, 0))
 
-        if oldChoice != 0 and oldChoice != choice:
-            pass
-        elif choice != 0:
+        if start:
             screen.blit(piecesSurface, (0, 0))
-        oldChoice = choice
+        elif computer != None:
+            colourChoose = False
+            if computer == 1:
+                board = rotate(board, None)
+            opposite = 0
+            piecesSurface = drawPieces(board, PSIZE, SIZE)
+            screen.blit(piecesSurface, (0, 0))
+            start = True
 
         # outline promotion buttons
         promoOutline(screen, SIZE, outline)
 
         # numbers the board
-        numBoard(screen, PSIZE, turn)
+        switch = numBoard(screen, PSIZE, turn, computer, switch)
 
         # creates 'dragging' animation for pieces
         drag(screen, selected, PSIZE, SIZE)

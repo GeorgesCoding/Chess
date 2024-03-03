@@ -1,26 +1,14 @@
 import pygame
 
 
-# map constant of the paths of the image of the pieces
+# dictionary constant of the paths of the image of the pieces
 IMAGEPATH = {
-    1: 'Assets\Pawn.png',
-    11: 'Assets\Pawn.png',
-    3: 'Assets\Knight.png',
-    4: 'Assets\Bishop.png',
-    5: 'Assets\Rook.png',
-    55: 'Assets\Rook.png',
-    7: 'Assets\Queen.png',
-    9: 'Assets\King.png',
-    99: 'Assets\King.png',
-    -1: 'Assets\wPawn.png',
-    -11: 'Assets\wPawn.png',
-    -3: 'Assets\wKnight.png',
-    -4: 'Assets\wBishop.png',
-    -5: 'Assets\wRook.png',
-    -55: 'Assets\wRook.png',
-    -7: 'Assets\wQueen.png',
-    -9: 'Assets\wKing.png',
-    -99: 'Assets\wKing.png'
+    1: 'Assets\Pawn.png', 11: 'Assets\Pawn.png', 3: 'Assets\Knight.png',
+    4: 'Assets\Bishop.png', 5: 'Assets\Rook.png', 55: 'Assets\Rook.png',
+    7: 'Assets\Queen.png', 9: 'Assets\King.png', 99: 'Assets\King.png',
+    -1: 'Assets\wPawn.png', -11: 'Assets\wPawn.png', -3: 'Assets\wKnight.png',
+    -4: 'Assets\wBishop.png', -5: 'Assets\wRook.png',  -55: 'Assets\wRook.png',
+    -7: 'Assets\wQueen.png',   -9: 'Assets\wKing.png',   -99: 'Assets\wKing.png'
 }
 
 
@@ -32,7 +20,7 @@ def testBoard(board):
 
 
 # prints the numbers of the board
-def numBoard(screen, pSize, turn):
+def numBoard(screen, pSize, turn, computer, switch):
 
     # font
     font = pygame.font.SysFont('Comic Sans MS', 20)
@@ -48,7 +36,7 @@ def numBoard(screen, pSize, turn):
     alphaCoord = [z + i * pSize for i in range(8)]
 
     # turn switch
-    if turn == -1:
+    if computer == 1 or (turn == -1 and computer is None):
         numCoord.reverse()
         alphaCoord.reverse()
 
@@ -56,6 +44,8 @@ def numBoard(screen, pSize, turn):
     for i, (num, alpha) in enumerate(zip(['8', '7', '6', '5', '4', '3', '2', '1'], ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])):
         screen.blit(font.render(num, False, (255, 255, 255)), (x, numCoord[i]))
         screen.blit(font.render(alpha, False, (255, 255, 255)), (alphaCoord[i], y))
+
+    return switch
 
 
 # gets the position of the mouse in terms of the board tile coordinates
@@ -118,7 +108,7 @@ def promoOutline(screen, size, toggle):
         pygame.draw.rect(screen, colour, (size + 45 + pSize * 3, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 5, 0, 12, 12, 12, 12)
 
 
-# adds additional dialouge into the array
+# adds additional dialouge into the list
 def addText(array, text):
     try:
         index = array.index("")
@@ -128,12 +118,12 @@ def addText(array, text):
         array.append(text)
 
 
-def removeText(array, text):
-    x = 0
-    for n in array:
-        if n == text:
-            array[x] = ""
-        x += 1
+# clears the dialouge list
+def clearText(array):
+
+    for i in range(len(array)):
+        array[i] = ""
+    return array
 
 
 # states the move of the board
@@ -154,7 +144,6 @@ def dialouge(size, text):
 
     # Draw the rectangle
     pygame.draw.rect(dialougeSurf, black, (x, y, w, h), 0, 0, 12, 12, 12, 12)
-    text.reverse()
 
     # Render and blit text
     for i, txt in enumerate(text):
@@ -179,7 +168,7 @@ def buttons(size):
     buttonHeight = (size - 45)/6
     brown = (129, 95, 71)
     black = (0, 0, 0)
-    font = pygame.font.SysFont('Comic Sans MS', 25)
+    font = pygame.font.SysFont('Comic Sans MS', int((size / 960) * 25))
     pSize = ((size/1.9)-25)/4 - 15
     dSize = (pSize, pSize)
 
@@ -227,8 +216,11 @@ def location(a, b, pSize):
 
 
 # rotates board
-def rotate(board):
-    return [x[::-1] for x in board[::-1]]
+def rotate(board, computer):
+    if computer == None:
+        return [x[::-1] for x in board[::-1]]
+    else:
+        return board
 
 
 # creates a 'dragging' animation for the pieces
