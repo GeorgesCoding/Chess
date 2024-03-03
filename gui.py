@@ -41,7 +41,7 @@ def numBoard(screen, pSize, turn, computer, switch):
         alphaCoord.reverse()
 
     # blit to screen
-    for i, (num, alpha) in enumerate(zip(['8', '7', '6', '5', '4', '3', '2', '1'], ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])):
+    for i, (num, alpha) in enumerate(zip(["8", "7", "6", "5", "4", "3", "2", "1"], ["a", "b", "c", "d", "e", "f", "g", "h"])):
         screen.blit(font.render(num, False, (255, 255, 255)), (x, numCoord[i]))
         screen.blit(font.render(alpha, False, (255, 255, 255)), (alphaCoord[i], y))
 
@@ -120,7 +120,6 @@ def addText(array, text):
 
 # clears the dialouge list
 def clearText(array):
-
     for i in range(len(array)):
         array[i] = ""
     return array
@@ -184,7 +183,7 @@ def buttons(size):
     for i in range(4):
         pygame.draw.rect(buttonSurface, brown, (size + 15 + (pSize + 10) * i, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 0, 0, 12, 12, 12, 12)
 
-    promotion = font.render('Pawn Promotion', True, black)
+    promotion = font.render("Pawn Promotion", True, black)
     promotionRect = promotion.get_rect(center=(size + 15 + (buttonLength * 3 + 30)/2, 105 + buttonHeight + buttonHeight/6))
 
     s = pygame.Rect(size + 15, 105 + buttonHeight, promotionRect.width + 40, buttonHeight/3)
@@ -223,7 +222,7 @@ def rotate(board, computer):
         return board
 
 
-# creates a 'dragging' animation for the pieces
+# creates a "dragging" animation for the pieces
 def drag(screen, selected, pSize, size):
     if selected != None:
         piece = selected[0]
@@ -263,7 +262,7 @@ def drawPieces(board, pSize, size):
     # indexes of 2D array
     x = y = -1
 
-    # loop through the 2D array, '_' is each item in the board array (A.K.A each sub array)
+    # loop through the 2D array, "_" is each item in the board array (A.K.A each sub array)
     for row in board:
         y += 1
         for piece in row:

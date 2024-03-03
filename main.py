@@ -4,12 +4,13 @@ from rules import *
 
 
 # Dictionary constant of the names of pieces according to their integer representation
-PIECE = {1: 'Black pawn', 11: 'Black pawn', 3: 'Black knight', 4: 'Black bishop',
-         5: 'Black rook', 55: 'Black rook', 7: 'Black queen', 9: 'Black king',
-         99: 'Black king', -1: 'White pawn', -11: 'White pawn', -3: 'White knight',
-         -4: 'White bishop', -5: 'White rook', -55: 'White rook', -7: 'White queen',
-         -9: 'White king', -99: 'White king'
-         }
+PIECE = {
+    1: "Black pawn", 11: "Black pawn", 3: "Black knight", 4: "Black bishop",
+    5: "Black rook", 55: "Black rook", 7: "Black queen", 9: "Black king",
+    99: "Black king", -1: "White pawn", -11: "White pawn", -3: "White knight",
+    -4: "White bishop", -5: "White rook", -55: "White rook", -7: "White queen",
+    -9: "White king", -99: "White king"
+}
 
 # Dictionary constant of the letters used to represent piece moves
 ALPH = {1: "a", 2: "b", 3: "c", 4: "d", 5: "e", 6: "f", 7: "g", 8: "h"}
@@ -32,14 +33,16 @@ def main():
     pygame.display.set_icon(icon)
 
     # 2D array to represent state of board
-    board = [[5, 3, 4, 7, 9, 4, 3, 5],
-             [11] * 8,
-             [0] * 8,
-             [0] * 8,
-             [0] * 8,
-             [0] * 8,
-             [-11] * 8,
-             [-5, -3, -4, -7, -9, -4, -3, -5]]
+    board = [
+        [5, 3, 4, 7, 9, 4, 3, 5],
+        [11] * 8,
+        [0] * 8,
+        [0] * 8,
+        [0] * 8,
+        [0] * 8,
+        [-11] * 8,
+        [-5, -3, -4, -7, -9, -4, -3, -5]
+    ]
 
     # toggable variables
     selected = None
@@ -62,7 +65,7 @@ def main():
     canPassant = []
 
     # an array that holds the dialouge to be displayed
-    text = ["", '', '', '', '', '', '', '', '']
+    text = ["", "", "", "", "", "", "", "", ""]
 
     # draw board, pieces and side bar
     buttonSurface = buttons(SIZE)
@@ -127,24 +130,24 @@ def main():
                 # promotion buttons are outlined
                 if outline:
                     for i, p in enumerate(promoInfo):
-                        if button(i + 1, p, promotion, board):
+                        if button(i + 1, p, promotion, board, text):
                             outline = False
                             board = rotate(board, computer)
                             turn = -turn
                             break
 
                 # restarts program
-                elif button(0, restartInfo, None, None):
+                elif button(0, restartInfo, None, None, text):
                     pygame.quit()
                     main()
                     return
 
                 #  two player mode
-                elif not colourChoose and button(0, twoPlayerInfo, None, None):
+                elif not colourChoose and button(0, twoPlayerInfo, None, None, text):
                     start = True
 
                 # vs Computer
-                elif not start and button(0, computerInfo, None, None):
+                elif not start and button(0, computerInfo, None, None, text):
                     addText(text, "Press the Key to Choose a Colour:")
                     addText(text, "W for White")
                     addText(text, "B for Black")
@@ -207,23 +210,23 @@ def main():
                                     alph = newX + 1
                                 addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num))
 
-                                end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
+                                # pawn at end of board
+                                if piece in {-1, 1} and newY == 0:
+                                    outline = True
+                                    promotion = piece, newY, newX
+                                    board = rotate(board, computer)
+                                    turn = -turn
+                                else:
+                                    outline = False
+                                    promotion = None, None, None
 
-                                if not end:
-                                    moveList = computeAll(-piece, board, 0, opposite, canPassant)
-                                    if kingCoord(-piece, board) in moveList:
-                                        inCheck = "White king in check" if -piece < 0 else "Black king in check"
-                                        addText(text, inCheck)
+                                    end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
 
-                                    # pawn at end of board
-                                    if piece in {-1, 1} and newY == 0:
-                                        outline = True
-                                        promotion = piece, newY, newX
-                                        board = rotate(board, computer)
-                                        turn = -turn
-                                    else:
-                                        outline = False
-                                        promotion = None, None, None
+                                    if not end:
+                                        moveList = computeAll(-piece, board, 0, opposite, canPassant)
+                                        if kingCoord(-piece, board) in moveList:
+                                            inCheck = "White king in check" if -piece < 0 else "Black king in check"
+                                            addText(text, inCheck)
 
                         else:
                             board[oldY][oldX] = piece
@@ -260,7 +263,7 @@ def main():
         # numbers the board
         switch = numBoard(screen, PSIZE, turn, computer, switch)
 
-        # creates 'dragging' animation for pieces
+        # creates "dragging" animation for pieces
         drag(screen, selected, PSIZE, SIZE)
 
         # update display

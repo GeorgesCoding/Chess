@@ -106,7 +106,7 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
     moves = set()
     a = -1 if opposite == 1 else 1
     b = -2 if opposite == 1 else 2
-
+    
     if board[y - a][x] == 0:
         moves.add((y - a, x))  # forward one space
 
@@ -311,7 +311,7 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text):
 
 # evaluates if a button is pressed
 # also dictates pawn promotion behaviour
-def button(selection, info, promotedPiece, board):
+def button(selection, info, promotedPiece, board, text):
 
     pressed = pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
     pawn = "Black"
@@ -330,7 +330,8 @@ def button(selection, info, promotedPiece, board):
 
         board[y][x] = newPiece
 
-        print(pawn + " pawn promoted to " + PIECE[newPiece])
+        addText(text, pawn + " pawn promoted to ")
+        addText(text, str(PIECE[newPiece]))
 
     return pressed
 
