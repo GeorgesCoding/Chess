@@ -1,8 +1,12 @@
 # **Overview** 
-- A traditional chess game developed in python using the [PyGame](https://www.pygame.org/wiki/about) module.
-- Includes two-player mode and a AI bot (work in progress) built using the minimax algorithm.
+- A traditional chess game developed in Python using the [PyGame](https://www.pygame.org/wiki/about) module.
+- Includes two-player mode and an AI bot (work in progress) built using the minimax algorithm.
 - Used pictures found on [Wikimedia](https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces) as the pieces.
 - Currently in the process of developing tooltips for buttons and the AI bot.
+
+![image-removebg-preview (9)](https://github.com/GeorgesCoding/Chess/assets/118407807/c3edbeb9-5a74-4367-948f-a96a314c8d3f)
+
+![image-removebg-preview (10)](https://github.com/GeorgesCoding/Chess/assets/118407807/28de399b-1160-4999-abab-91ac92fb7577)
 
 
 #
@@ -30,10 +34,10 @@ NOTE: Make sure that the PyGame module is installed before step two.
 	- Is responsible for dictating how the game behaves by examining the event detected by PyGame.
 	- Uses methods from _rules.py_ to determine how to draw the state of the board and handle button or mouse clicks.
 	- Three main buttons are restart, two-player mode and computer.
-	- In the process of developing AI generated moves for computer mode.
+	- In the process of developing AI-generated moves for computer mode.
 
 2. _gui.py_: Drawing and displaying components
-   - Draws the board, pieces, buttons, side window and updates dialouge.
+   - Draws the board, pieces, buttons, side window and updates dialogue.
    - Also includes the dragging animation when moving pieces.
    - Each main component (ie. board, pieces, buttons) is created as a [_surface_](https://www.pygame.org/docs/ref/surface.html)
    - The surface is converted as a bitmap image and is added to the main window surface specified as "screen" in _main.py_.
@@ -62,14 +66,53 @@ NOTE: Make sure that the PyGame module is installed before step two.
   - Queen: 7
   - King: 9 when unmoved, 99 when moved
 - King, rook and pawn change values after moving for the first time.
-  - This is used to dictate castling and moving two spaces for pawn.
+  - This is used to dictate castling and moving two spaces for the pawn.
+ 
+![image](https://github.com/GeorgesCoding/Chess/assets/118407807/b41d4b56-6169-49aa-83af-9a6347365767)
+
 
 - Legal moves are structured in terms of a set()
 	- If the space moved to is within the set, the move is valid.
   - Because all the legal moves of the piece are computed and compiled together, to test move validity, you need to check if the space the piece moved to is within this list.
-  - When testing for membership, lists have O(n) efficiency while sets have O(1), making sets more faster.
+  - When testing for membership, lists have [O(n) efficiency while sets have O(1)](https://wiki.python.org/moin/TimeComplexity), making sets more faster.
   - Furthermore, values don't need to be accessed, only a check for membership.
-  - Lastly sets ensure unique elements due to their properties, allowing for less checks and thus making sets the ideal choice.
+  - Lastly sets ensure unique elements due to their properties, allowing for fewer checks and thus making sets the ideal choice.
 
 - Computations for bishop and rook are grouped due to similarity.
 - Constants BLACK and WHITE represent player turns.
+
+#
+# **Buttons and Dialogue Window**
+In this program, there are three main buttons: 
+
+1. Restart
+	- Restarts the game to the beginning state, waiting for the user to select a game mode.
+
+		![image-removebg-preview](https://github.com/GeorgesCoding/Chess/assets/118407807/207e81d6-65f7-4795-97b2-d2b2a1c88ae6)
+
+2. Two Player Mode
+	- Two-player mode initializes the game to white to move, rotating the board after every move.
+
+ 		 ![image-removebg-preview (1)](https://github.com/GeorgesCoding/Chess/assets/118407807/6ca2c3c3-8bee-4699-b484-14c9719998b5)
+
+3. Computer Mode (Computer Screen)   
+	- Computer moves will prompt the user to press the key on their keyboard to determine their colour:
+	- B for black, W for white and R for random. 
+	- The game will be initialized accordingly.
+
+		![image-removebg-preview (2)](https://github.com/GeorgesCoding/Chess/assets/118407807/af4c78d0-0214-43e4-aab9-948f4bf245e6)
+
+
+\
+Underneath these buttons are the pawn promotion buttons:
+
+![image-removebg-preview (12)](https://github.com/GeorgesCoding/Chess/assets/118407807/5b414c11-aad5-4b74-a7f9-67777050699c)
+
+- When the pawn reaches the end of the board from their respective side, the four buttons with pieces will be outlined in red symbolizing the piece the pawn can be promoted to.
+- When pressed, the pawn will be promoted to that piece, the board will rotate (for two-player mode) and the turn will end.
+- If pressed under any other conditions, the button will do nothing.
+
+![image-removebg-preview (11)](https://github.com/GeorgesCoding/Chess/assets/118407807/7c6cdc3f-b711-4a4a-ac32-cc0580198a3d)
+
+
+During checkmate, all piece movements and buttons are disabled with only the restart button being enabled.
