@@ -2,11 +2,11 @@
 - A traditional chess game developed in Python using the [PyGame](https://www.pygame.org/wiki/about) module.
 - Includes two-player mode and an AI bot (work in progress) built using the minimax algorithm.
 - Used pictures found on [Wikimedia](https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces) as the pieces.
-- Currently in the process of developing tooltips for buttons and the AI bot.
+- Currently in the process of developing randomized moves as a placeholder for the AI bot.
 
 ![image-removebg-preview (9)](https://github.com/GeorgesCoding/Chess/assets/118407807/c3edbeb9-5a74-4367-948f-a96a314c8d3f)
 
-![image-removebg-preview (10)](https://github.com/GeorgesCoding/Chess/assets/118407807/28de399b-1160-4999-abab-91ac92fb7577)
+![image-removebg-preview](https://github.com/GeorgesCoding/Chess/assets/118407807/0e55488c-7c96-48a7-95b2-d31324dde8bf)
 
 
 #
@@ -115,4 +115,9 @@ Underneath these buttons are the pawn promotion buttons:
 ![image-removebg-preview (11)](https://github.com/GeorgesCoding/Chess/assets/118407807/7c6cdc3f-b711-4a4a-ac32-cc0580198a3d)
 
 
-During checkmate, all piece movements and buttons are disabled with only the restart button being enabled.
+During checkmate, all piece movements and buttons are disabled with only the restart button enabled.
+
+
+There is a black box on the bottom right-hand side of the screen underneath the pawn promotion buttons. Here, commentary will be displayed according to the moves of the players. It will also display if the move is invalid if the king is in check, castling, checkmate and more. The most recent comment is at the bottom.
+
+![image](https://github.com/GeorgesCoding/Chess/assets/118407807/0cc7be6a-279c-437d-99c2-fb9b3c19c647)
