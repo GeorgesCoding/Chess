@@ -192,7 +192,7 @@ def main():
                                 count = addText(text, "Invalid move: " + str(inCheck), count)
 
                             else:  # legal move
-                                enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant)
+                                count = enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count)
                                 board[newY][newX] = piece
                                 isPawn = pawnFirst(piece, newY, newX, oldY, oldX)
                                 firstMove(piece, board, newY, newX)

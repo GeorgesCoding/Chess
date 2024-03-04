@@ -51,9 +51,11 @@ def pawnFirst(piece, newY, newX, oldY, oldX):
 
 # removes the pawn captured through en passant
 # special because the pawn doesn't overtake the captured pawn's space
-def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant):
+def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count):
     if isPawn and (7 - oldY, 7 - oldX) in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX):
         board[newY + 1][newX] = 0
+        count = addText(text, PIECE[piece] + " en passant capture", count)
+    return count
 
 
 # the default check for computing legal moves
