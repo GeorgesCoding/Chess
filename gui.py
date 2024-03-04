@@ -12,7 +12,7 @@ IMAGEPATH = {
 }
 
 
-# helper function: prints the state of the board
+# testing function: prints the state of the board
 def testBoard(board):
     for row in board:
         print(row)
@@ -88,12 +88,6 @@ def createBoard(size, pSize):
     return tempBoard
 
 
-# toggles a tooltip at the mouse position when idle for 3 seconds
-def tooltip(screen):
-    x, y = pygame.mouse.get_pos()
-    pygame.draw.rect(screen, (200, 0, 0), (x, y, 200, 200))
-
-
 # outlines the promotion buttons when pawn promotion is applicable
 def promoOutline(screen, size, toggle):
 
@@ -109,14 +103,18 @@ def promoOutline(screen, size, toggle):
 
 
 # adds additional dialouge into the list
-def addText(array, text):
+def addText(array, text, count):
     try:
         index = array.index("")
-        array[index] = text
+        if count == 0:
+            array[index] = text
+        else:
+            array[index] = str(count) + ". " + text
+            return count + 1
     except ValueError:
         array.pop(0)
-        array.append(text)
-
+        array.append(str(count) + ". " + text)
+        return count + 1
 
 # clears the dialouge list
 def clearText(array):

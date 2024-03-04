@@ -34,14 +34,9 @@ def main():
 
     # 2D array to represent state of board
     board = [
-        [5, 3, 4, 7, 9, 4, 3, 5],
-        [11] * 8,
-        [0] * 8,
-        [0] * 8,
-        [0] * 8,
-        [0] * 8,
-        [-11] * 8,
-        [-5, -3, -4, -7, -9, -4, -3, -5]
+        [5, 3, 4, 7, 9, 4, 3, 5], [11] * 8,
+        [0] * 8, [0] * 8, [0] * 8, [0] * 8,
+        [-11] * 8, [-5, -3, -4, -7, -9, -4, -3, -5]
     ]
 
     # toggable variables
@@ -57,6 +52,7 @@ def main():
     opposite = 1
     switch = True
     end = False  # if true, freezes the game except restart and quit
+    count = 1
 
     # list of all possible enemy piece moves
     moveList = set()
@@ -130,28 +126,29 @@ def main():
                 # promotion buttons are outlined
                 if outline:
                     for i, p in enumerate(promoInfo):
-                        if button(i + 1, p, promotion, board, text):
+                        promoPressed, count = button(i + 1, p, promotion, board, text, count)
+                        if promoPressed:
                             outline = False
                             board = rotate(board, computer)
                             turn = -turn
                             break
 
                 # restarts program
-                elif button(0, restartInfo, None, None, text):
+                elif button(0, restartInfo, None, None, text, 0):
                     pygame.quit()
                     main()
                     return
 
                 #  two player mode
-                elif not colourChoose and button(0, twoPlayerInfo, None, None, text):
+                elif not colourChoose and button(0, twoPlayerInfo, None, None, text, 0):
                     start = True
 
                 # vs Computer
-                elif not start and button(0, computerInfo, None, None, text):
-                    addText(text, "Press the Key to Choose a Colour:")
-                    addText(text, "W for White")
-                    addText(text, "B for Black")
-                    addText(text, "R for Random")
+                elif not start and button(0, computerInfo, None, None, text, 0):
+                    addText(text, "Press the Key to Choose a Colour:", 0)
+                    addText(text, "W for White", 0)
+                    addText(text, "B for Black", 0)
+                    addText(text, "R for Random", 0)
                     colourChoose = True
 
                 # checks if a piece has been selected
@@ -179,7 +176,8 @@ def main():
                         moveList = computeAll(piece, tempBoard, 0, opposite, canPassant)
 
                         # king castles
-                        if castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard, text):
+                        didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard, text, count)
+                        if didCastle:
                             turn = -turn
                             board = rotate(board, computer)
 
@@ -191,7 +189,7 @@ def main():
                             if kingCoord(piece, board) in moveList:
                                 board[oldY][oldX] = piece
                                 inCheck = "White king in check" if piece < 0 else "Black king in check"
-                                addText(text, "Invalid move: " + str(inCheck))
+                                count = addText(text, "Invalid move: " + str(inCheck), count)
 
                             else:  # legal move
                                 enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant)
@@ -208,7 +206,7 @@ def main():
                                 else:
                                     num = 8 - newY
                                     alph = newX + 1
-                                addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num))
+                                count = addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count)
 
                                 # pawn at end of board
                                 if piece in {-1, 1} and newY == 0:
@@ -226,12 +224,12 @@ def main():
                                         moveList = computeAll(-piece, board, 0, opposite, canPassant)
                                         if kingCoord(-piece, board) in moveList:
                                             inCheck = "White king in check" if -piece < 0 else "Black king in check"
-                                            addText(text, inCheck)
+                                            count = addText(text, inCheck, count)
 
                         else:
                             board[oldY][oldX] = piece
                             if not (newY == oldY and newX == oldX):
-                                addText(text, "Invalid Move")
+                                count = addText(text, "Invalid Move", count)
 
                 # redraw surfaces, reset temp variables
                 boardSurface = createBoard(SIZE, PSIZE)

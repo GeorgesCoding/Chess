@@ -106,7 +106,7 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
     moves = set()
     a = -1 if opposite == 1 else 1
     b = -2 if opposite == 1 else 2
-    
+
     if board[y - a][x] == 0:
         moves.add((y - a, x))  # forward one space
 
@@ -127,42 +127,6 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
             moves.add((y - a, x - 1))
 
     return moves
-
-
-# in first array, each index is a seperate array for each piece
-# first index in subarray is the piece
-# second is the location
-# third index is the set of the legal moves
-def moveChoose(piece, y, x, board, opposite, canPassant, kingPass):
-    specificMoves = []
-    colour = pieceColour(piece)
-    x = 0
-
-    for b, row in enumerate(board):
-        for a, n in enumerate(row):
-            if pieceColour(-n) == colour:
-
-                if n in {-1, 1, 11, -11}:
-                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
-
-                elif n in {5, -5, 55, -55}:
-                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
-
-                elif n in {3, -3}:
-                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
-
-                elif n in {4, -4}:
-                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
-
-                elif n in {7, -7}:
-                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
-
-                elif n in {9, -9, 99, -99} and kingPass != 1:
-                    specificMoves[x][2] = pawnMove(n, y, x, board, opposite, canPassant)
-
-                specificMoves[x][0] = n
-                specificMoves[x][1] = (b, a)
-                x += 1
 
 
 # computes legal knight moves
@@ -277,7 +241,7 @@ def kingCoord(piece, board):
 
 # determines if the king can castle
 # returns true to castle the king
-def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text):
+def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text, count):
     mX, mY = getPos(pSize, size)
     tempX = mX
     rook = getPiece(board, pSize, size)[0]
@@ -292,26 +256,26 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text):
         # empty inbetween spaces
         while (mX != oldX):
             if board[oldY][mX + temp] != 0:
-                return False
+                return False, count
             mX += temp
 
         # check if king in check
         if kingCoord(piece, tempBoard) in moveList:
-            return False
+            return False, count
         else:
             board[oldY][kingX] = piece
             board[oldY][rookX] = rook
             firstMove(piece, board, oldY, kingX)
             firstMove(rook, board, oldY, rookX)
             board[mY][tempX] = 0
-            addText(text, str(PIECE[piece]) + str(side))
-            return True
-    return False
+            count = addText(text, str(PIECE[piece]) + str(side), count)
+            return True, count
+    return False, count
 
 
 # evaluates if a button is pressed
 # also dictates pawn promotion behaviour
-def button(selection, info, promotedPiece, board, text):
+def button(selection, info, promotedPiece, board, text, count):
 
     pressed = pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
     pawn = "Black"
@@ -330,10 +294,13 @@ def button(selection, info, promotedPiece, board, text):
 
         board[y][x] = newPiece
 
-        addText(text, pawn + " pawn promoted to ")
-        addText(text, str(PIECE[newPiece]))
+        count = addText(text, pawn + " pawn promoted to ", count)
+        addText(text, str(PIECE[newPiece]), 0)
 
-    return pressed
+    if count == 0:
+        return pressed
+    else:
+        return pressed, count
 
 
 # evaluates if king is in checkmate
@@ -385,15 +352,9 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
         king = board[kY][kX]
         if checkmate(king, board, kX, kY, canPassant, opposite):
             winner = "Black" if pieceColour(king) < 0 else "White"
-            addText(text, "Checkmate: " + str(winner) + " won!")
-            addText(text, "Press restart or exit the game.")
+            addText(text, "Checkmate: " + str(winner) + " won!", 0)
+            addText(text, "Press restart or exit the game.", 0)
             return True
-
-
-# temporary function
-# randomly decides moves for the computer
-def randomMove(king, board, canPassant):
-    return
 
 
 # returns a random turn for the user
