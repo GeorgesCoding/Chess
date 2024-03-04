@@ -115,10 +115,22 @@ def main():
                 dialougeSurf = dialouge(SIZE, text)
 
             if start and computer != None and turn == computer:
-                pass
-                # cY, cX = random.choice(list(computeAll(computer, board, 0, 1, canPassant)))
-                # need piece, old and new coordinates
-                # for promotion, promotes to random
+                oldCY, oldCX, newCY, newCX, cPiece = computerMove(turn, board, canPassant)
+                board[oldCY][oldCX] = 0
+                board[newCY][newCX] = cPiece
+                turn = - turn
+                if (pieceColour(-cPiece) == BLACK and computer is None) or (computer == 1 and player == -1):
+                    num = newCY + 1
+                    alph = 8 - newCX
+                else:
+                    num = 8 - newCY
+                    alph = newCX + 1
+                count = addText(text, str(PIECE[cPiece]) + " to " + str(ALPH[alph]) + str(num), count)
+
+                boardSurface = createBoard(SIZE, PSIZE)
+                buttonSurface = buttons(SIZE)
+                piecesSurface = drawPieces(board, PSIZE, SIZE)
+                dialougeSurf = dialouge(SIZE, text)
 
             # if left mouse button is pressed
             if event.type == pygame.MOUSEBUTTONDOWN:

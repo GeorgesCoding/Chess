@@ -1,8 +1,7 @@
 import pygame
-import random
+from random import randint, choice
 from gui import getPiece, getPos, addText
 from main import PIECE
-
 
 BLACK = -1
 WHITE = 1
@@ -229,6 +228,56 @@ def computeAll(king, board, kingPass, opposite, canPassant):
     return moves
 
 
+# computes all possible moves for the computer
+# randomly selects a move and plays it
+# temporary placeholder for AI bot
+def computerMove(piece, board, canPassant):
+    moves = []
+
+    colour = pieceColour(piece)
+    i = -1
+
+    for y, row in enumerate(board):
+        for x, n in enumerate(row):
+            if pieceColour(-n) == colour:
+                i += 1
+                moves.append([])
+                moves[i].append(n)
+                moves[i].append((y, x))
+
+                if n in {-1, 1, 11, -11}:
+                    moves[i].append(list(pawnMove(n, y, x, board, 1, canPassant)))
+
+                elif n in {5, -5, 55, -55}:
+                    moves[i].append(list(rookMove(n, y, x, board)))
+
+                elif n in {3, -3}:
+                    moves[i].append(list(knightMove(n, y, x, board)))
+
+                elif n in {4, -4}:
+                    moves[i].append(list(bishopMove(n, y, x, board)))
+
+                elif n in {7, -7}:
+                    moves[i].append(list(queenMove(n, y, x, board)))
+
+                elif n in {9, -9, 99, -99}:
+                    moves[i].append(list(kingMove(n, y, x, board)))
+
+                if len(moves[i][2]) == 0:
+                    i -= 1
+                    moves.pop()
+
+    # determine random piece and random move
+    index = randint(0, i)
+    piece = moves[index][0]
+    oldY, oldX = moves[index][1]
+    length = len(moves[index][2])
+    newIndex = randint(0, length-1)
+    newY, newX = moves[index][2][newIndex]
+
+    return oldY, oldX, newY, newX, piece
+
+
 # returns the coordinates of the piece's colour king
 def kingCoord(piece, board):
     y = x = -1
@@ -361,4 +410,4 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
 
 # returns a random turn for the user
 def randomTurn():
-    return random.choice((BLACK, WHITE))
+    return choice((BLACK, WHITE))

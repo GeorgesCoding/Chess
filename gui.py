@@ -113,8 +113,9 @@ def addText(array, text, count):
             return count + 1
     except ValueError:
         array.pop(0)
-        array.append(str(count) + ". " + text)
-        return count + 1
+        array.append("")
+        return addText(array, text, count)
+
 
 # clears the dialouge list
 def clearText(array):
