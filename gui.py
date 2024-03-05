@@ -1,6 +1,5 @@
 import pygame
 
-
 # dictionary constant of the paths of the image of the pieces
 IMAGEPATH = {
     1: 'Assets\Pawn.png', 11: 'Assets\Pawn.png', 3: 'Assets\Knight.png',
@@ -75,26 +74,32 @@ def createBoard(size, pSize):
 
     # draw rounded corners
     pygame.draw.rect(tempBoard, white, (25, 25, pSize, pSize), 0, 0, 12)
-    pygame.draw.rect(tempBoard, green, (pSize*7 + 25, 25, pSize, pSize), 0, 0, 0, 12)
-    pygame.draw.rect(tempBoard, green, (25, pSize*7 + 25, pSize, pSize), 0, 0, 0, 0, 12)
-    pygame.draw.rect(tempBoard, white, (pSize*7 + 25, pSize*7 + 25, pSize, pSize), 0, 0, 0, 0, 0, 12)
+    pygame.draw.rect(tempBoard, green, (pSize * 7 + 25, 25, pSize, pSize), 0, 0, 0, 12)
+    pygame.draw.rect(tempBoard, green, (25, pSize * 7 + 25, pSize, pSize), 0, 0, 0, 0, 12)
+    pygame.draw.rect(tempBoard, white, (pSize * 7 + 25, pSize*7 + 25, pSize, pSize), 0, 0, 0, 0, 0, 12)
 
-# Draw squares and rounded corners
-    for y in range(8):
-        for x in range(8):
+    # middle spaces
+    for y in range(1, 7):
+        for x in range(1, 7):
             rect_color = white if (x + y) % 2 == 0 else green
             pygame.draw.rect(tempBoard, rect_color, (25 + x * pSize, 25 + y * pSize, pSize, pSize))
+
+    # side spaces
+    for x in range(1, 7):
+        rect_color = white if (x + y) % 2 == 0 else green
+        pygame.draw.rect(tempBoard, rect_color, (25 + x * pSize, 25, pSize, pSize))
+        pygame.draw.rect(tempBoard, rect_color, (pSize * 7 + 25, 25 + pSize * (7-x), pSize, pSize))
+        pygame.draw.rect(tempBoard, rect_color, (25, 25 + pSize * x, pSize, pSize))
+        pygame.draw.rect(tempBoard, rect_color, (25 + pSize * (7-x), 25 + pSize * 7, pSize, pSize))
 
     return tempBoard
 
 
 # outlines the promotion buttons when pawn promotion is applicable
 def promoOutline(screen, size, toggle):
-
     if toggle:
         pSize = ((size/1.9)-25)/4 - 15
         buttonHeight = (size - 45)/6
-
         colour = (200, 0, 0, 50)
         pygame.draw.rect(screen, colour, (size + 15, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 5, 0, 12, 12, 12, 12)
         pygame.draw.rect(screen, colour, (size + 25 + pSize, 115 + buttonHeight + buttonHeight/3, pSize, pSize), 5, 0, 12, 12, 12, 12)
@@ -124,8 +129,7 @@ def clearText(array):
     return array
 
 
-# states the move of the board
-# also display check, checkmate, castle and winner
+# displays moves, invalid move, check, checkmate, castle and winner
 def dialouge(size, text):
     # buttons surface, transparent background
     dialougeSurf = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
@@ -158,7 +162,7 @@ def buttons(size):
     # buttons surface, transparent background
     buttonSurface = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
 
-    # draw side window
+    # draw window
     pygame.draw.rect(buttonSurface, (33, 32, 29), (size, 25, (size/1.9)-25, size - 50), 0, 0, 12, 12, 12, 12)
 
     # button attributes
@@ -224,7 +228,7 @@ def rotate(board, computer):
 # creates a "dragging" animation for the pieces
 def drag(screen, selected, pSize, size):
     if selected != None:
-        piece = selected[0]
+        piece = selected
         dSize = (pSize, pSize)
         mX, mY = pygame.mouse.get_pos()
         mouseLocation = (mX - pSize/2, mY - pSize/2)

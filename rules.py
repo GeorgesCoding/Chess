@@ -1,15 +1,36 @@
 import pygame
 from random import randint, choice
-from gui import getPiece, getPos, addText
+from gui import getPiece, getPos, addText, testBoard
 from main import PIECE
 
 BLACK = -1
 WHITE = 1
 
 
+# computes the board position of the piece
+def computePos(piece, computer, player, newY, newX):
+    if (pieceColour(-piece) == -1 and computer is None) or (computer == 1 and player == -1):
+        num = newY + 1
+        alph = 8 - newX
+    else:
+        num = 8 - newY
+        alph = newX + 1
+    return num, alph
+
+
 # toggles the turn
 def playerTurn(colour, turn):
     return (colour == BLACK) == (turn == 1)
+
+
+# checks if the opposite king is in check after the move
+def isCheck(end, piece, board, opposite, canPassant, text, count):
+    if not end:
+        moveList = computeAll(-piece, board, 0, opposite, canPassant)
+        if kingCoord(-piece, board) in moveList:
+            inCheck = "White king in check" if -piece < 0 else "Black king in check"
+            return addText(text, inCheck, count)
+    return count
 
 
 # determines if move is legal or not
@@ -106,7 +127,7 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
 
     moves = set()
     a = -1 if opposite == 1 else 1
-    b = -2 if opposite == 1 else 2
+    b = a * 2
 
     if board[y - a][x] == 0:
         moves.add((y - a, x))  # forward one space
@@ -121,7 +142,7 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
     if spaceCheck(piece, board, y - a, x - 1) and board[y - a][x - 1] != 0:  # left capture
         moves.add((y - a, x - 1))
 
-    if (7 - y, 7 - x) in canPassant:
+    if (7 - y, 7 - x) in canPassant:  # LH and RH en passant
         if 7 - canPassant[0][1] - x == 1:
             moves.add((y - a, x + 1))
         else:
@@ -267,13 +288,24 @@ def computerMove(piece, board, canPassant):
                     i -= 1
                     moves.pop()
 
-    # determine random piece and random move
-    index = randint(0, i)
-    piece = moves[index][0]
-    oldY, oldX = moves[index][1]
-    length = len(moves[index][2])
-    newIndex = randint(0, length-1)
-    newY, newX = moves[index][2][newIndex]
+    isValid = True
+    while isValid:
+        # determine random piece and random move
+        index = randint(0, i)
+        piece = moves[index][0]
+        oldY, oldX = moves[index][1]
+        length = len(moves[index][2])
+        newIndex = randint(0, length-1)
+        newY, newX = moves[index][2][newIndex]
+
+        tempBoard = [row[:] for row in board]
+        tempBoard[oldY][oldX] = 0
+        tempBoard[newY][newX] = piece
+        moveList = computeAll(piece, tempBoard, 0, 0, canPassant)
+
+        # prevents move if king in check
+        if not (kingCoord(piece, tempBoard) in moveList):
+            isValid = False
 
     return oldY, oldX, newY, newX, piece
 
@@ -396,7 +428,7 @@ def checkmate(king, board, x, y, canPassant, opposite):
 
 # determines if the game has ended through checkmate
 def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text):
-    if outline or (not start and (kingCoord(-turn, board) == None)) or (pieceMoving):
+    if outline or not start or pieceMoving:
         pass
     else:
         kY, kX = kingCoord(-turn, board)
