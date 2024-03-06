@@ -189,10 +189,10 @@ def main():
                         tempBoard[newY][newX] = piece
                         tempList = computeAll(piece, tempBoard, 0, opposite, canPassant)
                         
-                        castleList = computeAll(piece, board, 0, opposite, canPassant)
+                        moveList = computeAll(piece, board, 0, opposite, canPassant)
 
                         # king castles
-                        didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, castleList, text, count)
+                        didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, text, count)
                         if didCastle:
                             turn = -turn
                             board = rotate(board, computer)
