@@ -19,15 +19,16 @@ def testBoard(board):
 
 
 # prints the numbers of the board
-def numBoard(screen, pSize, turn, computer, switch):
+def numBoard(screen, pSize, turn, computer, switch, size):
 
     # font
-    font = pygame.font.SysFont('Comic Sans MS', 20)
+    numFont = pygame.font.SysFont('Comic Sans MS', int((size/45)))
+    alphFont = pygame.font.SysFont('Comic Sans MS', int((size/45)))
 
     # coordinates
     w = 10 + pSize/2
-    x = 5
-    y = 20 + pSize * 8
+    x = 4
+    y = 25 + pSize * 8
     z = 20 + pSize/2
 
     # coordinate lists
@@ -41,8 +42,14 @@ def numBoard(screen, pSize, turn, computer, switch):
 
     # blit to screen
     for i, (num, alpha) in enumerate(zip(["8", "7", "6", "5", "4", "3", "2", "1"], ["a", "b", "c", "d", "e", "f", "g", "h"])):
-        screen.blit(font.render(num, False, (255, 255, 255)), (x, numCoord[i]))
-        screen.blit(font.render(alpha, False, (255, 255, 255)), (alphaCoord[i], y))
+        if alpha == "g":
+            screen.blit(alphFont.render(alpha, False, (255, 255, 255)), (alphaCoord[i], y - 4))
+        elif i % 2 != 0:
+            screen.blit(alphFont.render(alpha, False, (255, 255, 255)), (alphaCoord[i], y + 2))
+        else:
+            screen.blit(alphFont.render(alpha, False, (255, 255, 255)), (alphaCoord[i], y))
+
+        screen.blit(numFont.render(num, False, (255, 255, 255)), (x, numCoord[i]))
 
     return switch
 
@@ -62,7 +69,7 @@ def getPos(pSize, size):
 def createBoard(size, pSize):
 
     # create board surface
-    tempBoard = pygame.Surface((size + size/1.9, size))
+    tempBoard = pygame.Surface((size + size/1.9, size + 15))
 
     # board colours
     green = (119, 149, 86)
@@ -135,7 +142,7 @@ def dialouge(size, text):
     dialougeSurf = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
     buttonHeight = (size - 45)/6
     black = (0, 0, 0)
-    font = pygame.font.SysFont('Comic Sans MS', 27)
+    font = pygame.font.SysFont('Comic Sans MS', int((size / 960) * 27))
     white = (255, 255, 255)
 
     # Calculate dimensions for the rectangle

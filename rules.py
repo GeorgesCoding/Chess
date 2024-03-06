@@ -74,7 +74,7 @@ def pawnFirst(piece, newY, newX, oldY, oldX):
 def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count):
     if isPawn and (7 - oldY, 7 - oldX) in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX):
         board[newY + 1][newX] = 0
-        count = addText(text, PIECE[piece] + " en passant capture", count)
+        count = addText(text, PIECE[piece] + " en passant capture", 0)
     return count
 
 
@@ -325,7 +325,7 @@ def kingCoord(piece, board):
 # determines if the king can castle
 # returns true to castle the king
 def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text, count):
-    mX, mY = getPos(pSize, size)
+    mY, mX = getPos(pSize, size)
     tempX = mX
     rook = getPiece(board, pSize, size)[0]
 
@@ -342,7 +342,7 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text, cou
                 return False, count
             mX += temp
 
-        # check if king in check
+        # check if king in check3
         if kingCoord(piece, tempBoard) in moveList:
             return False, count
         else:

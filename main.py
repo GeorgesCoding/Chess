@@ -23,9 +23,9 @@ def main():
     size = pygame.display.Info().current_h
     SIZE = size - 120
     PSIZE = (SIZE-50)/8
-
+    
     # initialize and customize window
-    screen = pygame.display.set_mode((SIZE + SIZE/1.9, SIZE))
+    screen = pygame.display.set_mode((SIZE + SIZE/1.9 + 15, SIZE + 15))
     pygame.display.set_caption("Chess")
     icon = pygame.image.load('Assets\icon.png')
     pygame.display.set_icon(icon)
@@ -105,19 +105,32 @@ def main():
                 dialougeSurf = dialouge(SIZE, text)
 
             # computer move
-            if start and computer != None and turn == computer:
+            if start and computer != None and turn == computer and not end:
                 oldY, oldX, newY, newX, piece = computerMove(turn, board, canPassant)
                 end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
+                board[oldY][oldX] = 0
 
-                if not end:
-                    board[oldY][oldX] = 0
+                if piece == 10:
+                    # do castling
+                    pass
+                elif not end:
+                    count = enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count)
                     board[newY][newX] = piece
-                    turn = -turn
+                    isPawn = pawnFirst(piece, newY, newX, oldY, oldX)
+                    canPassant = enPassant(piece, newY, newX, board, isPawn)
                     num, alph = computePos(piece, computer, player, newY, newX)
                     count = addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count)
-                    count = isCheck(end, piece, board, opposite, canPassant, text, count)
-                    piecesSurface = drawPieces(board, PSIZE, SIZE)
-                    dialougeSurf = dialouge(SIZE, text)
+
+                    if piece in {-1, 1} and newY == 7:
+                        board[newY][newX] = piece * choice((5, 3, 4, 7))
+                        count = addText(text, PIECE[piece] + " pawn promoted to ", count)
+                        addText(text, str(PIECE[board[newY][newX]]), 0)
+                
+                turn = -turn
+                count = isCheck(end, piece, board, opposite, canPassant, text, count)
+                firstMove(piece, board, newY, newX)
+                piecesSurface = drawPieces(board, PSIZE, SIZE)
+                dialougeSurf = dialouge(SIZE, text)
 
             # if left mouse button is pressed
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -191,7 +204,6 @@ def main():
                                 count = addText(text, "Invalid move: " + str(inCheck), count)
 
                             else:  # legal move
-                                count = enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count)
                                 board[newY][newX] = piece
                                 isPawn = pawnFirst(piece, newY, newX, oldY, oldX)
                                 firstMove(piece, board, newY, newX)
@@ -200,6 +212,7 @@ def main():
                                 board = rotate(board, computer)
                                 num, alph = computePos(piece, computer, player, newY, newX)
                                 count = addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count)
+                                count = enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count)
 
                                 # pawn at end of board
                                 if piece in {-1, 1} and newY == 0:
@@ -251,7 +264,7 @@ def main():
         promoOutline(screen, SIZE, outline)
 
         # numbers the board
-        switch = numBoard(screen, PSIZE, turn, computer, switch)
+        switch = numBoard(screen, PSIZE, turn, computer, switch, SIZE)
 
         # creates "dragging" animation for pieces
         drag(screen, selected, PSIZE, SIZE)
