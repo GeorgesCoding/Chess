@@ -392,19 +392,12 @@ def checkmate(king, board, x, y, canPassant, opposite):
     # compute enemy moves
     moveList = computeAll(king, board, 0, opposite, canPassant)
 
-    print("ABC")
-    print(moveList)
-    print("------------------------------------------")
-
     # check if the king is the only piece
     onlyKing = True
     for a in board:
         for b in a:
             if b != 0:
                 onlyKing = False
-
-    print(onlyKing)
-    print("------------")
 
     kingsList = kingMove(king, y, x, board)
     tempBoard = [row[:] for row in board]
@@ -413,11 +406,6 @@ def checkmate(king, board, x, y, canPassant, opposite):
         if (newY, newX) not in moveList:  # king still in check after move
             canMove = True
             break
-
-    print(kingsList)
-    print("-------------------")
-    print(canMove)
-    print("-------------------")
 
     # king is the only piece and cannot move
     if onlyKing and not canMove:
@@ -435,9 +423,6 @@ def checkmate(king, board, x, y, canPassant, opposite):
     temp = 1 if opposite == 0 else 0
     moveList = computeAll(-king, board, kingPass, temp, canPassant)
     tempPiece = -1 if king < 0 else 1
-
-    print(moveList)
-    print("------------------------")
 
     for (newY, newX) in moveList:
         tempBoard[newY][newX] = tempPiece
