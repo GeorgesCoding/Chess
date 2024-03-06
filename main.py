@@ -233,7 +233,7 @@ def main():
                             if not (newY == oldY and newX == oldX):
                                 count = addText(text, "Invalid Move", count)
 
-                    else:  # piece placed outside of boards
+                    else:  # piece placed outside of boardss
                         board[oldY][oldX] = piece
                         if not (newY == oldY and newX == oldX):
                             count = addText(text, "Invalid Move", count)
