@@ -23,7 +23,7 @@ def main():
     size = pygame.display.Info().current_h
     SIZE = size - 120
     PSIZE = (SIZE-50)/8
-    
+
     # initialize and customize window
     screen = pygame.display.set_mode((SIZE + SIZE/1.9 + 15, SIZE + 15))
     pygame.display.set_caption("Chess")
@@ -32,9 +32,9 @@ def main():
 
     # 2D array to represent state of board
     board = [
-        [5, 3, 4, 7, 9, 4, 3, 5], [0] * 8,
+        [5, 3, 4, 7, 9, 4, 3, 5], [11] * 8,
         [0] * 8, [0] * 8, [0] * 8, [0] * 8,
-        [0] * 8, [-5, -3, -4, -7, -9, -4, -3, -5]
+        [-11] * 8, [-5, 0, 0, 0, -9, -4, -3, -5]
     ]
 
     # toggleable variables
@@ -86,6 +86,7 @@ def main():
                 pygame.quit()
                 return
 
+            # checks for end game
             end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
 
             # Checks for colour selection
@@ -125,7 +126,7 @@ def main():
                         board[newY][newX] = piece * choice((5, 3, 4, 7))
                         count = addText(text, PIECE[piece] + " pawn promoted to ", count)
                         addText(text, str(PIECE[board[newY][newX]]), 0)
-                
+
                 turn = -turn
                 count = isCheck(end, piece, board, opposite, canPassant, text, count)
                 firstMove(piece, board, newY, newX)
@@ -181,14 +182,17 @@ def main():
                     piece = selected
                     newX, newY = getPos(PSIZE, SIZE)
 
+                    # new space within bounds
                     if newX != 10:
                         # creates a board with the temporary state of the board with the moved piece
                         tempBoard = [row[:] for row in board]
                         tempBoard[newY][newX] = piece
-                        moveList = computeAll(piece, tempBoard, 0, opposite, canPassant)
+                        tempList = computeAll(piece, tempBoard, 0, opposite, canPassant)
+                        
+                        castleList = computeAll(piece, board, 0, opposite, canPassant)
 
                         # king castles
-                        didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, tempBoard, text, count)
+                        didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, castleList, text, count)
                         if didCastle:
                             turn = -turn
                             board = rotate(board, computer)
@@ -198,10 +202,11 @@ def main():
                             firstMove(piece, tempBoard, newY, newX)
 
                             # king is in check after move
-                            if kingCoord(piece, board) in moveList:
+                            if kingCoord(piece, board) in moveList or kingCoord(piece, tempBoard) in tempList:
                                 board[oldY][oldX] = piece
                                 inCheck = "White king in check" if piece < 0 else "Black king in check"
-                                count = addText(text, "Invalid move: " + str(inCheck), count)
+                                count = addText(text, "Invalid move: ", count)
+                                addText(text, inCheck, 0)
 
                             else:  # legal move
                                 board[newY][newX] = piece
@@ -215,12 +220,12 @@ def main():
                                 count = enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count)
 
                                 # pawn at end of board
-                                if piece in {-1, 1} and newY == 0:
+                                if piece in {-1, 1} and newY == 0:  # promotion
                                     outline = True
                                     promotion = piece, newY, newX
                                     board = rotate(board, computer)
                                     turn = -turn
-                                else:
+                                else:  # promotion happened
                                     outline = False
                                     promotion = None, None, None
                                     end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
@@ -230,6 +235,7 @@ def main():
                             board[oldY][oldX] = piece
                             if not (newY == oldY and newX == oldX):
                                 count = addText(text, "Invalid Move", count)
+
                     else:  # piece placed outside of boards
                         board[oldY][oldX] = piece
                         if not (newY == oldY and newX == oldX):

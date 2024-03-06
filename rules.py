@@ -324,8 +324,9 @@ def kingCoord(piece, board):
 
 # determines if the king can castle
 # returns true to castle the king
-def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text, count):
-    mY, mX = getPos(pSize, size)
+def castle(piece, board, oldY, oldX, pSize, size, moveList, text, count):
+
+    mX, mY = getPos(pSize, size)
     tempX = mX
     rook = getPiece(board, pSize, size)[0]
 
@@ -342,8 +343,8 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, tempBoard, text, cou
                 return False, count
             mX += temp
 
-        # check if king in check3
-        if kingCoord(piece, tempBoard) in moveList:
+        # check if king in check before or after castle
+        if (oldY, oldX) in moveList or (oldY, kingX) in moveList:
             return False, count
         else:
             board[oldY][kingX] = piece

@@ -115,18 +115,19 @@ def promoOutline(screen, size, toggle):
 
 
 # adds additional dialouge into the list
+# recursively calls itself after deleting the last text dialouge
 def addText(array, text, count):
     try:
         index = array.index("")
-        if count == 0:
+        if count == 0:  # two line text
             array[index] = text
         else:
             array[index] = str(count) + ". " + text
             return count + 1
-    except ValueError:
-        array.pop(0)
+    except ValueError:  
+        array.pop(0) 
         array.append("")
-        return addText(array, text, count)
+        return addText(array, text, count)  
 
 
 # clears the dialouge list
