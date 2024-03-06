@@ -133,7 +133,7 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
         moves.add((y - a, x))  # forward one space
 
     if piece in {-11, 11}:
-        if board[y - b][x] == 0:  # first move
+        if board[y - b][x] == 0 and board[y - a][x] == 0:  # first move
             moves.add((y - b, x))
 
     if spaceCheck(piece, board, y - a, x + 1) and board[y - a][x + 1] != 0:  # right capture
@@ -387,51 +387,81 @@ def button(selection, info, promotedPiece, board, text, count):
         return pressed, count
 
 
-# evaluates if king is in checkmate
-# False for no, true for yes
+# evaluates true if king is in checkmate
 def checkmate(king, board, x, y, canPassant, opposite):
+    # compute enemy moves
     moveList = computeAll(king, board, 0, opposite, canPassant)
 
-    # check if the king is the only piece and it cannot move
-    if kingCoord(king, board) in moveList:  # king in check
-        kingsList = kingMove(king, y, x, board)
-        tempBoard = [row[:] for row in board]
-        canMove = False
-        for (newY, newX) in kingsList:
-            if (newY, newX) not in moveList:  # king still in check after move
-                canMove = True
-                break
-            opposite = 0 if opposite == 1 else 1
-        if canMove:
-            return False
-        else:
-            moveList = computeAll(-king, board, 1, opposite, canPassant)
-            tempPiece = -1 if king < 0 else 1
+    print("ABC")
+    print(moveList)
+    print("------------------------------------------")
 
-            opposite = 0 if opposite == 1 else 1
+    # check if the king is the only piece
+    onlyKing = True
+    for a in board:
+        for b in a:
+            if b != 0:
+                onlyKing = False
 
-            for (newY, newX) in moveList:
-                tempBoard[newY][newX] = tempPiece
-                tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant)
+    print(onlyKing)
+    print("------------")
 
-                if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
-                    canMove = True
-                    break
+    kingsList = kingMove(king, y, x, board)
+    tempBoard = [row[:] for row in board]
+    canMove = False
+    for (newY, newX) in kingsList:
+        if (newY, newX) not in moveList:  # king still in check after move
+            canMove = True
+            break
 
-                # resets tempBoard
-                tempBoard = [row[:] for row in board]
+    print(kingsList)
+    print("-------------------")
+    print(canMove)
+    print("-------------------")
 
-            return not canMove
-
-    else:
+    # king is the only piece and cannot move
+    if onlyKing and not canMove:
+        return True
+    elif canMove:
         return False
+
+    # king is not the only piece
+    if canMove:
+        kingPass = 0
+    else:
+        kingPass = 1
+
+    canMove = False
+    temp = 1 if opposite == 0 else 0
+    moveList = computeAll(-king, board, kingPass, temp, canPassant)
+    tempPiece = -1 if king < 0 else 1
+
+    print(moveList)
+    print("------------------------")
+
+    for (newY, newX) in moveList:
+        tempBoard[newY][newX] = tempPiece
+        tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant)
+
+        if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
+            canMove = True
+            break
+
+        tempBoard = [row[:] for row in board]
+    return not canMove
 
 
 # determines if the game has ended through checkmate
-def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text):
+def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer):
     if outline or not start or pieceMoving:
         pass
     else:
+        if computer != None:
+            if computer == turn:
+                opposite = 0
+            else:
+                opposite = 1
+
         kY, kX = kingCoord(-turn, board)
         king = board[kY][kX]
         if checkmate(king, board, kX, kY, canPassant, opposite):

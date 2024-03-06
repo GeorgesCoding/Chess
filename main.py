@@ -32,9 +32,9 @@ def main():
 
     # 2D array to represent state of board
     board = [
-        [5, 3, 4, 7, 9, 4, 3, 5], [11] * 8,
+        [5, 3, 4, 7, 9, 4, 3, 5], [11, 11, 11, 11, 11, 0, 0, 11],
         [0] * 8, [0] * 8, [0] * 8, [0] * 8,
-        [-11] * 8, [-5, 0, 0, 0, -9, -4, -3, -5]
+        [-11] * 8, [-5, -3, -4, -7, -9, -4, -3, -5]
     ]
 
     # toggleable variables
@@ -42,9 +42,6 @@ def main():
     promotion = None, None, None
     pieceMoving = colourChoose = start = isPawn = end = outline = False
     computer = player = switch = selected = None
-
-    # list of all possible enemy piece moves
-    moveList = set()
 
     # list of all pawns that can perform en passant
     canPassant = []
@@ -87,7 +84,7 @@ def main():
                 return
 
             # checks for end game
-            end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
+            end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
 
             # Checks for colour selection
             if colourChoose and event.type == pygame.KEYDOWN:
@@ -108,7 +105,6 @@ def main():
             # computer move
             if start and computer != None and turn == computer and not end:
                 oldY, oldX, newY, newX, piece = computerMove(turn, board, canPassant)
-                end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
                 board[oldY][oldX] = 0
 
                 if piece == 10:
@@ -116,6 +112,7 @@ def main():
                     pass
                 elif not end:
                     count = enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count)
+
                     board[newY][newX] = piece
                     isPawn = pawnFirst(piece, newY, newX, oldY, oldX)
                     canPassant = enPassant(piece, newY, newX, board, isPawn)
@@ -187,12 +184,12 @@ def main():
                         # creates a board with the temporary state of the board with the moved piece
                         tempBoard = [row[:] for row in board]
                         tempBoard[newY][newX] = piece
-                        tempList = computeAll(piece, tempBoard, 0, opposite, canPassant)
-                        
-                        moveList = computeAll(piece, board, 0, opposite, canPassant)
+                        moveList = computeAll(piece, tempBoard, 0, opposite, canPassant)
+
+                        castleList = computeAll(piece, board, 0, opposite, canPassant)
 
                         # king castles
-                        didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, moveList, text, count)
+                        didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, castleList, text, count)
                         if didCastle:
                             turn = -turn
                             board = rotate(board, computer)
@@ -202,7 +199,7 @@ def main():
                             firstMove(piece, tempBoard, newY, newX)
 
                             # king is in check after move
-                            if kingCoord(piece, board) in moveList or kingCoord(piece, tempBoard) in tempList:
+                            if kingCoord(piece, tempBoard) in moveList:
                                 board[oldY][oldX] = piece
                                 inCheck = "White king in check" if piece < 0 else "Black king in check"
                                 count = addText(text, "Invalid move: ", count)
@@ -228,7 +225,7 @@ def main():
                                 else:  # promotion happened
                                     outline = False
                                     promotion = None, None, None
-                                    end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text)
+                                    end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
                                     count = isCheck(end, piece, board, opposite, canPassant, text, count)
 
                         else:  # within bounds, invalid move
