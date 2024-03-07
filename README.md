@@ -32,7 +32,7 @@ NOTE: Make sure that the PyGame module is installed before step two.
 # **Files**
 1. _main.py_: Game initialization and event handler
 	- Is responsible for dictating how the game behaves by examining the event detected by PyGame.
-	- Uses methods from _rules.py_ to determine how to draw the state of the board and handle button or mouse clicks.
+	- Uses methods from _rules.py_ to determine how to draw the state of the board based on button or mouse clicks.
 	- Three main buttons are restart, two-player mode and computer.
 	- In the process of developing AI-generated moves for computer mode.
 
