@@ -32,9 +32,9 @@ def main():
 
     # 2D array to represent state of board
     board = [
-        [5, 3, 4, 7, 9, 4, 3, 5], [11, 11, 11, 11, 11, 0, 0, 11],
-        [0] * 8, [0] * 8, [0] * 8, [0] * 8,
-        [-11] * 8, [-5, -3, -4, -7, -9, -4, -3, -5]
+        [0, 0, 0, 0, 9, 0, 0, 0], [0, 11, 0, 11, 0, 11, 0, 11] ,
+        [0] * 8, [-1, 0, -1, 0, -1, 0, -1, 0], [0] * 8, [0] * 8,
+        [0] * 8, [-9, 0, 0, 0, 0, 0, 0, 0]
     ]
 
     # toggleable variables
@@ -104,20 +104,25 @@ def main():
 
             # computer move
             if start and computer != None and turn == computer and not end:
-                oldY, oldX, newY, newX, piece = computerMove(turn, board, canPassant)
+                oldY, oldX, newY, newX, piece = computerMove(turn, board, canPassant, computer)
                 board[oldY][oldX] = 0
 
                 if piece == 10:
-                    # do castling
-                    pass
-                elif not end:
-                    count = enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count)
-
-                    board[newY][newX] = piece
-                    isPawn = pawnFirst(piece, newY, newX, oldY, oldX)
-                    canPassant = enPassant(piece, newY, newX, board, isPawn)
+                    board[oldY][newX[2]] = 0
+                    board[oldY][newX[0]] = newY[1]
+                    rook = 5 if newY[1] > 0 else -5
+                    board[oldY][newX[1]] = rook
+                    firstMove(newY[1], board, oldY, newX[0])
+                    firstMove(rook, board, oldY, newX[1])
+                    count = addText(text, str(PIECE[newY[1]]) + str(newY[0]), count)
+                else:
                     num, alph = computePos(piece, computer, player, newY, newX)
                     count = addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count)
+                    enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer)
+                    board[newY][newX] = piece
+                    isPawn = pawnFirst(piece, newY, newX, oldY, oldX, computer, turn)
+                    firstMove(piece, board, newY, newX)
+                    canPassant = enPassant(piece, newY, newX, board, isPawn)
 
                     if piece in {-1, 1} and newY == 7:
                         board[newY][newX] = piece * choice((5, 3, 4, 7))
@@ -125,8 +130,7 @@ def main():
                         addText(text, str(PIECE[board[newY][newX]]), 0)
 
                 turn = -turn
-                count = isCheck(end, piece, board, opposite, canPassant, text, count)
-                firstMove(piece, board, newY, newX)
+                count = isCheck(end, piece, board, opposite, canPassant, text, count, computer)
                 piecesSurface = drawPieces(board, PSIZE, SIZE)
                 dialougeSurf = dialouge(SIZE, text)
 
@@ -184,9 +188,8 @@ def main():
                         # creates a board with the temporary state of the board with the moved piece
                         tempBoard = [row[:] for row in board]
                         tempBoard[newY][newX] = piece
-                        moveList = computeAll(piece, tempBoard, 0, opposite, canPassant)
-
-                        castleList = computeAll(piece, board, 0, opposite, canPassant)
+                        moveList = computeAll(piece, tempBoard, 0, opposite, canPassant, computer)
+                        castleList = computeAll(piece, board, 0, opposite, canPassant, computer)
 
                         # king castles
                         didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, castleList, text, count)
@@ -195,7 +198,7 @@ def main():
                             board = rotate(board, computer)
 
                         # piece is moved to a valid position
-                        elif move(piece, newY, newX, oldY, oldX, board, canPassant) and (newY, newX) != (oldY, oldX):
+                        elif move(piece, newY, newX, oldY, oldX, board, canPassant, computer) and (newY, newX) != (oldY, oldX):
                             firstMove(piece, tempBoard, newY, newX)
 
                             # king is in check after move
@@ -206,15 +209,15 @@ def main():
                                 addText(text, inCheck, 0)
 
                             else:  # legal move
+                                num, alph = computePos(piece, computer, player, newY, newX)
+                                count = addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count)
+                                enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer)
                                 board[newY][newX] = piece
-                                isPawn = pawnFirst(piece, newY, newX, oldY, oldX)
+                                isPawn = pawnFirst(piece, newY, newX, oldY, oldX, computer, turn)
                                 firstMove(piece, board, newY, newX)
                                 canPassant = enPassant(piece, newY, newX, board, isPawn)
                                 turn = -turn
                                 board = rotate(board, computer)
-                                num, alph = computePos(piece, computer, player, newY, newX)
-                                count = addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count)
-                                count = enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count)
 
                                 # pawn at end of board
                                 if piece in {-1, 1} and newY == 0:  # promotion
@@ -226,14 +229,14 @@ def main():
                                     outline = False
                                     promotion = None, None, None
                                     end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
-                                    count = isCheck(end, piece, board, opposite, canPassant, text, count)
+                                    count = isCheck(end, piece, board, opposite, canPassant, text, count, computer)
 
                         else:  # within bounds, invalid move
                             board[oldY][oldX] = piece
                             if not (newY == oldY and newX == oldX):
                                 count = addText(text, "Invalid Move", count)
 
-                    else:  # piece placed outside of boardss
+                    else:  # piece placed outside of boards
                         board[oldY][oldX] = piece
                         if not (newY == oldY and newX == oldX):
                             count = addText(text, "Invalid Move", count)
@@ -245,7 +248,7 @@ def main():
                 dialougeSurf = dialouge(SIZE, text)
                 selected = None
                 oldY, oldX = 0, 0
-
+            
         # add surfaces to screen
         screen.blit(boardSurface, (0, 0))
         screen.blit(buttonSurface, (0, 0))

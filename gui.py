@@ -121,6 +121,7 @@ def addText(array, text, count):
         index = array.index("")
         if count == 0:  # two line text
             array[index] = text
+            return count
         else:
             array[index] = str(count) + ". " + text
             return count + 1

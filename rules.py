@@ -24,9 +24,9 @@ def playerTurn(colour, turn):
 
 
 # checks if the opposite king is in check after the move
-def isCheck(end, piece, board, opposite, canPassant, text, count):
+def isCheck(end, piece, board, opposite, canPassant, text, count, computer):
     if not end:
-        moveList = computeAll(-piece, board, 0, opposite, canPassant)
+        moveList = computeAll(-piece, board, 0, opposite, canPassant, computer)
         if kingCoord(-piece, board) in moveList:
             inCheck = "White king in check" if -piece < 0 else "Black king in check"
             return addText(text, inCheck, count)
@@ -35,10 +35,10 @@ def isCheck(end, piece, board, opposite, canPassant, text, count):
 
 # determines if move is legal or not
 # if the new position is in the list of legal moves, return true
-def move(piece, newY, newX, oldY, oldX, board, canPassant):
+def move(piece, newY, newX, oldY, oldX, board, canPassant, computer):
 
     if piece in {-11, 11, 1, -1}:
-        moves = pawnMove(piece, oldY, oldX, board, 0, canPassant)
+        moves = pawnMove(piece, oldY, oldX, board, 0, canPassant, computer)
 
     elif piece in {5, -5, 55, -55}:
         moves = rookMove(piece, oldY, oldX, board)
@@ -65,17 +65,18 @@ def inBounds(newX, newY):
 
 # determines if the pawn moved two spaces in first turn
 # used for en passant computations
-def pawnFirst(piece, newY, newX, oldY, oldX):
-    return piece in {-11, 11} and newX == oldX and newY == oldY - 2
+def pawnFirst(piece, newY, newX, oldY, oldX, computer, turn):
+    y = oldY - 2 if computer != turn else oldY + 2
+    return piece in {-11, 11} and newX == oldX and newY == y
 
 
 # removes the pawn captured through en passant
 # special because the pawn doesn't overtake the captured pawn's space
-def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, count):
-    if isPawn and (7 - oldY, 7 - oldX) in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX):
+def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer):
+    coord = (7 - oldY, 7 - oldX) if computer == None else (oldY, oldX)
+    if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and (6 - newY, 7 - newX) == canPassant[0]:
         board[newY + 1][newX] = 0
-        count = addText(text, PIECE[piece] + " en passant capture", 0)
-    return count
+        addText(text, PIECE[piece] + " en passant capture", 0)
 
 
 # the default check for computing legal moves
@@ -97,18 +98,16 @@ def firstMove(tempPiece, board, newY, newX):
 
 
 # determines if en passant is a possible move
-# checks when a pawn moves two spaces
+# appends the piece that is able to perform en passant
 def enPassant(piece, y, x, board, isPawn):
     colour = pieceColour(-piece)
     canPassant = []
-
     if isPawn:
         canPassant.append((y, x))
         if inBounds(x - 1, y) and pieceColour(board[y][x - 1]) == colour:
             canPassant.append((y, x - 1))
         if inBounds(x + 1, y) and pieceColour(board[y][x + 1]) == colour:
             canPassant.append((y, x + 1))
-
     return canPassant
 
 
@@ -123,7 +122,7 @@ def pieceColour(piece):
 
 
 # computes legal pawn moves
-def pawnMove(piece, y, x, board, opposite, canPassant):
+def pawnMove(piece, y, x, board, opposite, canPassant, computer):
 
     moves = set()
     a = -1 if opposite == 1 else 1
@@ -142,11 +141,18 @@ def pawnMove(piece, y, x, board, opposite, canPassant):
     if spaceCheck(piece, board, y - a, x - 1) and board[y - a][x - 1] != 0:  # left capture
         moves.add((y - a, x - 1))
 
-    if (7 - y, 7 - x) in canPassant:  # LH and RH en passant
-        if 7 - canPassant[0][1] - x == 1:
-            moves.add((y - a, x + 1))
+    if computer == None:
+        coord = (7 - y, 7 - x)
+        p, m = 1, -1
+    else:
+        coord = (y, x)
+        m, p = 1, -1
+
+    if coord in canPassant:  # LH and RH en passant
+        if coord[1] - 1 == canPassant[0][1]:
+            moves.add((y - a, x + p))
         else:
-            moves.add((y - a, x - 1))
+            moves.add((y - a, x + m))
 
     return moves
 
@@ -221,7 +227,7 @@ def kingMove(piece, y, x, board):
 # computes all possible moves for the piece's opposite colour
 # kingPass is to ignore the kings movements
 # used when determining checkmate to avoid infinite recursion
-def computeAll(king, board, kingPass, opposite, canPassant):
+def computeAll(king, board, kingPass, opposite, canPassant, computer):
     moves = set()
     colour = pieceColour(king)
 
@@ -229,7 +235,7 @@ def computeAll(king, board, kingPass, opposite, canPassant):
         for x, n in enumerate(row):
             if pieceColour(-n) == colour:
                 if n in {-1, 1, 11, -11}:
-                    moves |= pawnMove(n, y, x, board, opposite, canPassant)
+                    moves |= pawnMove(n, y, x, board, opposite, canPassant, computer)
 
                 elif n in {5, -5, 55, -55}:
                     moves |= rookMove(n, y, x, board)
@@ -252,7 +258,7 @@ def computeAll(king, board, kingPass, opposite, canPassant):
 # computes all possible moves for the computer
 # randomly selects a move and plays it
 # temporary placeholder for AI bot
-def computerMove(piece, board, canPassant):
+def computerMove(piece, board, canPassant, computer):
     moves = []
 
     colour = pieceColour(piece)
@@ -267,7 +273,7 @@ def computerMove(piece, board, canPassant):
                 moves[i].append((y, x))
 
                 if n in {-1, 1, 11, -11}:
-                    moves[i].append(list(pawnMove(n, y, x, board, 1, canPassant)))
+                    moves[i].append(list(pawnMove(n, y, x, board, 1, canPassant, computer)))
 
                 elif n in {5, -5, 55, -55}:
                     moves[i].append(list(rookMove(n, y, x, board)))
@@ -288,26 +294,67 @@ def computerMove(piece, board, canPassant):
                     i -= 1
                     moves.pop()
 
+    moves = computerCastle(-piece, board, moves, i, canPassant, computer)
     isValid = True
     while isValid:
         # determine random piece and random move
         index = randint(0, i)
         piece = moves[index][0]
         oldY, oldX = moves[index][1]
-        length = len(moves[index][2])
-        newIndex = randint(0, length-1)
-        newY, newX = moves[index][2][newIndex]
 
-        tempBoard = [row[:] for row in board]
-        tempBoard[oldY][oldX] = 0
-        tempBoard[newY][newX] = piece
-        moveList = computeAll(piece, tempBoard, 0, 0, canPassant)
-
-        # prevents move if king in check
-        if not (kingCoord(piece, tempBoard) in moveList):
+        if piece == 10:
+            kingX, rookX, side, piece, oldRook = moves[index][2]
+            newY = side, piece
+            newX = kingX, rookX, oldRook
+            piece = 10
             isValid = False
+        else:
+            length = len(moves[index][2])
+            newIndex = randint(0, length-1)
+            newY, newX = moves[index][2][newIndex]
 
+            tempBoard = [row[:] for row in board]
+            tempBoard[oldY][oldX] = 0
+            tempBoard[newY][newX] = piece
+            moveList = computeAll(piece, tempBoard, 0, 0, canPassant, computer)
+
+            # prevents move if king in check
+            if not (kingCoord(piece, tempBoard) in moveList):
+                isValid = False
     return oldY, oldX, newY, newX, piece
+
+
+# computes if the computer can castle
+def computerCastle(piece, board, moves, i, canPassant, computer):
+    moveList = computeAll(piece, board, 0, 0, canPassant, computer)
+    piece = -9 if piece < 0 else 9
+    oldY, oldX = kingCoord(piece, board)
+
+    if not (oldY, oldX) in moveList and piece in {-9, 9}:  # not in check or king moved
+        rookCoord = [0, 7]
+        for n, x in enumerate(rookCoord):
+            if board[0][x] in {5, -5}:  # rook unmoved
+                temp = 1 if n == 0 else -1
+                tempX = x
+
+                while (tempX != oldX):
+                    if board[0][tempX + temp] != 0:
+                        break
+                    tempX += temp
+
+                tempX += temp
+                kingX = oldX - 2 * temp
+                rookX = kingX + temp
+                if ((oldY, kingX) in moveList or tempX != oldX):  # kingn in check after castle
+                    pass
+                else:
+                    side = " leftwards castle" if n == 1 else " rightwards castle"
+                    i += 1
+                    moves.append([])
+                    moves[i].append(10)
+                    moves[i].append((oldY, oldX))
+                    moves[i].append([kingX, rookX, side, piece, x])
+    return moves
 
 
 # returns the coordinates of the piece's colour king
@@ -388,9 +435,9 @@ def button(selection, info, promotedPiece, board, text, count):
 
 
 # evaluates true if king is in checkmate
-def checkmate(king, board, x, y, canPassant, opposite):
+def checkmate(king, board, x, y, canPassant, opposite, computer):
     # compute enemy moves
-    moveList = computeAll(king, board, 0, opposite, canPassant)
+    moveList = computeAll(king, board, 0, opposite, canPassant, computer)
 
     # check if the king is the only piece
     onlyKing = True
@@ -421,12 +468,12 @@ def checkmate(king, board, x, y, canPassant, opposite):
 
     canMove = False
     temp = 1 if opposite == 0 else 0
-    moveList = computeAll(-king, board, kingPass, temp, canPassant)
+    moveList = computeAll(-king, board, kingPass, temp, canPassant, computer)
     tempPiece = -1 if king < 0 else 1
 
     for (newY, newX) in moveList:
         tempBoard[newY][newX] = tempPiece
-        tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant)
+        tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant, computer)
 
         if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
             canMove = True
@@ -449,7 +496,7 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
 
         kY, kX = kingCoord(-turn, board)
         king = board[kY][kX]
-        if checkmate(king, board, kX, kY, canPassant, opposite):
+        if checkmate(king, board, kX, kY, canPassant, opposite, computer):
             winner = "Black" if pieceColour(king) < 0 else "White"
             addText(text, "Checkmate: " + str(winner) + " won!", 0)
             addText(text, "Press restart or exit the game.", 0)
