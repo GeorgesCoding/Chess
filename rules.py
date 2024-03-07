@@ -74,8 +74,17 @@ def pawnFirst(piece, newY, newX, oldY, oldX, computer, turn):
 # special because the pawn doesn't overtake the captured pawn's space
 def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer):
     coord = (7 - oldY, 7 - oldX) if computer == None else (oldY, oldX)
-    if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and (6 - newY, 7 - newX) == canPassant[0]:
-        board[newY + 1][newX] = 0
+    add = 1
+    if computer == None:
+        newCoord = (6 - newY, 7 - newX)
+    elif computer == -1:
+        newCoord = (newY + 1, newX)
+    else:
+        newCoord = (newY - 1, newX)
+        add = -1
+
+    if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and newCoord == canPassant[0]:
+        board[newY + add][newX] = 0
         addText(text, PIECE[piece] + " en passant capture", 0)
 
 
