@@ -32,9 +32,9 @@ def main():
 
     # 2D array to represent state of board
     board = [
-        [0, 0, 0, 0, 9, 0, 0, 0], [0, 11, 0, 11, 0, 11, 0, 11] ,
-        [0] * 8, [-1, 0, -1, 0, -1, 0, -1, 0], [0] * 8, [0] * 8,
-        [0] * 8, [-9, 0, 0, 0, 0, 0, 0, 0]
+        [5, 3, 4, 7, 9, 4, 3, 5], [11] * 8 ,
+        [0] * 8, [0] * 8, [0] * 8, [0] * 8,
+        [-11] * 8, [-5, -3, -4, -7, -9, -4, -3, -5]
     ]
 
     # toggleable variables
@@ -118,7 +118,7 @@ def main():
                 else:
                     num, alph = computePos(piece, computer, player, newY, newX)
                     count = addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count)
-                    enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer)
+                    enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer, turn)
                     board[newY][newX] = piece
                     isPawn = pawnFirst(piece, newY, newX, oldY, oldX, computer, turn)
                     firstMove(piece, board, newY, newX)
@@ -211,7 +211,7 @@ def main():
                             else:  # legal move
                                 num, alph = computePos(piece, computer, player, newY, newX)
                                 count = addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count)
-                                enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer)
+                                enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer, turn)
                                 board[newY][newX] = piece
                                 isPawn = pawnFirst(piece, newY, newX, oldY, oldX, computer, turn)
                                 firstMove(piece, board, newY, newX)

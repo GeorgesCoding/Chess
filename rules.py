@@ -7,6 +7,84 @@ BLACK = -1
 WHITE = 1
 
 
+# toggles the turn
+def playerTurn(colour, turn):
+    return (colour == BLACK) == (turn == 1)
+
+
+# determines if a set of coordinates are in bounds
+def inBounds(newX, newY):
+    return 0 <= newX <= 7 and 0 <= newY <= 7
+
+
+# the default check for computing legal moves
+# True for valid space, false for invalid
+def spaceCheck(piece, board, newY, newX):
+    return inBounds(newX, newY) and (board[newY][newX] == 0 or pieceColour(board[newY][newX]) == pieceColour(-piece))
+
+
+# returns a random turn for the user
+def randomTurn():
+    return choice((BLACK, WHITE))
+
+
+# determines if the pawn moved two spaces in first turn
+# used for en passant computations
+def pawnFirst(piece, newY, newX, oldY, oldX, computer, turn):
+    y = oldY - 2 if computer != turn else oldY + 2
+    return piece in {-11, 11} and newX == oldX and newY == y
+
+
+# toggles first move ability of pawn
+# also determines if king can castle
+# returns true if it is a pawn that moved
+def firstMove(tempPiece, board, newY, newX):
+
+    if tempPiece in {11, -11}:
+        board[newY][newX] = tempPiece // 11
+
+    elif tempPiece in {-9, 9, -5, 5}:
+        board[newY][newX] = tempPiece * 11
+
+
+# finds the opposite colour of the piece
+def pieceColour(piece):
+    if piece < 0:
+        return BLACK
+    elif piece == 0:
+        return 0
+    else:
+        return WHITE
+
+
+# gives a value to the piece
+def evaluation(piece):
+    neg = 1
+    if piece < 0:
+        neg = -1
+
+    if piece in {-11, -1, 11, 1}:
+        return 1 * neg
+    elif piece in {-5, -55, 5, 55}:
+        return 5 * neg
+    elif piece in {-4, 4, -3, 3}:
+        return 3 * neg
+    elif piece in {-7, 7}:
+        return 7 * neg
+    elif piece in {-9, -99, 9, 99}:
+        return 9 * neg
+
+
+# checks if the opposite king is in check after the move
+def isCheck(end, piece, board, opposite, canPassant, text, count, computer):
+    if not end:
+        moveList = computeAll(-piece, board, 0, opposite, canPassant, computer)
+        if kingCoord(-piece, board) in moveList:
+            inCheck = "White king in check" if -piece < 0 else "Black king in check"
+            return addText(text, inCheck, count)
+    return count
+
+
 # computes the board position of the piece
 def computePos(piece, computer, player, newY, newX):
     if (pieceColour(-piece) == -1 and computer is None) or (computer == 1 and player == -1):
@@ -18,19 +96,16 @@ def computePos(piece, computer, player, newY, newX):
     return num, alph
 
 
-# toggles the turn
-def playerTurn(colour, turn):
-    return (colour == BLACK) == (turn == 1)
+# returns the coordinates of the piece's colour king
+def kingCoord(piece, board):
+    y = x = -1
 
+    king = {-9, -99} if piece < 0 else {9, 99}
 
-# checks if the opposite king is in check after the move
-def isCheck(end, piece, board, opposite, canPassant, text, count, computer):
-    if not end:
-        moveList = computeAll(-piece, board, 0, opposite, canPassant, computer)
-        if kingCoord(-piece, board) in moveList:
-            inCheck = "White king in check" if -piece < 0 else "Black king in check"
-            return addText(text, inCheck, count)
-    return count
+    for y, row in enumerate(board):
+        for x, z in enumerate(row):
+            if z in king:
+                return y, x
 
 
 # determines if move is legal or not
@@ -56,78 +131,6 @@ def move(piece, newY, newX, oldY, oldX, board, canPassant, computer):
         moves = kingMove(piece, oldY, oldX, board)
 
     return ((newY, newX) in moves)
-
-
-# determines if a set of coordinates are in bounds
-def inBounds(newX, newY):
-    return 0 <= newX <= 7 and 0 <= newY <= 7
-
-
-# determines if the pawn moved two spaces in first turn
-# used for en passant computations
-def pawnFirst(piece, newY, newX, oldY, oldX, computer, turn):
-    y = oldY - 2 if computer != turn else oldY + 2
-    return piece in {-11, 11} and newX == oldX and newY == y
-
-
-# removes the pawn captured through en passant
-# special because the pawn doesn't overtake the captured pawn's space
-def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer):
-    coord = (7 - oldY, 7 - oldX) if computer == None else (oldY, oldX)
-    add = 1
-    if computer == None:
-        newCoord = (6 - newY, 7 - newX)
-    elif computer == -1:
-        newCoord = (newY + 1, newX)
-    else:
-        newCoord = (newY - 1, newX)
-        add = -1
-
-    if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and newCoord == canPassant[0]:
-        board[newY + add][newX] = 0
-        addText(text, PIECE[piece] + " en passant capture", 0)
-
-
-# the default check for computing legal moves
-# True for valid space, false for invalid
-def spaceCheck(piece, board, newY, newX):
-    return inBounds(newX, newY) and (board[newY][newX] == 0 or pieceColour(board[newY][newX]) == pieceColour(-piece))
-
-
-# toggles first move ability of pawn
-# also determines if king can castle
-# returns true if it is a pawn that moved
-def firstMove(tempPiece, board, newY, newX):
-
-    if tempPiece in {11, -11}:
-        board[newY][newX] = tempPiece // 11
-
-    elif tempPiece in {-9, 9, -5, 5}:
-        board[newY][newX] = tempPiece * 11
-
-
-# determines if en passant is a possible move
-# appends the piece that is able to perform en passant
-def enPassant(piece, y, x, board, isPawn):
-    colour = pieceColour(-piece)
-    canPassant = []
-    if isPawn:
-        canPassant.append((y, x))
-        if inBounds(x - 1, y) and pieceColour(board[y][x - 1]) == colour:
-            canPassant.append((y, x - 1))
-        if inBounds(x + 1, y) and pieceColour(board[y][x + 1]) == colour:
-            canPassant.append((y, x + 1))
-    return canPassant
-
-
-# finds the opposite colour of the piece
-def pieceColour(piece):
-    if piece < 0:
-        return BLACK
-    elif piece == 0:
-        return 0
-    else:
-        return WHITE
 
 
 # computes legal pawn moves
@@ -233,9 +236,42 @@ def kingMove(piece, y, x, board):
     return moves
 
 
+# removes the pawn captured through en passant
+# special because the pawn doesn't overtake the captured pawn's space
+def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer, turn):
+    coord = (7 - oldY, 7 - oldX) if computer == None else (oldY, oldX)
+    add = 1
+    if computer == None:
+        newCoord = (6 - newY, 7 - newX)
+    elif computer == turn:
+        newCoord = (newY - 1, newX)
+        add = -1
+    else:  # not computers turn
+        newCoord = (newY + 1, newX)
+
+    if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and newCoord == canPassant[0]:
+        board[newY + add][newX] = 0
+        addText(text, PIECE[piece] + " en passant capture", 0)
+
+
+# determines if en passant is a possible move
+# appends the piece that is able to perform en passant
+def enPassant(piece, y, x, board, isPawn):
+    colour = pieceColour(-piece)
+    canPassant = []
+    if isPawn:
+        canPassant.append((y, x))
+        if inBounds(x - 1, y) and pieceColour(board[y][x - 1]) == colour:
+            canPassant.append((y, x - 1))
+        if inBounds(x + 1, y) and pieceColour(board[y][x + 1]) == colour:
+            canPassant.append((y, x + 1))
+    return canPassant
+
+
 # computes all possible moves for the piece's opposite colour
 # kingPass is to ignore the kings movements
 # used when determining checkmate to avoid infinite recursion
+# is meant for fast move validation
 def computeAll(king, board, kingPass, opposite, canPassant, computer):
     moves = set()
     colour = pieceColour(king)
@@ -264,12 +300,11 @@ def computeAll(king, board, kingPass, opposite, canPassant, computer):
     return moves
 
 
-# computes all possible moves for the computer
-# randomly selects a move and plays it
-# temporary placeholder for AI bot
-def computerMove(piece, board, canPassant, computer):
+# similar to compute all
+# except will compute the piece type, and old position
+# meant for checkmate determination and computer move computations
+def specificCompute(piece, board, canPassant, computer, opposite):
     moves = []
-
     colour = pieceColour(piece)
     i = -1
 
@@ -282,7 +317,7 @@ def computerMove(piece, board, canPassant, computer):
                 moves[i].append((y, x))
 
                 if n in {-1, 1, 11, -11}:
-                    moves[i].append(list(pawnMove(n, y, x, board, 1, canPassant, computer)))
+                    moves[i].append(list(pawnMove(n, y, x, board, opposite, canPassant, computer)))
 
                 elif n in {5, -5, 55, -55}:
                     moves[i].append(list(rookMove(n, y, x, board)))
@@ -302,9 +337,17 @@ def computerMove(piece, board, canPassant, computer):
                 if len(moves[i][2]) == 0:
                     i -= 1
                     moves.pop()
+    return moves, i
 
+
+# computes all possible moves for the computer
+# randomly selects a move and plays it
+# temporary placeholder for AI bot
+def computerMove(piece, board, canPassant, computer):
+    moves, i = specificCompute(piece, board, canPassant, computer, 1)
     moves = computerCastle(-piece, board, moves, i, canPassant, computer)
     isValid = True
+    print(moves)
     while isValid:
         # determine random piece and random move
         index = randint(0, i)
@@ -364,18 +407,6 @@ def computerCastle(piece, board, moves, i, canPassant, computer):
                     moves[i].append((oldY, oldX))
                     moves[i].append([kingX, rookX, side, piece, x])
     return moves
-
-
-# returns the coordinates of the piece's colour king
-def kingCoord(piece, board):
-    y = x = -1
-
-    king = {-9, -99} if piece < 0 else {9, 99}
-
-    for y, row in enumerate(board):
-        for x, z in enumerate(row):
-            if z in king:
-                return y, x
 
 
 # determines if the king can castle
@@ -444,51 +475,30 @@ def button(selection, info, promotedPiece, board, text, count):
 
 
 # evaluates true if king is in checkmate
-def checkmate(king, board, x, y, canPassant, opposite, computer):
-    # compute enemy moves
-    moveList = computeAll(king, board, 0, opposite, canPassant, computer)
+def checkmate(king, board, canPassant, opposite, computer):
+    canMove = False
+    opposite = 1 if (opposite == 0 and computer == None) else 0
 
-    # check if the king is the only piece
-    onlyKing = True
-    for a in board:
-        for b in a:
-            if b != 0:
-                onlyKing = False
-
-    kingsList = kingMove(king, y, x, board)
+    moveList = specificCompute(-king, board, canPassant, computer, opposite)[0]
     tempBoard = [row[:] for row in board]
-    canMove = False
-    for (newY, newX) in kingsList:
-        if (newY, newX) not in moveList:  # king still in check after move
-            canMove = True
-            break
 
-    # king is the only piece and cannot move
-    if onlyKing and not canMove:
-        return True
-    elif canMove:
-        return False
+    # goes through each list in moveList
+    for i, _ in enumerate(moveList):
+        n = moveList[i][0]
+        oldY, oldX = moveList[i][1]
+        tempBoard[oldY][oldX] = 0
 
-    # king is not the only piece
-    if canMove:
-        kingPass = 0
-    else:
-        kingPass = 1
+        # goes through each sublist
+        for (newY, newX) in moveList[i][2]:
+            tempBoard[newY][newX] = n
 
-    canMove = False
-    temp = 1 if opposite == 0 else 0
-    moveList = computeAll(-king, board, kingPass, temp, canPassant, computer)
-    tempPiece = -1 if king < 0 else 1
-
-    for (newY, newX) in moveList:
-        tempBoard[newY][newX] = tempPiece
-        tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant, computer)
-
-        if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
-            canMove = True
-            break
-
+            tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant, computer)
+            if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
+                canMove = True
+                break
+            tempBoard[newY][newX] = 0
         tempBoard = [row[:] for row in board]
+
     return not canMove
 
 
@@ -505,13 +515,8 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
 
         kY, kX = kingCoord(-turn, board)
         king = board[kY][kX]
-        if checkmate(king, board, kX, kY, canPassant, opposite, computer):
+        if checkmate(king, board, canPassant, opposite, computer):
             winner = "Black" if pieceColour(king) < 0 else "White"
             addText(text, "Checkmate: " + str(winner) + " won!", 0)
             addText(text, "Press restart or exit the game.", 0)
             return True
-
-
-# returns a random turn for the user
-def randomTurn():
-    return choice((BLACK, WHITE))
