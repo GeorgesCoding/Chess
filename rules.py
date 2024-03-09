@@ -347,7 +347,7 @@ def computerMove(piece, board, canPassant, computer):
     moves, i = specificCompute(piece, board, canPassant, computer, 1)
     moves = computerCastle(-piece, board, moves, i, canPassant, computer)
     isValid = True
-    print(moves)
+
     while isValid:
         # determine random piece and random move
         index = randint(0, i)
