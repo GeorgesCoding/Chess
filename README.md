@@ -4,9 +4,7 @@
 - Used pictures found on [Wikimedia](https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces) as the pieces.
 - Currently implementing board state evaluation based on piece captures.
 - Researching minimax algorithms and alpha-beta pruning for optimization.
-
-
-
+  
 https://github.com/GeorgesCoding/Chess/assets/118407807/baf9b877-ae29-45b6-bbe5-0767394ad079
 
 
@@ -51,6 +49,7 @@ NOTE: Make sure that the PyGame module is installed before step two.
  	- Includes en passant capture, castling, check, checkmate and pawn promotion.
 	- The majority of the functions rely heavily on array computations.
 
+
 #
 # **Game Structure**
 - The chess board is represented through a 2D array.
@@ -81,6 +80,7 @@ NOTE: Make sure that the PyGame module is installed before step two.
 
 - Computations for bishop and rook are grouped due to similarity.
 - Constants BLACK and WHITE represent player turns.
+
 
 #
 # **Features: Buttons and Dialogue Window**
@@ -121,4 +121,4 @@ During checkmate, all piece movements and buttons are disabled with only the res
 
 There is a black box on the bottom right-hand side of the screen underneath the pawn promotion buttons. Here, commentary will be displayed according to the moves of the players. It will also display if the move is invalid if the king is in check, castling, checkmate and more. The most recent comment is at the bottom.
 
-![image](https://github.com/GeorgesCoding/Chess/assets/118407807/0cc7be6a-279c-437d-99c2-fb9b3c19c647)
+![Chess - frame at 0m59s](https://github.com/GeorgesCoding/Chess/assets/118407807/fa434f2e-0a77-42ce-a092-9a218224c755)
