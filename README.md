@@ -5,9 +5,9 @@
 - Currently implementing board state evaluation based on piece captures.
 - Researching minimax algorithms and alpha-beta pruning for optimization.
 
-![image-removebg-preview (9)](https://github.com/GeorgesCoding/Chess/assets/118407807/c3edbeb9-5a74-4367-948f-a96a314c8d3f)
 
-![image-removebg-preview](https://github.com/GeorgesCoding/Chess/assets/118407807/0e55488c-7c96-48a7-95b2-d31324dde8bf)
+
+https://github.com/GeorgesCoding/Chess/assets/118407807/baf9b877-ae29-45b6-bbe5-0767394ad079
 
 
 #
