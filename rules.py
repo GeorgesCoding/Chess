@@ -9,8 +9,7 @@ WHITE = 1
 
 # toggles turn
 def playerTurn(colour, turn, player):
-    temp = True if player == turn or player == None else False
-    return (colour == BLACK) == (turn == 1) and temp
+    return (colour == BLACK) == (turn == 1) and (player == turn or player == None)
 
 
 # determines if a set of coordinates are in bounds of the board
@@ -61,7 +60,7 @@ def isCheck(end, piece, board, opposite, canPassant, text, computer):
         moveList = computeAll(-piece, board, 0, opposite, canPassant, computer)
         if kingCoord(-piece, board) in moveList:
             inCheck = "    White king in check" if -piece < 0 else "    Black king in check"
-            return addText(text, inCheck, 0)
+            addText(text, inCheck, 0)
 
 
 # computes the board position of the piece
@@ -141,6 +140,7 @@ def move(piece, newY, newX, oldY, oldX, board, canPassant, computer):
 def pawnMove(piece, y, x, board, opposite, canPassant, computer):
 
     moves = set()
+
     a = -1 if opposite == 1 else 1
     b = a * 2
 
@@ -169,7 +169,6 @@ def pawnMove(piece, y, x, board, opposite, canPassant, computer):
             moves.add((y - a, x + p))
         else:
             moves.add((y - a, x + m))
-
     return moves
 
 
@@ -185,7 +184,6 @@ def knightMove(piece, y, x, board):
 
         if spaceCheck(piece, board, (y - b), (x + a)):
             moves.add((y - b, x + a))
-
     return moves
 
 
@@ -201,7 +199,6 @@ def bishopRookCompute(piece, y, x, board, xMove, yMove):
                 break
             tempY += b
             tempX += a
-
     return moves
 
 
@@ -209,7 +206,6 @@ def bishopRookCompute(piece, y, x, board, xMove, yMove):
 def bishopMove(piece, y, x, board):
     xMove = [1, 1, -1, -1]
     yMove = [1, -1, 1, -1]
-
     return bishopRookCompute(piece, y, x, board, xMove, yMove)
 
 
@@ -217,7 +213,6 @@ def bishopMove(piece, y, x, board):
 def rookMove(piece, y, x, board):
     xMove = [-1, 1, 0, 0]
     yMove = [0, 0, -1, 1]
-
     return bishopRookCompute(piece, y, x, board, xMove, yMove)
 
 
@@ -236,7 +231,6 @@ def kingMove(piece, y, x, board):
         for a in moveX:
             if spaceCheck(piece, board, y + b, x + a):
                 moves.add((y + b, x + a))
-
     return moves
 
 
@@ -299,7 +293,6 @@ def computeAll(king, board, kingPass, opposite, canPassant, computer):
 
                 elif n in {9, -9, 99, -99} and kingPass != 1:
                     moves |= kingMove(n, y, x, board)
-
     return moves
 
 
@@ -528,6 +521,7 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
 
         kY, kX = kingCoord(-turn, board)
         king = board[kY][kX]
+        
         if checkmate(king, board, canPassant, opposite, computer):
             winner = "Black" if pieceColour(king) < 0 else "White"
             addText(text, "Checkmate: " + str(winner) + " won!", 0)

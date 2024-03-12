@@ -1,7 +1,6 @@
 import pygame
 from gui import *
 from rules import *
-import time
 
 # Dictionary constant of the names of pieces according to their integer representation
 PIECE = {
@@ -75,7 +74,6 @@ def main():
 
     # main loop
     while True:
-        tempPiece, x, y = getPiece(board, PSIZE, SIZE)  # checks if there is a piece under the mouse
         for event in pygame.event.get():
 
             # exit button pressed
@@ -126,15 +124,17 @@ def main():
                         board[newY][newX] = piece * choice((5, 3, 4, 7))
                         addText(text, PIECE[piece] + " pawn promoted to ", 0)
                         addText(text, "    " + str(PIECE[board[newY][newX]]), 0)
-
                 turn = -turn
-                isCheck(end, piece, board, opposite, canPassant, text, computer)
                 text = clearText(text)
+                isCheck(end, piece, board, 1, canPassant, text, computer)
                 piecesSurface = drawPieces(board, PSIZE, SIZE)
                 dialougeSurf = dialouge(SIZE, text)
+                oldY, oldX = 0, 0
+                tempPiece = None
 
             # if left mouse button is pressed
             if event.type == pygame.MOUSEBUTTONDOWN:
+                tempPiece, x, y = getPiece(board, PSIZE, SIZE)  # checks if there is a piece under the mouse
 
                 # pawn promotion is happening
                 if outline:
@@ -189,8 +189,8 @@ def main():
                         # creates a board with the temporary state of the board with the moved piece
                         tempBoard = [row[:] for row in board]
                         tempBoard[newY][newX] = piece
-                        moveList = computeAll(piece, tempBoard, 0, opposite, canPassant, computer)
-                        castleList = computeAll(piece, board, 0, opposite, canPassant, computer)
+                        moveList = computeAll(piece, tempBoard, 0, 1, canPassant, computer)
+                        castleList = computeAll(piece, board, 0, 1, canPassant, computer)
 
                         # king castles
                         didCastle, count = castle(piece, board, oldY, oldX, PSIZE, SIZE, castleList, text, count)
@@ -202,6 +202,8 @@ def main():
                         # piece is moved to a valid position
                         elif move(piece, newY, newX, oldY, oldX, board, canPassant, computer) and (newY, newX) != (oldY, oldX):
                             firstMove(piece, tempBoard, newY, newX)
+
+                            # moveList does not include pawn for check
 
                             # king is in check after move
                             if kingCoord(piece, tempBoard) in moveList:
