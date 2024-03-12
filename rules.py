@@ -345,6 +345,10 @@ def computerMove(piece, board, canPassant, computer):
     high = 0
     priority = []
 
+    # add another function that will 
+
+
+
     # compute priority move list
     for subList in moves:
         for newMove in subList[2]:
@@ -521,7 +525,7 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
 
         kY, kX = kingCoord(-turn, board)
         king = board[kY][kX]
-        
+
         if checkmate(king, board, canPassant, opposite, computer):
             winner = "Black" if pieceColour(king) < 0 else "White"
             addText(text, "Checkmate: " + str(winner) + " won!", 0)
