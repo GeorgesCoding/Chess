@@ -131,10 +131,20 @@ def addText(array, text, count):
         return addText(array, text, count)
 
 
-# clears the dialouge list
+# clears the dialouge list of unecessary dialouge
+# includes invalid moves and colour selector
 def clearText(array):
-    for i in range(len(array)):
-        array[i] = ""
+    if array[0] == "Press the Key to Choose a Colour:":
+        for i in range(len(array)):
+            array[i] = ""
+    else:
+        newArray = []
+        for n in array:
+            if n not in {"Invalid move:", "    White king in check", "    Black king in check", "Invalid Move"}:
+                newArray.append(n)
+        while len(newArray) != 9:
+            newArray.append("")
+        array = newArray
     return array
 
 

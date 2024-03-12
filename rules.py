@@ -1,24 +1,24 @@
 import pygame
 from random import randint, choice
-from gui import getPiece, getPos, addText, testBoard
+from gui import getPiece, getPos, addText
 from main import PIECE
 
 BLACK = -1
 WHITE = 1
 
 
-# toggles the turn
-def playerTurn(colour, turn):
-    return (colour == BLACK) == (turn == 1)
+# toggles turn
+def playerTurn(colour, turn, player):
+    temp = True if player == turn or player == None else False
+    return (colour == BLACK) == (turn == 1) and temp
 
 
-# determines if a set of coordinates are in bounds
+# determines if a set of coordinates are in bounds of the board
 def inBounds(newX, newY):
     return 0 <= newX <= 7 and 0 <= newY <= 7
 
 
-# the default check for computing legal moves
-# True for valid space, false for invalid
+# checks if space is in bounds and if the space is empty or has an emeny piece
 def spaceCheck(piece, board, newY, newX):
     return inBounds(newX, newY) and (board[newY][newX] == 0 or pieceColour(board[newY][newX]) == pieceColour(-piece))
 
@@ -39,10 +39,8 @@ def pawnFirst(piece, newY, newX, oldY, oldX, computer, turn):
 # also determines if king can castle
 # returns true if it is a pawn that moved
 def firstMove(tempPiece, board, newY, newX):
-
     if tempPiece in {11, -11}:
         board[newY][newX] = tempPiece // 11
-
     elif tempPiece in {-9, 9, -5, 5}:
         board[newY][newX] = tempPiece * 11
 
@@ -57,55 +55,61 @@ def pieceColour(piece):
         return WHITE
 
 
-# gives a value to the piece
-def evaluation(piece):
-    neg = 1
-    if piece < 0:
-        neg = -1
-
-    if piece in {-11, -1, 11, 1}:
-        return 1 * neg
-    elif piece in {-5, -55, 5, 55}:
-        return 5 * neg
-    elif piece in {-4, 4, -3, 3}:
-        return 3 * neg
-    elif piece in {-7, 7}:
-        return 7 * neg
-    elif piece in {-9, -99, 9, 99}:
-        return 9 * neg
-
-
 # checks if the opposite king is in check after the move
-def isCheck(end, piece, board, opposite, canPassant, text, count, computer):
+def isCheck(end, piece, board, opposite, canPassant, text, computer):
     if not end:
         moveList = computeAll(-piece, board, 0, opposite, canPassant, computer)
         if kingCoord(-piece, board) in moveList:
-            inCheck = "White king in check" if -piece < 0 else "Black king in check"
-            return addText(text, inCheck, count)
-    return count
+            inCheck = "    White king in check" if -piece < 0 else "    Black king in check"
+            return addText(text, inCheck, 0)
 
 
 # computes the board position of the piece
 def computePos(piece, computer, player, newY, newX):
     if (pieceColour(-piece) == -1 and computer is None) or (computer == 1 and player == -1):
-        num = newY + 1
-        alph = 8 - newX
+        num, alph = newY + 1,  8 - newX
     else:
-        num = 8 - newY
-        alph = newX + 1
+        num, alph = 8 - newY, newX + 1
     return num, alph
 
 
 # returns the coordinates of the piece's colour king
 def kingCoord(piece, board):
-    y = x = -1
-
     king = {-9, -99} if piece < 0 else {9, 99}
-
     for y, row in enumerate(board):
         for x, z in enumerate(row):
             if z in king:
                 return y, x
+
+
+# determine if move is legal during check or if it prevents check
+def checkMove(piece, newY, newX, oldY, oldX, board, canPassant, computer):
+    tempBoard = [row[:] for row in board]
+    tempBoard[oldY][oldX] = 0
+    tempBoard[newY][newX] = piece
+    moveList = computeAll(piece, tempBoard, 0, 0, canPassant, computer)
+
+    # prevents move if king in check
+    if (kingCoord(piece, tempBoard) in moveList):
+        return False
+    else:
+        return True
+
+
+# gives a value to the piece
+def evaluation(board, newY, newX):
+    piece = board[newY][newX]
+    if board[newY][newX] != 0:
+        if piece in {-11, -1, 11, 1}:
+            return 1
+        elif piece in {-5, -55, 5, 55}:
+            return 5
+        elif piece in {-4, 4, -3, 3}:
+            return 3
+        elif piece in {-7, 7}:
+            return 7
+    else:
+        return 0
 
 
 # determines if move is legal or not
@@ -248,7 +252,6 @@ def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, t
         add = -1
     else:  # not computers turn
         newCoord = (newY + 1, newX)
-
     if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and newCoord == canPassant[0]:
         board[newY + add][newX] = 0
         addText(text, PIECE[piece] + " en passant capture", 0)
@@ -342,37 +345,47 @@ def specificCompute(piece, board, canPassant, computer, opposite):
 
 # computes all possible moves for the computer
 # randomly selects a move and plays it
-# temporary placeholder for AI bot
 def computerMove(piece, board, canPassant, computer):
     moves, i = specificCompute(piece, board, canPassant, computer, 1)
     moves = computerCastle(-piece, board, moves, i, canPassant, computer)
     isValid = True
+    high = 0
+    priority = []
 
-    while isValid:
-        # determine random piece and random move
-        index = randint(0, i)
-        piece = moves[index][0]
-        oldY, oldX = moves[index][1]
+    # compute priority move list
+    for subList in moves:
+        for newMove in subList[2]:
+            if subList[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
+                rank = evaluation(board, newMove[0], newMove[1])
+                if rank > high:
+                    high = rank
+                    priority.clear()
+                if rank == high:
+                    newList = [subList[0], subList[1], newMove]
+                    priority.append(newList)
 
-        if piece == 10:
-            kingX, rookX, side, piece, oldRook = moves[index][2]
-            newY = side, piece
-            newX = kingX, rookX, oldRook
-            piece = 10
-            isValid = False
-        else:
-            length = len(moves[index][2])
-            newIndex = randint(0, length-1)
+    if high > 0:  # prioritize piece capture
+        index = randint(0, len(priority) - 1)
+        piece = priority[index][0]
+        oldY, oldX = priority[index][1]
+        newY, newX = priority[index][2]
+
+    else:  # random move
+        while isValid:
+            index = randint(0, i)
+            newIndex = randint(0, len(moves[index][2])-1)
+            piece = moves[index][0]
+            oldY, oldX = moves[index][1]
             newY, newX = moves[index][2][newIndex]
+            isValid = not checkMove(piece, newY, newX, oldY, oldX, board, canPassant, computer)
 
-            tempBoard = [row[:] for row in board]
-            tempBoard[oldY][oldX] = 0
-            tempBoard[newY][newX] = piece
-            moveList = computeAll(piece, tempBoard, 0, 0, canPassant, computer)
+    if piece == 10:  # castle
+        kingX, rookX, side, piece, oldRook = moves[index][2]
+        newY = side, piece
+        newX = kingX, rookX, oldRook
+        piece = 10
+        isValid = False
 
-            # prevents move if king in check
-            if not (kingCoord(piece, tempBoard) in moveList):
-                isValid = False
     return oldY, oldX, newY, newX, piece
 
 
@@ -465,8 +478,8 @@ def button(selection, info, promotedPiece, board, text, count):
 
         board[y][x] = newPiece
 
-        count = addText(text, pawn + " pawn promoted to ", count)
-        addText(text, str(PIECE[newPiece]), 0)
+        addText(text, pawn + " pawn promoted to ", 0)
+        addText(text, "    " + str(PIECE[newPiece]), 0)
 
     if count == 0:
         return pressed

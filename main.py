@@ -1,7 +1,7 @@
 import pygame
 from gui import *
 from rules import *
-
+import time
 
 # Dictionary constant of the names of pieces according to their integer representation
 PIECE = {
@@ -32,7 +32,7 @@ def main():
 
     # 2D array to represent state of board
     board = [
-        [5, 3, 4, 7, 9, 4, 3, 5], [11] * 8 ,
+        [5, 3, 4, 7, 9, 4, 3, 5], [11] * 8,
         [0] * 8, [0] * 8, [0] * 8, [0] * 8,
         [-11] * 8, [-5, -3, -4, -7, -9, -4, -3, -5]
     ]
@@ -89,12 +89,10 @@ def main():
             # Checks for colour selection
             if colourChoose and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
-                    computer = BLACK
-                    player = WHITE
+                    computer, player = BLACK, WHITE
                     clearText(text)
                 elif event.key == pygame.K_b:
-                    player = BLACK
-                    computer = WHITE
+                    player, computer = BLACK, WHITE
                     clearText(text)
                 elif event.key == pygame.K_r:
                     computer = randomTurn()
@@ -107,7 +105,7 @@ def main():
                 oldY, oldX, newY, newX, piece = computerMove(turn, board, canPassant, computer)
                 board[oldY][oldX] = 0
 
-                if piece == 10:
+                if piece == 10:  # castle
                     board[oldY][newX[2]] = 0
                     board[oldY][newX[0]] = newY[1]
                     rook = 5 if newY[1] > 0 else -5
@@ -124,20 +122,21 @@ def main():
                     firstMove(piece, board, newY, newX)
                     canPassant = enPassant(piece, newY, newX, board, isPawn)
 
-                    if piece in {-1, 1} and newY == 7:
+                    if piece in {-1, 1} and newY == 7:  # computer promotion
                         board[newY][newX] = piece * choice((5, 3, 4, 7))
-                        count = addText(text, PIECE[piece] + " pawn promoted to ", count)
-                        addText(text, str(PIECE[board[newY][newX]]), 0)
+                        addText(text, PIECE[piece] + " pawn promoted to ", 0)
+                        addText(text, "    " + str(PIECE[board[newY][newX]]), 0)
 
                 turn = -turn
-                count = isCheck(end, piece, board, opposite, canPassant, text, count, computer)
+                isCheck(end, piece, board, opposite, canPassant, text, computer)
+                text = clearText(text)
                 piecesSurface = drawPieces(board, PSIZE, SIZE)
                 dialougeSurf = dialouge(SIZE, text)
 
             # if left mouse button is pressed
             if event.type == pygame.MOUSEBUTTONDOWN:
 
-                # pawn promotion is occuring
+                # pawn promotion is happening
                 if outline:
                     for i, p in enumerate(promoInfo):
                         promoPressed, count = button(i + 1, p, promotion, board, text, count)
@@ -145,6 +144,7 @@ def main():
                             outline = False
                             board = rotate(board, computer)
                             turn = -turn
+                            text = clearText(text)
                             break
 
                 # restarts program
@@ -158,15 +158,16 @@ def main():
                     start = True
 
                 # Computer mode
-                elif not start and button(0, computerInfo, None, None, text, 0):
+                elif not start and button(0, computerInfo, None, None, text, 0) and not colourChoose:
                     addText(text, "Press the Key to Choose a Colour:", 0)
                     addText(text, "W for White", 0)
                     addText(text, "B for Black", 0)
                     addText(text, "R for Random", 0)
                     colourChoose = True
+                    dialougeSurf = dialouge(SIZE, text)
 
                 # checks if a piece has been selected
-                elif start and tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn) and not end:
+                elif start and tempPiece != 10 and playerTurn(pieceColour(tempPiece), turn, player) and not end:
                     selected = tempPiece  # piece is selected, toggles selected variable
                     board[y][x] = 0  # remove piece from board
                     pygame.draw.rect(boardSurface, (244, 246, 128, 50), ((x * PSIZE) + 25, (y * PSIZE) + 25, PSIZE, PSIZE), 5)  # outline old space
@@ -196,6 +197,7 @@ def main():
                         if didCastle:
                             turn = -turn
                             board = rotate(board, computer)
+                            text = clearText(text)
 
                         # piece is moved to a valid position
                         elif move(piece, newY, newX, oldY, oldX, board, canPassant, computer) and (newY, newX) != (oldY, oldX):
@@ -204,8 +206,8 @@ def main():
                             # king is in check after move
                             if kingCoord(piece, tempBoard) in moveList:
                                 board[oldY][oldX] = piece
-                                inCheck = "White king in check" if piece < 0 else "Black king in check"
-                                count = addText(text, "Invalid move: ", count)
+                                inCheck = "    White king in check" if piece < 0 else "    Black king in check"
+                                addText(text, "Invalid move:", 0)
                                 addText(text, inCheck, 0)
 
                             else:  # legal move
@@ -229,17 +231,17 @@ def main():
                                     outline = False
                                     promotion = None, None, None
                                     end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
-                                    count = isCheck(end, piece, board, opposite, canPassant, text, count, computer)
-
+                                    text = clearText(text)
+                                    isCheck(end, piece, board, opposite, canPassant, text, computer)
                         else:  # within bounds, invalid move
                             board[oldY][oldX] = piece
                             if not (newY == oldY and newX == oldX):
-                                count = addText(text, "Invalid Move", count)
+                                addText(text, "Invalid Move", 0)
 
                     else:  # piece placed outside of boards
                         board[oldY][oldX] = piece
                         if not (newY == oldY and newX == oldX):
-                            count = addText(text, "Invalid Move", count)
+                            addText(text, "Invalid Move", 0)
 
                 # redraw surfaces, reset temp variables
                 boardSurface = createBoard(SIZE, PSIZE)
@@ -248,7 +250,7 @@ def main():
                 dialougeSurf = dialouge(SIZE, text)
                 selected = None
                 oldY, oldX = 0, 0
-            
+
         # add surfaces to screen
         screen.blit(boardSurface, (0, 0))
         screen.blit(buttonSurface, (0, 0))
