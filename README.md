@@ -21,8 +21,7 @@ Below are the steps for downloading and running the program locally or using the
 
   A. __Downloading the release file__
   1. Go to the repository's release page: [click me!](https://github.com/GeorgesCoding/Chess/releases)
-  2. Go to the latest release (the topmost of the page).
-  3. Click on _Assets_.
+  2. On the latest release (the topmost of the page), click on _Assets_.
   4. Click on the file called _Chess.exe_. This will download the program's file.
   5. Run this file. Windows Defender will abort the program as it's a .exe file but click "_More Info_", then "_Run anyway_".
 
