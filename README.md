@@ -24,13 +24,13 @@ Below are the steps for downloading and running the program locally or using the
   2. Go to the latest release (the topmost of the page).
   3. Click on _Assets_.
   4. Click on the file called _Chess.exe_. This will download the program's file.
-  5. Run this file. Windows Defender might abort the program, but click on "_More Info_", then "_Run anyway_".
+  5. Run this file. Windows Defender will abort the program as it's a .exe file but click "_More Info_", then "_Run anyway_".
 
 
   B. __Running locally through an IDE with Python installed__
   1. Clone repository: `git clone https://github.com/GeorgesCoding/Chess.git`
   2. Install PyGame: `pip install pygame`
-  3. In the terminal, run the file with the command: `py main.py`
+  3. In the IDE terminal, run the file with the command: `py main.py`
 
 __Notes__
 - If you are running the program through an IDE, ensure that the PyGame module and Python are installed before step two.
