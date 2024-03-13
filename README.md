@@ -2,9 +2,9 @@
 - A traditional chess game developed in Python using the [PyGame](https://www.pygame.org/wiki/about) module.
 - Includes two-player mode and an AI bot (work in progress) using a minimax algorithm.
 - Used pictures found on [Wikimedia](https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces) as the pieces.
-- Currently implementing board state evaluation based on piece captures.
-- Researching minimax algorithms and alpha-beta pruning for optimization.
-  
+- Currently creating a recursive minimax algorithm for move selection.
+- Will later use alpha-beta pruning to optimize tree searching.
+    
 https://github.com/GeorgesCoding/Chess/assets/118407807/baf9b877-ae29-45b6-bbe5-0767394ad079
 
 
@@ -12,30 +12,39 @@ https://github.com/GeorgesCoding/Chess/assets/118407807/baf9b877-ae29-45b6-bbe5-
 # **Dependencies**
 Tested on Python 3.12.
 
-Requires PyGame module installation (using pip): `pip install pygame`
+Requires PyGame module installation: `pip install pygame`
 
 
 #
 # **Running the Program**
-1. Clone repository
-   `git clone https://github.com/GeorgesCoding/Chess.git`
-   
-NOTE: Make sure that the PyGame module is installed before step two.
+Below are the steps for downloading and running the program locally or using the release file. The release file can run the game without using an IDE or the need to download Python and the PyGame module. 
 
-2. Run the file with the terminal command: `py main.py`
-   
-   (The game window will resize according to the "main" display set in your computer settings.)
+  A. __Downloading the release file__
+  1. Go to the repository's release page: [click me!](https://github.com/GeorgesCoding/Chess/releases)
+  2. On the latest release (the topmost of the page), click on _Assets_.
+  4. Click on the file called _Chess.exe_. This will download the program's file.
+  5. Run this file. Windows Defender will abort the program as it's a .exe file but click "_More Info_", then "_Run anyway_".
+
+
+  B. __Running locally through an IDE with Python installed__
+  1. Clone repository: `git clone https://github.com/GeorgesCoding/Chess.git`
+  2. Install PyGame: `pip install pygame`
+  3. In the IDE terminal, run the file with the command: `py main.py`
+
+__Notes__
+- If you are running the program through an IDE, ensure that the PyGame module and Python are installed before step two.
+- Regardless of the method you downloaded the program, the game window will automatically resize according to the "main" display set in your computer settings.
 
 
 #
 # **Files**
-1. _main.py_: Game initialization and event handler
+1. ___main.py_: Game initialization and event handler__
 	- Is responsible for dictating how the game behaves by examining the event detected by PyGame.
 	- Uses methods from _rules.py_ to determine how to draw the state of the board based on button or mouse clicks.
 	- Three main buttons are restart, two-player mode and computer.
 	- In the process of developing AI-generated moves for computer mode.
 
-2. _gui.py_: Drawing and displaying components
+2. ___gui.py_: Drawing and displaying components____
    - Draws the board, pieces, buttons, side window and updates dialogue.
    - Also includes the dragging animation when moving pieces.
    - Each main component (ie. board, pieces, buttons) is created as a [_surface_](https://www.pygame.org/docs/ref/surface.html)
@@ -43,7 +52,7 @@ NOTE: Make sure that the PyGame module is installed before step two.
    - The method [_blit_](https://www.pygame.org/docs/ref/surface.html#pygame.Surface.blit) is responsible for this process.
    - Images for the pieces and buttons are stored in the _assets_ folder.
 
-3. _rules.py_: Game controller and move computations
+3. ___rules.py_: Game controller and move computations__
 	- Responsible for controlling the entirety of the game through functions.
 	- Contains functions for move computations, move validity and helper functions for computations and checks.
  	- Includes en passant capture, castling, check, checkmate and pawn promotion.
@@ -86,23 +95,24 @@ NOTE: Make sure that the PyGame module is installed before step two.
 # **Features: Buttons and Dialogue Window**
 In this program, there are three main buttons: 
 
-1. Restart
+1. __Restart__
 	- Restarts the game to the beginning state, waiting for the user to select a game mode.
 
 		![image-removebg-preview](https://github.com/GeorgesCoding/Chess/assets/118407807/207e81d6-65f7-4795-97b2-d2b2a1c88ae6)
 
-2. Two Player Mode
+
+2. __Two Player Mode__
 	- Two-player mode initializes the game to white to move, rotating the board after every move.
 
  		 ![image-removebg-preview (1)](https://github.com/GeorgesCoding/Chess/assets/118407807/6ca2c3c3-8bee-4699-b484-14c9719998b5)
+   
 
-3. Computer Mode (Computer Screen)   
+3. __Computer Mode__   
 	- Computer moves will prompt the user to press the key on their keyboard to determine their colour:
 	- B for black, W for white and R for random. 
 	- The game will be initialized accordingly.
 
 		![image-removebg-preview (2)](https://github.com/GeorgesCoding/Chess/assets/118407807/af4c78d0-0214-43e4-aab9-948f4bf245e6)
-
 
 \
 Underneath these buttons are the pawn promotion buttons:
@@ -115,9 +125,7 @@ Underneath these buttons are the pawn promotion buttons:
 
 ![image-removebg-preview (11)](https://github.com/GeorgesCoding/Chess/assets/118407807/7c6cdc3f-b711-4a4a-ac32-cc0580198a3d)
 
-
 During checkmate, all piece movements and buttons are disabled with only the restart button enabled.
-
 
 There is a black box on the bottom right-hand side of the screen underneath the pawn promotion buttons. Here, commentary will be displayed according to the moves of the players. It will also display if the move is invalid if the king is in check, castling, checkmate and more. The most recent comment is at the bottom.
 
