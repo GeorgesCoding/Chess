@@ -31,9 +31,9 @@ def main():
 
     # 2D array to represent state of board
     board = [
-        [5, 3, 4, 7, 9, 4, 3, 5], [11] * 8,
-        [0] * 8, [0] * 8, [0] * 8, [0] * 8,
-        [-11] * 8, [-5, -3, -4, -7, -9, -4, -3, -5]
+        [0, 0, 0, 0, -7, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 9],
+        [0, -7, 0, 0, 0, 0, 0, 0,], [0] * 8, [0] * 8, [0] * 8,
+        [-1, -4, -1, -1, -1, -1, -1, -1], [-5, -3, -4, -7, -9, -4, -3, -5]
     ]
 
     # toggleable variables
@@ -81,9 +81,6 @@ def main():
                 pygame.quit()
                 return
 
-            # checks for end game
-            end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
-
             # Checks for colour selection
             if colourChoose and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
@@ -98,6 +95,12 @@ def main():
                     clearText(text)
                 dialougeSurf = dialouge(SIZE, text)
 
+            # checks for end game
+            end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
+
+            # end is being returned as false for some reason
+            if end == True:
+                return
             # computer move
             if start and computer != None and turn == computer and not end:
                 oldY, oldX, newY, newX, piece = computerMove(turn, board, canPassant, computer)

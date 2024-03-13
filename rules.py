@@ -1,6 +1,6 @@
 import pygame
 from random import randint, choice
-from gui import getPiece, getPos, addText
+from gui import getPiece, getPos, addText, testBoard
 from main import PIECE
 
 BLACK = -1
@@ -345,9 +345,7 @@ def computerMove(piece, board, canPassant, computer):
     high = 0
     priority = []
 
-    # add another function that will 
-
-
+    # checkmate does not work when there is only the compter's king and it cannot move
 
     # compute priority move list
     for subList in moves:
@@ -496,26 +494,25 @@ def checkmate(king, board, canPassant, opposite, computer):
     for i, _ in enumerate(moveList):
         n = moveList[i][0]
         oldY, oldX = moveList[i][1]
+        tempBoard = [row[:] for row in board]
         tempBoard[oldY][oldX] = 0
 
         # goes through each sublist
         for (newY, newX) in moveList[i][2]:
-            tempBoard[newY][newX] = n
-
-            tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant, computer)
-            if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
-                canMove = True
-                break
-            tempBoard[newY][newX] = 0
-        tempBoard = [row[:] for row in board]
-
+            tempBoard = [row[:] for row in tempBoard]
+            if spaceCheck(n, tempBoard, newY, newX):
+                tempBoard[newY][newX] = n
+                tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant, computer)
+                if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
+                    canMove = True
+                    break
     return not canMove
 
 
 # determines if the game has ended through checkmate
 def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer):
     if outline or not start or pieceMoving:
-        pass
+        return False
     else:
         if computer != None:
             if computer == turn:
