@@ -15,6 +15,7 @@ PIECE = {
 ALPH = {1: "a", 2: "b", 3: "c", 4: "d", 5: "e", 6: "f", 7: "g", 8: "h"}
 
 
+
 def main():
 
     # automatically changes window dimensions according to monitor size
@@ -26,14 +27,14 @@ def main():
     # initialize and customize window
     screen = pygame.display.set_mode((SIZE + SIZE/1.9 + 15, SIZE + 15))
     pygame.display.set_caption("Chess")
-    icon = pygame.image.load('Assets\icon.png')
+    icon = pygame.image.load(resource_path('Assets\icon.png'))
     pygame.display.set_icon(icon)
 
     # 2D array to represent state of board
     board = [
-        [0, 0, 0, 0, -7, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 9],
-        [0, -7, 0, 0, 0, 0, 0, 0,], [0] * 8, [0] * 8, [0] * 8,
-        [-1, -4, -1, -1, -1, -1, -1, -1], [-5, -3, -4, -7, -9, -4, -3, -5]
+        [5, 3, 4, 7, 9, 4, 3, 5], [11] * 8,
+        [0] * 8, [0] * 8, [0] * 8, [0] * 8,
+        [-11] * 8, [-5, -3, -4, -7, -9, -4, -3, -5]
     ]
 
     # toggleable variables
@@ -101,6 +102,7 @@ def main():
             # end is being returned as false for some reason
             if end == True:
                 return
+
             # computer move
             if start and computer != None and turn == computer and not end:
                 oldY, oldX, newY, newX, piece = computerMove(turn, board, canPassant, computer)
