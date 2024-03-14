@@ -2,7 +2,7 @@
 - A traditional chess game developed in Python using the [PyGame](https://www.pygame.org/wiki/about) module.
 - Includes two-player mode and an AI bot (work in progress) using a minimax algorithm.
 - Used pictures found on [Wikimedia](https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces) as the pieces.
-- Currently creating a recursive minimax algorithm for move selection.
+- Currently trying to return the move predicted by the algorithm.
 - Will later use alpha-beta pruning to optimize tree searching.
     
 https://github.com/GeorgesCoding/Chess/assets/118407807/baf9b877-ae29-45b6-bbe5-0767394ad079
