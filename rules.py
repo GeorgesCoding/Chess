@@ -2,6 +2,7 @@ import pygame
 from random import randint, choice
 from gui import getPiece, getPos, addText, testBoard
 from main import PIECE
+import math
 
 BLACK = -1
 WHITE = 1
@@ -95,10 +96,12 @@ def checkMove(piece, newY, newX, oldY, oldX, board, canPassant, computer):
         return True
 
 
-# gives a value to the piece
-def evaluation(board, newY, newX):
-    piece = board[newY][newX]
-    if board[newY][newX] != 0:
+# piece values
+def evaluation(board, newY, newX, piece):
+    if piece == None:
+        piece = board[newY][newX]
+
+    if piece != 0:
         if piece in {-11, -1, 11, 1}:
             return 1
         elif piece in {-5, -55, 5, 55}:
@@ -107,8 +110,22 @@ def evaluation(board, newY, newX):
             return 3
         elif piece in {-7, 7}:
             return 7
+        elif piece in {9, -9, 99, -99}:
+            return 9
     else:
         return 0
+
+
+# board state evaluation
+# white is positive, black is negative
+# will only change if a piece is captured
+def boardEvaluation(board):
+    eval = 0
+    for _ in board:
+        for n in _:
+            temp = evaluation(0, 0, 0, n) if n < 0 else -evaluation(0, 0, 0, n)
+            eval += temp
+    return eval
 
 
 # determines if move is legal or not
@@ -236,7 +253,7 @@ def kingMove(piece, y, x, board):
 
 # removes the pawn captured through en passant
 # special because the pawn doesn't overtake the captured pawn's space
-def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer, turn):
+def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer, turn, noPrint):
     coord = (7 - oldY, 7 - oldX) if computer == None else (oldY, oldX)
     add = 1
     if computer == None:
@@ -248,7 +265,8 @@ def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, t
         newCoord = (newY + 1, newX)
     if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and newCoord == canPassant[0]:
         board[newY + add][newX] = 0
-        addText(text, PIECE[piece] + " en passant capture", 0)
+        if not noPrint:
+            addText(text, PIECE[piece] + " en passant capture", 0)
 
 
 # determines if en passant is a possible move
@@ -345,13 +363,11 @@ def computerMove(piece, board, canPassant, computer):
     high = 0
     priority = []
 
-    # checkmate does not work when there is only the compter's king and it cannot move
-
     # compute priority move list
     for subList in moves:
         for newMove in subList[2]:
             if subList[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
-                rank = evaluation(board, newMove[0], newMove[1])
+                rank = evaluation(board, newMove[0], newMove[1], None)
                 if rank > high:
                     high = rank
                     priority.clear()
@@ -382,6 +398,62 @@ def computerMove(piece, board, canPassant, computer):
         isValid = False
 
     return oldY, oldX, newY, newX, piece
+
+
+# create a function that stores the piece, old and new coordinates related to the evaluation
+
+
+# if maxEval == -math.inf, then the move is associated with eval
+# if maxEval = eval, move is associated with eval
+
+# minimax algorithm
+# when depth goes past 2, is very very very slow
+def minimax(board, canPassant, computer, depth, turn, isPawn):
+
+    opposite = 1 if computer == turn else 0
+    moves, i = specificCompute(turn, board, canPassant, computer, opposite)  # all possible white moves
+    moves = computerCastle(turn, board, moves, i, canPassant, computer)
+    tempBoard = [row[:] for row in board]
+
+    if depth == 0 or gameOver(computer, turn, board, canPassant):
+        return boardEvaluation(board)
+
+    elif turn == WHITE:  # white's turn
+        maxEval = -math.inf
+
+        for subList in moves:
+            for newMove in subList[2]:
+                if moves[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer) and board[newMove[0]][newMove[1]] > 0:
+                    oldY, oldX = subList[1]
+                    newY, newX = newMove
+                    tempBoard[oldY][oldX] = 0
+                    tempBoard[newY][newX] = subList[0]
+                    enPassantCapture(subList[0], board, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
+
+                eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
+                maxEval = max(maxEval, eval)
+                tempBoard = [row[:] for row in board]
+
+        return maxEval
+
+    else:  # black's turn
+        minEval = math.inf
+
+        for subList in moves:
+            for newMove in subList[2]:
+                if moves[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer) and board[newMove[0]][newMove[1]] < 0:
+                    oldY, oldX = subList[1]
+                    newY, newX = newMove
+                    tempBoard[oldY][oldX] = 0
+                    tempBoard[newY][newX] = subList[0]
+                    enPassantCapture(subList[0], board, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
+
+                eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
+                minEval = min(minEval, eval)
+                tempBoard = [row[:] for row in board]
+
+        print(minEval)
+        return minEval
 
 
 # computes if the computer can castle
@@ -515,10 +587,7 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
         return False
     else:
         if computer != None:
-            if computer == turn:
-                opposite = 0
-            else:
-                opposite = 1
+            opposite = 0 if computer == turn else 1
 
         kY, kX = kingCoord(-turn, board)
         king = board[kY][kX]
@@ -528,3 +597,13 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
             addText(text, "Checkmate: " + str(winner) + " won!", 0)
             addText(text, "Press restart or exit the game.", 0)
             return True
+
+
+# determines if is checkmate
+# used only for minimax
+def gameOver(computer, turn, board, canPassant):
+    opposite = 0 if computer == turn else 1
+    kY, kX = kingCoord(-turn, board)
+    king = board[kY][kX]
+
+    return checkmate(king, board, canPassant, opposite, computer)

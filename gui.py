@@ -1,6 +1,5 @@
 import pygame
-import os
-import sys
+
 
 # dictionary constant of the paths of the image of the pieces
 IMAGEPATH = {
@@ -11,12 +10,6 @@ IMAGEPATH = {
     -4: 'Assets\wBishop.png', -5: 'Assets\wRook.png',  -55: 'Assets\wRook.png',
     -7: 'Assets\wQueen.png',   -9: 'Assets\wKing.png',   -99: 'Assets\wKing.png'
 }
-
-
-def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
 
 
 # testing function: prints the state of the board
@@ -205,9 +198,9 @@ def buttons(size):
     for i in range(3):
         pygame.draw.rect(buttonSurface, brown, (size + 15 + (buttonLength + 15) * i, 45, buttonLength, buttonHeight), 0, 0, 12, 12, 12, 12)
 
-    restart = pygame.transform.scale(pygame.image.load(resource_path('Assets\Restart.png')), (buttonLength-45, buttonLength-45)).convert_alpha()
-    twoPlayer = pygame.transform.scale(pygame.image.load(resource_path('Assets\TPlayer.png')), (buttonLength, buttonLength)).convert_alpha()
-    computer = pygame.transform.scale(pygame.image.load(resource_path('Assets\Computer.png')), (buttonLength, buttonLength)).convert_alpha()
+    restart = pygame.transform.scale(pygame.image.load('Assets\Restart.png'), (buttonLength-45, buttonLength-45)).convert_alpha()
+    twoPlayer = pygame.transform.scale(pygame.image.load('Assets\TPlayer.png'), (buttonLength, buttonLength)).convert_alpha()
+    computer = pygame.transform.scale(pygame.image.load('Assets\Computer.png'), (buttonLength, buttonLength)).convert_alpha()
 
     # draw promotion buttons
     for i in range(4):
@@ -221,10 +214,10 @@ def buttons(size):
     pygame.draw.rect(buttonSurface, brown, s, 0, 0, 12, 12, 12, 12)
 
     # icons
-    bishop = pygame.transform.scale(pygame.image.load(resource_path('Assets\BishopIcon.png')), dSize).convert_alpha()
-    knight = pygame.transform.scale(pygame.image.load(resource_path('Assets\KnightIcon.png')), dSize).convert_alpha()
-    rook = pygame.transform.scale(pygame.image.load(resource_path('Assets\RookIcon.png')), dSize).convert_alpha()
-    queen = pygame.transform.scale(pygame.image.load(resource_path('Assets\QueenIcon.png')), dSize).convert_alpha()
+    bishop = pygame.transform.scale(pygame.image.load('Assets\BishopIcon.png'), dSize).convert_alpha()
+    knight = pygame.transform.scale(pygame.image.load('Assets\KnightIcon.png'), dSize).convert_alpha()
+    rook = pygame.transform.scale(pygame.image.load('Assets\RookIcon.png'), dSize).convert_alpha()
+    queen = pygame.transform.scale(pygame.image.load('Assets\QueenIcon.png'), dSize).convert_alpha()
 
     # add to surface
     buttonSurface.blit(restart, (size + 22.5*1.5, 75))
@@ -266,7 +259,7 @@ def drag(screen, selected, pSize, size):
 
         # Load and scale piece images
         path = IMAGEPATH[piece]
-        image = pygame.transform.scale(pygame.image.load(resource_path(path)), dSize).convert_alpha()
+        image = pygame.transform.scale(pygame.image.load(path), dSize).convert_alpha()
         screen.blit(image, mouseLocation)
 
 
@@ -287,7 +280,7 @@ def drawPieces(board, pSize, size):
     pieces = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
 
     # Load and scale piece images
-    image = {key: pygame.transform.scale(pygame.image.load(resource_path(path)), dSize).convert_alpha() for key, path in IMAGEPATH.items()}
+    image = {key: pygame.transform.scale(pygame.image.load(path), dSize).convert_alpha() for key, path in IMAGEPATH.items()}
 
     # indexes of 2D array
     x = y = -1
