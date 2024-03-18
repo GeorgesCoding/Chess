@@ -96,16 +96,12 @@ def main():
                 dialougeSurf = dialouge(SIZE, text)
 
             # checks for end game
-            end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
-
-            # end is being returned as false for some reason
-            if end == True:
-                return
+            if start and computer != None and not outline and not end:
+                end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
 
             # computer move
-            if start and computer != None and turn == computer and not end:
-                minimax(board, canPassant, computer, 2, turn, isPawn)
-                oldY, oldX, newY, newX, piece = computerMove(turn, board, canPassant, computer)
+            if start and computer != None and turn == computer and not end and not outline:
+                oldY, oldX, newY, newX, piece = computerMove(piece, board, canPassant, computer)
                 board[oldY][oldX] = 0
 
                 if piece == 10:  # castle
@@ -131,7 +127,7 @@ def main():
                         addText(text, "    " + str(PIECE[board[newY][newX]]), 0)
                 turn = -turn
                 text = clearText(text)
-                isCheck(end, piece, board, 1, canPassant, text, computer)
+                isCheck(end, piece, board, 0, canPassant, text, computer)
                 piecesSurface = drawPieces(board, PSIZE, SIZE)
                 dialougeSurf = dialouge(SIZE, text)
                 oldY, oldX = 0, 0
@@ -150,6 +146,11 @@ def main():
                             board = rotate(board, computer)
                             turn = -turn
                             text = clearText(text)
+                            end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
+                            boardSurface = createBoard(SIZE, PSIZE)
+                            buttonSurface = buttons(SIZE)
+                            piecesSurface = drawPieces(board, PSIZE, SIZE)
+                            dialougeSurf = dialouge(SIZE, text)
                             break
 
                 # restarts program
@@ -234,12 +235,15 @@ def main():
                                     promotion = piece, newY, newX
                                     board = rotate(board, computer)
                                     turn = -turn
+                                    boardSurface = createBoard(SIZE, PSIZE)
+                                    buttonSurface = buttons(SIZE)
+                                    piecesSurface = drawPieces(board, PSIZE, SIZE)
                                 else:  # promotion happened
-                                    outline = False
                                     promotion = None, None, None
                                     end = gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
                                     text = clearText(text)
                                     isCheck(end, piece, board, opposite, canPassant, text, computer)
+
                         else:  # within bounds, invalid move
                             board[oldY][oldX] = piece
                             if not (newY == oldY and newX == oldX):

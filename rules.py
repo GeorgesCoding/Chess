@@ -118,13 +118,24 @@ def evaluation(board, newY, newX, piece):
 
 # board state evaluation
 # white is positive, black is negative
-# will only change if a piece is captured
-def boardEvaluation(board):
+# will only change if a piece is captured or king in check
+def boardEvaluation(board, computer, canPassant):
     eval = 0
+    tempBoard = [row[:] for row in board]
+    opposite = 1 if computer == BLACK else 0
+    blackList = computeAll(1, tempBoard, 0, opposite + 1, canPassant, computer)
+    whiteList = computeAll(-1, tempBoard, 0, opposite, canPassant, computer)
+
     for _ in board:
-        for n in _:
+        for n in _:  # evaluates the number of pieces on each side
             temp = evaluation(0, 0, 0, n) if n < 0 else -evaluation(0, 0, 0, n)
             eval += temp
+
+    if kingCoord(1, board) in blackList:
+        eval -= 10  # black king in check
+    elif kingCoord(-1, board) in whiteList:
+        eval += 10  # white king in check
+
     return eval
 
 
@@ -400,60 +411,56 @@ def computerMove(piece, board, canPassant, computer):
     return oldY, oldX, newY, newX, piece
 
 
-# create a function that stores the piece, old and new coordinates related to the evaluation
-
-
-# if maxEval == -math.inf, then the move is associated with eval
-# if maxEval = eval, move is associated with eval
-
 # minimax algorithm
 # when depth goes past 2, is very very very slow
 def minimax(board, canPassant, computer, depth, turn, isPawn):
 
     opposite = 1 if computer == turn else 0
-    moves, i = specificCompute(turn, board, canPassant, computer, opposite)  # all possible white moves
+    moves, i = specificCompute(turn, board, canPassant, computer, opposite)  # all possible moves
     moves = computerCastle(turn, board, moves, i, canPassant, computer)
     tempBoard = [row[:] for row in board]
+    bestMove = 0
 
-    if depth == 0 or gameOver(computer, turn, board, canPassant):
-        return boardEvaluation(board)
+    if depth == 0 or gameOver(computer, turn, board, canPassant):  # reached end of tree or game ended
+        return boardEvaluation(board, computer, canPassant), 0
 
-    elif turn == WHITE:  # white's turn
+    elif turn == WHITE:  # white turn
         maxEval = -math.inf
 
         for subList in moves:
             for newMove in subList[2]:
-                if moves[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer) and board[newMove[0]][newMove[1]] > 0:
+                if moves[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
                     oldY, oldX = subList[1]
                     newY, newX = newMove
                     tempBoard[oldY][oldX] = 0
                     tempBoard[newY][newX] = subList[0]
-                    enPassantCapture(subList[0], board, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
+                    enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
+                    bestMove = 1
 
-                eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
+                eval, bestMove = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
                 maxEval = max(maxEval, eval)
                 tempBoard = [row[:] for row in board]
 
-        return maxEval
+        return maxEval, bestMove
 
-    else:  # black's turn
+    else:  # black turn
         minEval = math.inf
 
         for subList in moves:
             for newMove in subList[2]:
-                if moves[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer) and board[newMove[0]][newMove[1]] < 0:
+                if moves[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
                     oldY, oldX = subList[1]
                     newY, newX = newMove
                     tempBoard[oldY][oldX] = 0
                     tempBoard[newY][newX] = subList[0]
-                    enPassantCapture(subList[0], board, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
+                    enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
+                    bestMove = 1
 
-                eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
+                eval, bestMove = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
                 minEval = min(minEval, eval)
                 tempBoard = [row[:] for row in board]
 
-        print(minEval)
-        return minEval
+        return minEval, bestMove
 
 
 # computes if the computer can castle
@@ -571,11 +578,11 @@ def checkmate(king, board, canPassant, opposite, computer):
 
         # goes through each sublist
         for (newY, newX) in moveList[i][2]:
-            tempBoard = [row[:] for row in tempBoard]
-            if spaceCheck(n, tempBoard, newY, newX):
-                tempBoard[newY][newX] = n
-                tempMoveList = computeAll(king, tempBoard, 0, opposite, canPassant, computer)
-                if kingCoord(king, tempBoard) not in tempMoveList:  # king not in check after move
+            movedBoard = [row[:] for row in tempBoard]
+            if spaceCheck(n, movedBoard, newY, newX):
+                movedBoard[newY][newX] = n
+                tempMoveList = computeAll(king, movedBoard, 0, opposite, canPassant, computer)
+                if kingCoord(king, movedBoard) not in tempMoveList:  # king not in check after move
                     canMove = True
                     break
     return not canMove
