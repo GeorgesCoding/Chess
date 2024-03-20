@@ -101,7 +101,9 @@ def main():
 
             # computer move
             if start and computer != None and turn == computer and not end and not outline:
-                oldY, oldX, newY, newX, piece = computerMove(piece, board, canPassant, computer)
+                testBoard(minimax(board, canPassant, computer, 2, turn, isPawn)[1])
+
+                oldY, oldX, newY, newX, piece = computerMove(computer, board, canPassant, computer)
                 board[oldY][oldX] = 0
 
                 if piece == 10:  # castle
@@ -208,8 +210,6 @@ def main():
                         # piece is moved to a valid position
                         elif move(piece, newY, newX, oldY, oldX, board, canPassant, computer) and (newY, newX) != (oldY, oldX):
                             firstMove(piece, tempBoard, newY, newX)
-
-                            # moveList does not include pawn for check
 
                             # king is in check after move
                             if kingCoord(piece, tempBoard) in moveList:

@@ -1,11 +1,67 @@
 import pygame
 from random import randint, choice
-from gui import getPiece, getPos, addText, testBoard
+from gui import getPiece, getPos, addText
 from main import PIECE
 import math
 
 BLACK = -1
 WHITE = 1
+
+# piece square tables
+# helps evaluate the board state based on piece positioning
+PAWN = [0,  0,  0,  0,  0,  0,  0,  0,
+        5, 5, 5, 5, 5, 5, 5, 5,
+        1, 1, 2, 3, 3, 2, 1, 1,
+        0.5,  0.5, 1, 2.5, 2.5, 1,  0.5,  0.5,
+        0,  0,  0, 2, 2,  0,  0,  0,
+        0.5, -0.5, -1,  0,  0, -1, -0.5,  0.5,
+        0.5, 1, 1, -2, -2, 1, 1,  0.5,
+        0,  0,  0,  0,  0,  0,  0,  0]
+
+KNIGHT = [-5, -4, -3, -3, -3, -3, -4, -5,
+          -4, -2,  0,  0,  0,  0, -2, -4,
+          -3,  0, 1, 1.5, 1.5, 1,  0, -3,
+          -3,  0.5, 1.5, 2, 2, 1,  0.5, -3,
+          -3,  0, 1.5, 2, 2, 1.5,  0, -3,
+          -3,  0.5, 1, 1.5, 1.5, 1,  0.5, -3,
+          -4, -2,  0,  0.5,  0.5,  0, -2, -4,
+          -5, -4, -3, -3, -3, -3, -4, -5]
+
+BISHOP = [-2, -1, -1, -1, -1, -1, -1, -2,
+          -1,  0,  0,  0,  0,  0,  0, -1,
+          -1,  0,  0.5, 1, 1,  0.5,  0, -1,
+          -1,  0.5,  -0.5, 1, 1,  0.5,  0.5, -1,
+          -1,  0, 1, 1, 1, 1,  0, -1,
+          -1, 1, 1, 1, 1, 1, 1, -1,
+          -1,  0.5,  0,  0,  0,  0,  0.5, -1,
+          -2, -1, -1, -1, -1, -1, -1, -2]
+
+ROOK = [0,  0,  0,  0,  0,  0,  0,  0,
+        0.5, 1, 1, 1, 1, 1, 1,  0.5,
+        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+        0,  0,  0,  0.5,  0.5,  0,  0,  0]
+
+QUEEN = [-2, -1, -1, -0.5, -0.5, -1, -1, -2,
+         -1,  0,  0,  0,  0,  0,  0, -1,
+         -1,  0,  0.5,  0.5,  0.5,  0.5,  0, -1,
+         -0.5,  0,  0.5,  0.5,  0.5,  0.5,  0, -0.5,
+         0,  0,  0.5,  0.5,  0.5,  0.5,  0, -0.5,
+         -1,  0.5,  0.5,  0.5,  0.5,  0.5,  0, -1,
+         -1,  0,  0.5,  0,  0,  0,  0, -1,
+         -2, -1, -1, -0.5, -0.5, -1, -1, -2]
+
+KING = [-3, -4, -4, -5, -5, -4, -4, -3,
+        -3, -4, -4, -5, -5, -4, -4, -3,
+        -3, -4, -4, -5, -5, -4, -4, -3,
+        -3, -4, -4, -5, -5, -4, -4, -3,
+        -2, -3, -3, -4, -4, -3, -3, -2,
+        -1, -2, -2, -2, -2, -2, -2, -1,
+        2, 2,  0,  0,  0,  0, 2, 2,
+        2, 3, 1,  0,  0, 1, 3, 2]
 
 
 # toggles turn
@@ -13,7 +69,7 @@ def playerTurn(colour, turn, player):
     return (colour == BLACK) == (turn == 1) and (player == turn or player == None)
 
 
-# determines if a set of coordinates are in bounds of the board
+# determines if a set of coordinates are in the bounds of the board
 def inBounds(newX, newY):
     return 0 <= newX <= 7 and 0 <= newY <= 7
 
@@ -29,15 +85,12 @@ def randomTurn():
 
 
 # determines if the pawn moved two spaces in first turn
-# used for en passant computations
 def pawnFirst(piece, newY, newX, oldY, oldX, computer, turn):
     y = oldY - 2 if computer != turn else oldY + 2
     return piece in {-11, 11} and newX == oldX and newY == y
 
 
-# toggles first move ability of pawn
-# also determines if king can castle
-# returns true if it is a pawn that moved
+# toggles first move ability of pawn and determines king's ability to castle
 def firstMove(tempPiece, board, newY, newX):
     if tempPiece in {11, -11}:
         board[newY][newX] = tempPiece // 11
@@ -96,11 +149,9 @@ def checkMove(piece, newY, newX, oldY, oldX, board, canPassant, computer):
         return True
 
 
-# piece values
+# values of pieces
 def evaluation(board, newY, newX, piece):
-    if piece == None:
-        piece = board[newY][newX]
-
+    piece = board[newY][newX] if piece == None else piece
     if piece != 0:
         if piece in {-11, -1, 11, 1}:
             return 1
@@ -116,25 +167,46 @@ def evaluation(board, newY, newX, piece):
         return 0
 
 
-# board state evaluation
+# depending on the piece, will evaluate based on the position
+def pieceSquare(piece, y, x, flip):
+    space = y * 8 + x if flip == 0 else 63 - (y * 8 + x)
+    if piece in {-11, -1, 11, 1}:
+        return PAWN[space]
+    elif piece in {-5, -55, 5, 55}:
+        return ROOK[space]
+    elif piece in {-4, 4}:
+        return BISHOP[space]
+    elif piece in {-3, 3}:
+        return KNIGHT[space]
+    elif piece in {-7, 7}:
+        return QUEEN[space]
+    elif piece in {9, -9, 99, -99}:
+        return KING[space]
+    else:
+        return 0
+
+
 # white is positive, black is negative
-# will only change if a piece is captured or king in check
+# incporporates the values of the remaining pieces on the board, their positioning and if the king is in check
 def boardEvaluation(board, computer, canPassant):
     eval = 0
     tempBoard = [row[:] for row in board]
+
+    for y, row in enumerate(board):
+        for x, n in enumerate(row):  # evaluates the number of pieces on each side
+            flip = 1 if pieceColour(-n) == computer else 0
+            temp = evaluation(0, 0, 0, n) if n < 0 else -evaluation(0, 0, 0, n)
+            table = pieceSquare(n, y, x, flip) if n < 0 else -pieceSquare(n, y, x, flip)
+            eval += temp + table
+
     opposite = 1 if computer == BLACK else 0
     blackList = computeAll(1, tempBoard, 0, opposite + 1, canPassant, computer)
     whiteList = computeAll(-1, tempBoard, 0, opposite, canPassant, computer)
 
-    for _ in board:
-        for n in _:  # evaluates the number of pieces on each side
-            temp = evaluation(0, 0, 0, n) if n < 0 else -evaluation(0, 0, 0, n)
-            eval += temp
-
     if kingCoord(1, board) in blackList:
-        eval -= 10  # black king in check
+        eval -= 100  # black king in check
     elif kingCoord(-1, board) in whiteList:
-        eval += 10  # white king in check
+        eval += 100  # white king in check
 
     return eval
 
@@ -218,7 +290,6 @@ def knightMove(piece, y, x, board):
 # general move pattern for bishop & rook
 def bishopRookCompute(piece, y, x, board, xMove, yMove):
     moves = set()
-
     for a, b in zip(xMove, yMove):
         tempX, tempY = x + a, y + b
         while (spaceCheck(piece, board, tempY, tempX)):
@@ -267,15 +338,20 @@ def kingMove(piece, y, x, board):
 def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer, turn, noPrint):
     coord = (7 - oldY, 7 - oldX) if computer == None else (oldY, oldX)
     add = 1
+
     if computer == None:
         newCoord = (6 - newY, 7 - newX)
+
     elif computer == turn:
         newCoord = (newY - 1, newX)
         add = -1
+
     else:  # not computers turn
         newCoord = (newY + 1, newX)
+
     if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and newCoord == canPassant[0]:
         board[newY + add][newX] = 0
+
         if not noPrint:
             addText(text, PIECE[piece] + " en passant capture", 0)
 
@@ -285,12 +361,16 @@ def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, t
 def enPassant(piece, y, x, board, isPawn):
     colour = pieceColour(-piece)
     canPassant = []
+
     if isPawn:
         canPassant.append((y, x))
+
         if inBounds(x - 1, y) and pieceColour(board[y][x - 1]) == colour:
             canPassant.append((y, x - 1))
+
         if inBounds(x + 1, y) and pieceColour(board[y][x + 1]) == colour:
             canPassant.append((y, x + 1))
+
     return canPassant
 
 
@@ -305,6 +385,7 @@ def computeAll(king, board, kingPass, opposite, canPassant, computer):
     for y, row in enumerate(board):
         for x, n in enumerate(row):
             if pieceColour(-n) == colour:
+
                 if n in {-1, 1, 11, -11}:
                     moves |= pawnMove(n, y, x, board, opposite, canPassant, computer)
 
@@ -336,6 +417,7 @@ def specificCompute(piece, board, canPassant, computer, opposite):
     for y, row in enumerate(board):
         for x, n in enumerate(row):
             if pieceColour(-n) == colour:
+
                 i += 1
                 moves.append([])
                 moves[i].append(n)
@@ -379,9 +461,11 @@ def computerMove(piece, board, canPassant, computer):
         for newMove in subList[2]:
             if subList[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
                 rank = evaluation(board, newMove[0], newMove[1], None)
+
                 if rank > high:
                     high = rank
                     priority.clear()
+
                 if rank == high:
                     newList = [subList[0], subList[1], newMove]
                     priority.append(newList)
@@ -411,18 +495,15 @@ def computerMove(piece, board, canPassant, computer):
     return oldY, oldX, newY, newX, piece
 
 
-# minimax algorithm
-# when depth goes past 2, is very very very slow
+# minimax algorithm implemented to fit within this interpretation of chess
 def minimax(board, canPassant, computer, depth, turn, isPawn):
-
     opposite = 1 if computer == turn else 0
     moves, i = specificCompute(turn, board, canPassant, computer, opposite)  # all possible moves
-    moves = computerCastle(turn, board, moves, i, canPassant, computer)
+    moves = computerCastle(turn, board, moves, i, canPassant, computer)  # includes castle
     tempBoard = [row[:] for row in board]
-    bestMove = 0
 
     if depth == 0 or gameOver(computer, turn, board, canPassant):  # reached end of tree or game ended
-        return boardEvaluation(board, computer, canPassant), 0
+        return boardEvaluation(board, computer, canPassant), board
 
     elif turn == WHITE:  # white turn
         maxEval = -math.inf
@@ -435,13 +516,11 @@ def minimax(board, canPassant, computer, depth, turn, isPawn):
                     tempBoard[oldY][oldX] = 0
                     tempBoard[newY][newX] = subList[0]
                     enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
-                    bestMove = 1
 
-                eval, bestMove = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
+                eval, newBoard = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
                 maxEval = max(maxEval, eval)
                 tempBoard = [row[:] for row in board]
-
-        return maxEval, bestMove
+        return maxEval, newBoard
 
     else:  # black turn
         minEval = math.inf
@@ -454,13 +533,11 @@ def minimax(board, canPassant, computer, depth, turn, isPawn):
                     tempBoard[oldY][oldX] = 0
                     tempBoard[newY][newX] = subList[0]
                     enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
-                    bestMove = 1
 
-                eval, bestMove = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
+                eval, newBoard = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
                 minEval = min(minEval, eval)
                 tempBoard = [row[:] for row in board]
-
-        return minEval, bestMove
+        return minEval, newBoard
 
 
 # computes if the computer can castle
