@@ -101,9 +101,8 @@ def main():
 
             # computer move
             if start and computer != None and turn == computer and not end and not outline:
-                testBoard(minimax(board, canPassant, computer, 2, turn, isPawn)[1])
 
-                oldY, oldX, newY, newX, piece = computerMove(computer, board, canPassant, computer)
+                oldY, oldX, newY, newX, piece = minimax(board, canPassant, computer, 2, turn, isPawn)[1]
                 board[oldY][oldX] = 0
 
                 if piece == 10:  # castle

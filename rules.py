@@ -154,15 +154,15 @@ def evaluation(board, newY, newX, piece):
     piece = board[newY][newX] if piece == None else piece
     if piece != 0:
         if piece in {-11, -1, 11, 1}:
-            return 1
+            return 10
         elif piece in {-5, -55, 5, 55}:
-            return 5
+            return 50
         elif piece in {-4, 4, -3, 3}:
-            return 3
+            return 30
         elif piece in {-7, 7}:
-            return 7
+            return 70
         elif piece in {9, -9, 99, -99}:
-            return 9
+            return 90
     else:
         return 0
 
@@ -497,47 +497,58 @@ def computerMove(piece, board, canPassant, computer):
 
 # minimax algorithm implemented to fit within this interpretation of chess
 def minimax(board, canPassant, computer, depth, turn, isPawn):
+    """
+    MAIN OBJECTIVE: Pass up move coordinates through the minimax algorithm
+    """
     opposite = 1 if computer == turn else 0
     moves, i = specificCompute(turn, board, canPassant, computer, opposite)  # all possible moves
     moves = computerCastle(turn, board, moves, i, canPassant, computer)  # includes castle
     tempBoard = [row[:] for row in board]
 
     if depth == 0 or gameOver(computer, turn, board, canPassant):  # reached end of tree or game ended
-        return boardEvaluation(board, computer, canPassant), board
+        return boardEvaluation(board, computer, canPassant), 0
 
     elif turn == WHITE:  # white turn
         maxEval = -math.inf
 
         for subList in moves:
             for newMove in subList[2]:
-                if moves[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
+                if subList[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
                     oldY, oldX = subList[1]
                     newY, newX = newMove
                     tempBoard[oldY][oldX] = 0
                     tempBoard[newY][newX] = subList[0]
                     enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
 
-                eval, newBoard = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
+                eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)[0]
                 maxEval = max(maxEval, eval)
+                
+                if maxEval == eval:
+                    bestMove = oldY, oldX, newY, newX, subList[0]
+
                 tempBoard = [row[:] for row in board]
-        return maxEval, newBoard
+        return maxEval, bestMove
 
     else:  # black turn
         minEval = math.inf
 
         for subList in moves:
             for newMove in subList[2]:
-                if moves[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
+                if subList[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
                     oldY, oldX = subList[1]
                     newY, newX = newMove
                     tempBoard[oldY][oldX] = 0
                     tempBoard[newY][newX] = subList[0]
                     enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
 
-                eval, newBoard = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)
+                eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)[0]
                 minEval = min(minEval, eval)
+
+                if minEval == eval:
+                    bestMove = oldY, oldX, newY, newX, subList[0]
+
                 tempBoard = [row[:] for row in board]
-        return minEval, newBoard
+        return minEval, bestMove
 
 
 # computes if the computer can castle
