@@ -1,9 +1,9 @@
 # **Overview** 
 - A traditional chess game developed in Python using the [PyGame](https://www.pygame.org/wiki/about) module.
-- Includes two-player mode and an AI bot (work in progress) using a minimax algorithm.
-- Used pictures found on [Wikimedia](https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces) as the pieces.
-- Currently trying to return the move predicted by the algorithm.
-- Will later use alpha-beta pruning to optimize tree searching.
+- Utilizes piece-square tables found from the [Chess Programming Wiki](https://www.chessprogramming.org/Simplified_Evaluation_Function).
+- Includes two-player mode and an AI bot using a minimax algorithm.
+- Currently implementing alpha-beta pruning to optimize tree searching.
+- After, will use more complex piece square tables that include mid and end-game states.
     
 https://github.com/GeorgesCoding/Chess/assets/118407807/baf9b877-ae29-45b6-bbe5-0767394ad079
 
