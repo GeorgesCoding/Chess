@@ -1,6 +1,6 @@
 import pygame
-from gui import *
-from rules import *
+from GUI import *
+from Controller import *
 
 # Dictionary constant of the names of pieces according to their integer representation
 PIECE = {
@@ -102,7 +102,7 @@ def main():
             # computer move
             if start and computer != None and turn == computer and not end and not outline:
 
-                oldY, oldX, newY, newX, piece = minimax(board, canPassant, computer, 2, turn, isPawn)[1]
+                oldY, oldX, newY, newX, piece = minimax(board, canPassant, computer, 3, turn, isPawn)[1]
                 board[oldY][oldX] = 0
 
                 if piece == 10:  # castle

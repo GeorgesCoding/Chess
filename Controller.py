@@ -1,7 +1,7 @@
 import pygame
 from random import randint, choice
-from gui import getPiece, getPos, addText
-from main import PIECE
+from GUI import getPiece, getPos, addText
+from Main import PIECE
 import math
 
 BLACK = -1
@@ -9,59 +9,65 @@ WHITE = 1
 
 # piece square tables
 # helps evaluate the board state based on piece positioning
-PAWN = [0,  0,  0,  0,  0,  0,  0,  0,
-        5, 5, 5, 5, 5, 5, 5, 5,
-        1, 1, 2, 3, 3, 2, 1, 1,
-        0.5,  0.5, 1, 2.5, 2.5, 1,  0.5,  0.5,
-        0,  0,  0, 2, 2,  0,  0,  0,
-        0.5, -0.5, -1,  0,  0, -1, -0.5,  0.5,
-        0.5, 1, 1, -2, -2, 1, 1,  0.5,
-        0,  0,  0,  0,  0,  0,  0,  0]
+PAWN = [
+    0,  0,  0,  0,  0,  0,  0,  0,
+    5, 5, 5, 5, 5, 5, 5, 5,
+    1, 1, 2, 3, 3, 2, 1, 1,
+    0.5,  0.5, 1, 2.5, 2.5, 1,  0.5,  0.5,
+    0,  0,  0, 2, 2,  0,  0,  0,
+    0.5, -0.5, -1,  0,  0, -1, -0.5,  0.5,
+    0.5, 1, 1, -2, -2, 1, 1,  0.5,
+    0,  0,  0,  0,  0,  0,  0,  0]
 
-KNIGHT = [-5, -4, -3, -3, -3, -3, -4, -5,
-          -4, -2,  0,  0,  0,  0, -2, -4,
-          -3,  0, 1, 1.5, 1.5, 1,  0, -3,
-          -3,  0.5, 1.5, 2, 2, 1,  0.5, -3,
-          -3,  0, 1.5, 2, 2, 1.5,  0, -3,
-          -3,  0.5, 1, 1.5, 1.5, 1,  0.5, -3,
-          -4, -2,  0,  0.5,  0.5,  0, -2, -4,
-          -5, -4, -3, -3, -3, -3, -4, -5]
+KNIGHT = [
+    -5, -4, -3, -3, -3, -3, -4, -5,
+    -4, -2,  0,  0,  0,  0, -2, -4,
+    -3,  0, 1, 1.5, 1.5, 1,  0, -3,
+    -3,  0.5, 1.5, 2, 2, 1,  0.5, -3,
+    -3,  0, 1.5, 2, 2, 1.5,  0, -3,
+    -3,  0.5, 1, 1.5, 1.5, 1,  0.5, -3,
+    -4, -2,  0,  0.5,  0.5,  0, -2, -4,
+    -5, -4, -3, -3, -3, -3, -4, -5]
 
-BISHOP = [-2, -1, -1, -1, -1, -1, -1, -2,
-          -1,  0,  0,  0,  0,  0,  0, -1,
-          -1,  0,  0.5, 1, 1,  0.5,  0, -1,
-          -1,  0.5,  -0.5, 1, 1,  0.5,  0.5, -1,
-          -1,  0, 1, 1, 1, 1,  0, -1,
-          -1, 1, 1, 1, 1, 1, 1, -1,
-          -1,  0.5,  0,  0,  0,  0,  0.5, -1,
-          -2, -1, -1, -1, -1, -1, -1, -2]
+BISHOP = [
+    -2, -1, -1, -1, -1, -1, -1, -2,
+    -1,  0,  0,  0,  0,  0,  0, -1,
+    -1,  0,  0.5, 1, 1,  0.5,  0, -1,
+    -1,  0.5,  -0.5, 1, 1,  0.5,  0.5, -1,
+    -1,  0, 1, 1, 1, 1,  0, -1,
+    -1, 1, 1, 1, 1, 1, 1, -1,
+    -1,  0.5,  0,  0,  0,  0,  0.5, -1,
+    -2, -1, -1, -1, -1, -1, -1, -2]
 
-ROOK = [0,  0,  0,  0,  0,  0,  0,  0,
-        0.5, 1, 1, 1, 1, 1, 1,  0.5,
-        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
-        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
-        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
-        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
-        -0.5,  0,  0,  0,  0,  0,  0, -0.5,
-        0,  0,  0,  0.5,  0.5,  0,  0,  0]
+ROOK = [
+    0,  0,  0,  0,  0,  0,  0,  0,
+    0.5, 1, 1, 1, 1, 1, 1,  0.5,
+    -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+    -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+    -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+    -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+    -0.5,  0,  0,  0,  0,  0,  0, -0.5,
+    0,  0,  0,  0.5,  0.5,  0,  0,  0]
 
-QUEEN = [-2, -1, -1, -0.5, -0.5, -1, -1, -2,
-         -1,  0,  0,  0,  0,  0,  0, -1,
-         -1,  0,  0.5,  0.5,  0.5,  0.5,  0, -1,
-         -0.5,  0,  0.5,  0.5,  0.5,  0.5,  0, -0.5,
-         0,  0,  0.5,  0.5,  0.5,  0.5,  0, -0.5,
-         -1,  0.5,  0.5,  0.5,  0.5,  0.5,  0, -1,
-         -1,  0,  0.5,  0,  0,  0,  0, -1,
-         -2, -1, -1, -0.5, -0.5, -1, -1, -2]
+QUEEN = [
+    -2, -1, -1, -0.5, -0.5, -1, -1, -2,
+    -1,  0,  0,  0,  0,  0,  0, -1,
+    -1,  0,  0.5,  0.5,  0.5,  0.5,  0, -1,
+    -0.5,  0,  0.5,  0.5,  0.5,  0.5,  0, -0.5,
+    0,  0,  0.5,  0.5,  0.5,  0.5,  0, -0.5,
+    -1,  0.5,  0.5,  0.5,  0.5,  0.5,  0, -1,
+    -1,  0,  0.5,  0,  0,  0,  0, -1,
+    -2, -1, -1, -0.5, -0.5, -1, -1, -2]
 
-KING = [-3, -4, -4, -5, -5, -4, -4, -3,
-        -3, -4, -4, -5, -5, -4, -4, -3,
-        -3, -4, -4, -5, -5, -4, -4, -3,
-        -3, -4, -4, -5, -5, -4, -4, -3,
-        -2, -3, -3, -4, -4, -3, -3, -2,
-        -1, -2, -2, -2, -2, -2, -2, -1,
-        2, 2,  0,  0,  0,  0, 2, 2,
-        2, 3, 1,  0,  0, 1, 3, 2]
+KING = [
+    -3, -4, -4, -5, -5, -4, -4, -3,
+    -3, -4, -4, -5, -5, -4, -4, -3,
+    -3, -4, -4, -5, -5, -4, -4, -3,
+    -3, -4, -4, -5, -5, -4, -4, -3,
+    -2, -3, -3, -4, -4, -3, -3, -2,
+    -1, -2, -2, -2, -2, -2, -2, -1,
+    2, 2,  0,  0,  0,  0, 2, 2,
+    2, 3, 1,  0,  0, 1, 3, 2]
 
 
 # toggles turn
@@ -199,6 +205,7 @@ def boardEvaluation(board, computer, canPassant):
             table = pieceSquare(n, y, x, flip) if n < 0 else -pieceSquare(n, y, x, flip)
             eval += temp + table
 
+    # computeAll gave an index error in pawnMove
     opposite = 1 if computer == BLACK else 0
     blackList = computeAll(1, tempBoard, 0, opposite + 1, canPassant, computer)
     whiteList = computeAll(-1, tempBoard, 0, opposite, canPassant, computer)
@@ -497,9 +504,7 @@ def computerMove(piece, board, canPassant, computer):
 
 # minimax algorithm implemented to fit within this interpretation of chess
 def minimax(board, canPassant, computer, depth, turn, isPawn):
-    """
-    MAIN OBJECTIVE: Pass up move coordinates through the minimax algorithm
-    """
+
     opposite = 1 if computer == turn else 0
     moves, i = specificCompute(turn, board, canPassant, computer, opposite)  # all possible moves
     moves = computerCastle(turn, board, moves, i, canPassant, computer)  # includes castle
@@ -510,7 +515,6 @@ def minimax(board, canPassant, computer, depth, turn, isPawn):
 
     elif turn == WHITE:  # white turn
         maxEval = -math.inf
-
         for subList in moves:
             for newMove in subList[2]:
                 if subList[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
@@ -518,20 +522,18 @@ def minimax(board, canPassant, computer, depth, turn, isPawn):
                     newY, newX = newMove
                     tempBoard[oldY][oldX] = 0
                     tempBoard[newY][newX] = subList[0]
+                    piece = subList[0]
                     enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
 
-                eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)[0]
-                maxEval = max(maxEval, eval)
-                
-                if maxEval == eval:
-                    bestMove = oldY, oldX, newY, newX, subList[0]
+                    eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)[0]
+                    maxEval = max(maxEval, eval)
+                    bestMove = (oldY, oldX, newY, newX, piece) if maxEval == eval else bestMove
 
                 tempBoard = [row[:] for row in board]
         return maxEval, bestMove
 
     else:  # black turn
         minEval = math.inf
-
         for subList in moves:
             for newMove in subList[2]:
                 if subList[0] != 10 and checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
@@ -539,13 +541,12 @@ def minimax(board, canPassant, computer, depth, turn, isPawn):
                     newY, newX = newMove
                     tempBoard[oldY][oldX] = 0
                     tempBoard[newY][newX] = subList[0]
+                    piece = subList[0]
                     enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
 
-                eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)[0]
-                minEval = min(minEval, eval)
-
-                if minEval == eval:
-                    bestMove = oldY, oldX, newY, newX, subList[0]
+                    eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)[0]
+                    minEval = min(minEval, eval)
+                    bestMove = (oldY, oldX, newY, newX, piece) if minEval == eval else bestMove
 
                 tempBoard = [row[:] for row in board]
         return minEval, bestMove

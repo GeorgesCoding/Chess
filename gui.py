@@ -1,6 +1,5 @@
 import pygame
 
-
 # dictionary constant of the paths of the image of the pieces
 IMAGEPATH = {
     1: 'Assets\Pawn.png', 11: 'Assets\Pawn.png', 3: 'Assets\Knight.png',
@@ -10,13 +9,6 @@ IMAGEPATH = {
     -4: 'Assets\wBishop.png', -5: 'Assets\wRook.png',  -55: 'Assets\wRook.png',
     -7: 'Assets\wQueen.png',   -9: 'Assets\wKing.png',   -99: 'Assets\wKing.png'
 }
-
-
-# testing function: prints the state of the board
-def testBoard(board):
-    for row in board:
-        print(row)
-    print("--------------------------------")
 
 
 # prints the numbers of the board
