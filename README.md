@@ -29,7 +29,7 @@ Below are the steps for downloading and running the program locally or using the
   B. __Running locally through an IDE with Python installed__
   1. Clone repository: `git clone https://github.com/GeorgesCoding/Chess.git`
   2. Install PyGame: `pip install pygame`
-  3. In the IDE terminal, run the file with the command: `py main.py`
+  3. In the IDE terminal, run the file with the command: `py Main.py`
 
 __Notes__
 - If you are running the program through an IDE, ensure that the PyGame module and Python are installed before step two.
@@ -38,21 +38,21 @@ __Notes__
 
 #
 # **Files**
-1. ___main.py_: Game initialization and event handler__
+1. ___Main.py_: Game initialization and event handler__
 	- Is responsible for dictating how the game behaves by examining the event detected by PyGame.
-	- Uses methods from _rules.py_ to determine how to draw the state of the board based on button or mouse clicks.
+	- Uses methods from _Controller.py_ to determine how to draw the state of the board based on button or mouse clicks.
 	- Three main buttons are restart, two-player mode and computer.
 	- In the process of developing AI-generated moves for computer mode.
 
-2. ___gui.py_: Drawing and displaying components____
+2. ___GUI.py_: Drawing and displaying components____
    - Draws the board, pieces, buttons, side window and updates dialogue.
    - Also includes the dragging animation when moving pieces.
    - Each main component (ie. board, pieces, buttons) is created as a [_surface_](https://www.pygame.org/docs/ref/surface.html)
-   - The surface is converted as a bitmap image and is added to the main window surface specified as "screen" in _main.py_.
+   - The surface is converted as a bitmap image and is added to the main window surface specified as "screen" in _Main.py_.
    - The method [_blit_](https://www.pygame.org/docs/ref/surface.html#pygame.Surface.blit) is responsible for this process.
-   - Images for the pieces and buttons are stored in the _assets_ folder.
+   - Images for the pieces and buttons are stored in the _Assets_ folder.
 
-3. ___rules.py_: Game controller and move computations__
+3. ___Controller.py_: Game controller and move computations__
 	- Responsible for controlling the entirety of the game through functions.
 	- Contains functions for move computations, move validity and helper functions for computations and checks.
  	- Includes en passant capture, castling, check, checkmate and pawn promotion.
