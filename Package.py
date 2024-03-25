@@ -67,6 +67,15 @@ for a, b in zip(old, new):
 with open('GUI.py', 'w') as file:
     file.write(filedata)
 
+
+with open('Controller.py', 'r') as file:
+    filedata = file.read()
+
+filedata = filedata.replace("from GUI import getPiece, getPos, addText, testBoard", "from GUI import getPiece, getPos, addText")
+
+with open('Controller.py', 'w') as file:
+    file.write(filedata)
+
 # run the pyinstaller terminal command to package all files into executable
 os.system('pyinstaller --onefile --windowed --add-data "*.png:." Main.py')
 

@@ -1,6 +1,6 @@
 import pygame
 from random import randint, choice
-from GUI import getPiece, getPos, addText
+from GUI import getPiece, getPos, addText, testBoard
 from Main import PIECE
 import math
 
@@ -502,9 +502,8 @@ def computerMove(piece, board, canPassant, computer):
     return oldY, oldX, newY, newX, piece
 
 
-# minimax algorithm implemented to fit within this interpretation of chess
-def minimax(board, canPassant, computer, depth, turn, isPawn):
-
+# minimax algorithm with alpha beta pruning
+def minimax(board, canPassant, computer, depth, turn, isPawn, alpha, beta):
     opposite = 1 if computer == turn else 0
     moves, i = specificCompute(turn, board, canPassant, computer, opposite)  # all possible moves
     moves = computerCastle(turn, board, moves, i, canPassant, computer)  # includes castle
@@ -525,9 +524,14 @@ def minimax(board, canPassant, computer, depth, turn, isPawn):
                     piece = subList[0]
                     enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
 
-                    eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)[0]
+                    eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn, alpha, beta)[0]
                     maxEval = max(maxEval, eval)
                     bestMove = (oldY, oldX, newY, newX, piece) if maxEval == eval else bestMove
+
+                    alpha = max(alpha, eval)
+                    if beta <= alpha:
+                        tempBoard = [row[:] for row in board]
+                        break
 
                 tempBoard = [row[:] for row in board]
         return maxEval, bestMove
@@ -544,9 +548,14 @@ def minimax(board, canPassant, computer, depth, turn, isPawn):
                     piece = subList[0]
                     enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
 
-                    eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn)[0]
+                    eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn, alpha, beta)[0]
                     minEval = min(minEval, eval)
                     bestMove = (oldY, oldX, newY, newX, piece) if minEval == eval else bestMove
+
+                    beta = min(beta, eval)
+                    if beta <= alpha:
+                        tempBoard = [row[:] for row in board]
+                        break
 
                 tempBoard = [row[:] for row in board]
         return minEval, bestMove

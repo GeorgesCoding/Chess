@@ -11,6 +11,13 @@ IMAGEPATH = {
 }
 
 
+# testing function: prints the state of the board
+def testBoard(board):
+    for row in board:
+        print(row)
+    print("--------------------------------")
+
+
 # prints the numbers of the board
 def numBoard(screen, pSize, turn, computer, switch, size):
 
