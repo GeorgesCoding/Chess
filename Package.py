@@ -1,28 +1,21 @@
 import os
 import shutil
 
-# python script to effeciently make a executable from the three main files
+# delete old files
+if os.path.exists('temp'):
+    shutil.rmtree('temp')
 
-# copies files to a new folder called 'temp'
-shutil.copytree('Assets', 'temp')
-shutil.copy('Main.py', 'temp')
-shutil.copy('GUI.py', 'temp')
-shutil.copy('Controller.py', 'temp')
+if os.path.exists('Chess.exe'):
+    os.remove('Chess.exe')
 
-# change directory to 'temp' folder
-os.chdir('temp')
+if os.path.exists('certificate.pfx'):
+    os.remove('certificate.pfx')
 
-# Read in the file
-with open('Main.py', 'r') as file:
-    filedata = file.read()
+if os.path.exists('signtool.exe'):
+    os.remove('signtool.exe')
 
-# Replace the target string
-filedata = filedata.replace("'Assets\icon.png'", "resource_path('icon.png')")
 
-# Write the file out again
-with open('Main.py', 'w') as file:
-    file.write(filedata)
-
+# text to replace and write in files
 method = """def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -57,33 +50,103 @@ new = [
     "'wBishop.png'", "'wRook.png'", "'wQueen.png'", "'wKing.png'", newImport, method
 ]
 
+versionData = """
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(0, 4, 1, 0),
+    prodvers=(0, 4, 1, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x4,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          u'040904B0',
+          [StringStruct(u'CompanyName', u'George Chen'),
+          StringStruct(u'FileDescription', u'Chess'),
+          StringStruct(u'FileVersion', u'0.4.1'),
+          StringStruct(u'InternalName', u'Chess'),
+          StringStruct(u'LegalCopyright', u'Copyright (c) George Chen'),
+          StringStruct(u'OriginalFilename', u'Chess.exe'),
+          StringStruct(u'ProductName', u'Chess Game App'),
+          StringStruct(u'ProductVersion', u'0.4.1')])
+    ]), 
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)
+"""
+
+
+# copies files to a new folder called 'temp'
+shutil.copytree('Assets', 'temp')
+shutil.copy('Main.py', 'temp')
+shutil.copy('GUI.py', 'temp')
+shutil.copy('Controller.py', 'temp')
+os.chdir('temp')
+
+
+# read and write in the files that need editing
+with open('Main.py', 'r') as file:
+    filedata = file.read()
+
+filedata = filedata.replace("'Assets\icon.png'", "resource_path('icon.png')")
+
+with open('Main.py', 'w') as file:
+    file.write(filedata)
+
 with open('GUI.py', 'r') as file:
     filedata = file.read()
 
 for a, b in zip(old, new):
     filedata = filedata.replace(a, b)
 
-# Write the file out again
 with open('GUI.py', 'w') as file:
     file.write(filedata)
-
 
 with open('Controller.py', 'r') as file:
     filedata = file.read()
 
-filedata = filedata.replace("from GUI import getPiece, getPos, addText, testBoard", "from GUI import getPiece, getPos, addText")
+filedata = filedata.replace('from GUI import getPiece, getPos, addText, testBoard', 'from GUI import getPiece, getPos, addText')
 
 with open('Controller.py', 'w') as file:
     file.write(filedata)
 
-# run the pyinstaller terminal command to package all files into executable
-os.system('pyinstaller --onefile --windowed --add-data "*.png:." Main.py')
+file = open('version.txt', 'a')
 
-# change directory back to original 'Chess' folder
-os.chdir("C:\\Users\\cheng\\Downloads\\Coding\\Chess")
+with open('version.txt', 'r') as file:
+    filedata = file.read()
 
-# copy the created executable 'main.exe' into the main 'chess' folder and rename it to 'Chess.exe'
+filedata = filedata.replace("", versionData)
+
+with open('version.txt', 'w') as file:
+    file.write(filedata)
+
+
+# package files into executable using PyInstaller command
+os.system('pyinstaller --onefile  --windowed --add-data "*.png:." Main.py --version-file version.txt')
+os.chdir('C:\\Users\\cheng\\Downloads\\Coding\\Chess')
 shutil.copy('temp\dist\Main.exe', '.\Chess.exe')
+shutil.copy('C:\\Users\\cheng\\certificate.pfx', '.\certificate.pfx')
 
-# deletes folder named temp
-shutil.rmtree("temp")
+
+# check to see if packaging was successful
+if os.path.exists('Chess.exe'):
+    # sign the executable using hash function SHA-256 and verify the signature
+    shutil.copy('C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.22621.0\\x86\\signtool.exe', '.\signtool.exe')
+    os.system('Signtool sign /fd SHA256 /f certificate.pfx /p <password> /t http://timestamp.comodoca.com Chess.exe')
+    os.system('Signtool verify /pa Chess.exe')
+
+    shutil.rmtree("temp")
+    os.remove('certificate.pfx')
+    os.remove('signtool.exe')
+    os.system('cls||clear')
+    print('Packaging Complete!')
+else:
+    print('ERROR: Chess.exe was not created.')
+
+# shutil.copy('C:\\Users\\cheng\\Downloads\\Coding\\Chess\\Chess.exe', 'C:\\Users\\cheng\\OneDrive\\Desktop\\Chess.exe')

@@ -251,32 +251,37 @@ def pawnMove(piece, y, x, board, opposite, canPassant, computer):
     a = -1 if opposite == 1 else 1
     b = a * 2
 
-    if board[y - a][x] == 0:
-        moves.add((y - a, x))  # forward one space
+    try:
+        if board[y - a][x] == 0:
+            moves.add((y - a, x))  # forward one space
 
-    if piece in {-11, 11}:
-        if board[y - b][x] == 0 and board[y - a][x] == 0:  # first move
-            moves.add((y - b, x))
+        if piece in {-11, 11}:
+            if board[y - b][x] == 0 and board[y - a][x] == 0:  # first move
+                moves.add((y - b, x))
 
-    if spaceCheck(piece, board, y - a, x + 1) and board[y - a][x + 1] != 0:  # right capture
-        moves.add((y - a, x + 1))
+        if spaceCheck(piece, board, y - a, x + 1) and board[y - a][x + 1] != 0:  # right capture
+            moves.add((y - a, x + 1))
 
-    if spaceCheck(piece, board, y - a, x - 1) and board[y - a][x - 1] != 0:  # left capture
-        moves.add((y - a, x - 1))
+        if spaceCheck(piece, board, y - a, x - 1) and board[y - a][x - 1] != 0:  # left capture
+            moves.add((y - a, x - 1))
 
-    if computer == None:
-        coord = (7 - y, 7 - x)
-        p, m = 1, -1
-    else:
-        coord = (y, x)
-        m, p = 1, -1
-
-    if coord in canPassant:  # LH and RH en passant
-        if coord[1] - 1 == canPassant[0][1]:
-            moves.add((y - a, x + p))
+        if computer == None:
+            coord = (7 - y, 7 - x)
+            p, m = 1, -1
         else:
-            moves.add((y - a, x + m))
-    return moves
+            coord = (y, x)
+            m, p = 1, -1
+
+        if coord in canPassant:  # LH and RH en passant
+            if coord[1] - 1 == canPassant[0][1]:
+                moves.add((y - a, x + p))
+            else:
+                moves.add((y - a, x + m))
+        return moves
+
+    except (IndexError):
+        print(y, x, a, b, opposite)
+        input()
 
 
 # computes legal knight moves
@@ -508,9 +513,10 @@ def minimax(board, canPassant, computer, depth, turn, isPawn, alpha, beta):
     moves, i = specificCompute(turn, board, canPassant, computer, opposite)  # all possible moves
     moves = computerCastle(turn, board, moves, i, canPassant, computer)  # includes castle
     tempBoard = [row[:] for row in board]
+    bestMove = None
 
     if depth == 0 or gameOver(computer, turn, board, canPassant):  # reached end of tree or game ended
-        return boardEvaluation(board, computer, canPassant), 0
+        return boardEvaluation(board, computer, canPassant), bestMove
 
     elif turn == WHITE:  # white turn
         maxEval = -math.inf
