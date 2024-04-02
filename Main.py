@@ -1,6 +1,7 @@
 import pygame
 from GUI import *
 from Controller import *
+import os
 
 # Dictionary constant of the names of pieces according to their integer representation
 PIECE = {
@@ -19,12 +20,15 @@ def main():
 
     # automatically changes window dimensions according to monitor size
     pygame.init()
+    x, y = -1300, -1000
+    os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x, y)
     size = pygame.display.Info().current_h
-    SIZE = size - 120
+    size = size/0.5
+    SIZE = (size - 120)
     PSIZE = (SIZE-50)/8
 
     # initialize and customize window
-    screen = pygame.display.set_mode((SIZE + SIZE/1.9 + 15, SIZE + 15))
+    screen = pygame.display.set_mode((SIZE + SIZE/1.9, SIZE + 15))
     pygame.display.set_caption("Chess")
     icon = pygame.image.load('Assets\icon.png')
     pygame.display.set_icon(icon)
@@ -45,15 +49,6 @@ def main():
     # list of all pawns that can perform en passant
     canPassant = []
 
-    # an array that holds the dialouge to be displayed
-    text = ["", "", "", "", "", "", "", "", ""]
-
-    # draw board, pieces and side bar
-    buttonSurface = buttons(SIZE)
-    boardSurface = createBoard(SIZE, PSIZE)
-    dialougeSurf = dialouge(SIZE, text)
-    piecesSurface = drawPieces(board, PSIZE, SIZE)
-
     # button dimensions and coordinates
     # used for button press detection
     BUTTONLENGTH = int(((SIZE/1.9)-25 - 60)/3)
@@ -68,6 +63,18 @@ def main():
     rookInfo = (INTSIZE + 35 + INTPSIZE * 2, 45 + INTPSIZE + BUTTONHEIGHT, INTPSIZE, INTPSIZE)
     queenInfo = (INTSIZE + 45 + INTPSIZE * 3, 45 + INTPSIZE + BUTTONHEIGHT, INTPSIZE, INTPSIZE)
     promoInfo = bishopInfo, knightInfo, rookInfo, queenInfo
+    dialougeInfo = (SIZE/1.9) - 55, SIZE - (165 + 2 * (SIZE - 45)/6 + (SIZE - 45)/18)
+    textHeight = (490 - 915/18)/9
+    numText = int(dialougeInfo[1]/textHeight + 0.1)
+
+    # an array that holds the dialouge to be displayed
+    text = [""] * numText
+
+    # draw board, pieces and side bar
+    buttonSurface = buttons(SIZE)
+    boardSurface = createBoard(SIZE, PSIZE)
+    dialougeSurf = dialouge(SIZE, text)
+    piecesSurface = drawPieces(board, PSIZE, SIZE)
 
     # default position of piece being moved
     oldX, oldY = 0, 0
@@ -94,6 +101,18 @@ def main():
                     player = -computer
                     clearText(text)
                 dialougeSurf = dialouge(SIZE, text)
+
+            # text wrapping debugging
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_u:
+                    start = True
+                elif event.key == pygame.K_r:
+                    pygame.quit()
+                    main()
+                    return
+                elif event.key == pygame.K_e:
+                    pygame.quit()
+                    return
 
             # checks for end game
             if start and computer != None and not outline and not end:
