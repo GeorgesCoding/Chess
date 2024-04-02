@@ -15,7 +15,7 @@ Requires PyGame module installation: `pip install pygame`
 
 #
 # **Running the Program**
-Below are the steps for downloading and running the program locally or using the release file. The release file can run the game without using an IDE or the need to download Python and the PyGame module. 
+Below are the steps for downloading and running the program locally or using the release file. The release file can run the game without using an IDE or the need to download Python and the PyGame module. Text and images may appear incorrectly formatted if the monitor size is below 12 inches.
 
   A. __Downloading the release file__
   1. Go to the repository's release page: [click me!](https://github.com/GeorgesCoding/Chess/releases)
