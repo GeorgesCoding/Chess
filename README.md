@@ -43,7 +43,7 @@ __Notes__
 	- Uses methods from _Controller.py_ to determine how to draw the state of the board based on button or mouse clicks.
 	- Three main buttons are restart, two-player mode and computer.
 
-2. ___GUI.py_: Drawing and displaying components____
+2. ___GUI.py_: Drawing and displaying components__
    - Draws the board, pieces, buttons, side window and updates dialogue.
    - Also includes the dragging animation when moving pieces.
    - Each main component (ie. board, pieces, buttons) is created as a [_surface_](https://www.pygame.org/docs/ref/surface.html)
