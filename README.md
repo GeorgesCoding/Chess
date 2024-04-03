@@ -15,13 +15,13 @@ Requires PyGame module installation: `pip install pygame`
 
 #
 # **Running the Program**
-Below are the steps for downloading and running the program locally or using the release file. The release file can run the game without using an IDE or the need to download Python and the PyGame module. Text and images may appear incorrectly formatted if the monitor size is below 12 inches.
+Below are the steps for downloading and running the program locally or using the release file. The release file can run the game without using an IDE or the need to download Python and the PyGame module.
 
   A. __Downloading the release file__
   1. Go to the repository's release page: [click me!](https://github.com/GeorgesCoding/Chess/releases)
   2. On the latest release (the topmost of the page), click on _Assets_.
   4. Click on the file called _Chess.exe_. This will download the program's file.
-  5. Run this file. Windows Defender will abort the program as it's a .exe file but click "_More Info_", then "_Run anyway_".
+  5. Run this file. Windows Defender may abort the program as it's a random .exe file downloaded. To run, click "_More Info_", then "_Run anyway_".
 
 
   B. __Running locally through an IDE with Python installed__
@@ -32,6 +32,7 @@ Below are the steps for downloading and running the program locally or using the
 __Notes__
 - If you are running the program through an IDE, ensure that the PyGame module and Python are installed before step two.
 - Regardless of the method you downloaded the program, the game window will automatically resize according to the "main" display set in your computer settings.
+- Text and images may appear incorrectly sized if the monitor size is below 13 inches, but still playable. 
 
 
 #
@@ -40,7 +41,6 @@ __Notes__
 	- Is responsible for dictating how the game behaves by examining the event detected by PyGame.
 	- Uses methods from _Controller.py_ to determine how to draw the state of the board based on button or mouse clicks.
 	- Three main buttons are restart, two-player mode and computer.
-	- In the process of developing AI-generated moves for computer mode.
 
 2. ___GUI.py_: Drawing and displaying components____
    - Draws the board, pieces, buttons, side window and updates dialogue.
@@ -55,6 +55,16 @@ __Notes__
 	- Contains functions for move computations, move validity and helper functions for computations and checks.
  	- Includes en passant capture, castling, check, checkmate and pawn promotion.
 	- The majority of the functions rely heavily on array computations.
+	- Uses a minimax algorithm with alpha-beta pruning for the computer generated moves.
+	- Currently reaches a max depth of 3 in the search tree.
+
+4. ___Package.py_: Executable packaging script__
+	- First copies all necessary files into a temporary folder.
+	- Then edits the main files, _Main.Py_, _GUI.py_ and _Controller.py_ to include the resource_path function and replace the old image paths.
+	- This function allows the picture binary data to be read through the compiled python code.
+	- After will create a [version info resource file](https://learn.microsoft.com/en-us/windows/win32/menurc/versioninfo-resource) to be read by PyInstaller to include file information.
+ 	- Will then sign the file using Microsoft's [SignTool](https://learn.microsoft.com/en-us/windows/win32/appxpkg/how-to-sign-a-package-using-signtool).
+  	- Automatically deletes any unecessary files leaving only the executable in the curent working directory.  	
 
 
 #
@@ -80,7 +90,7 @@ __Notes__
 
 - Legal moves are structured in terms of a set()
 	- If the space moved to is within the set, the move is valid.
-  - Because all the legal moves of the piece are computed and compiled together, to test move validity, you need to check if the space the piece moved to is within this list.
+  - All the legal moves of the piece are computed and compiled together, s0 to test move validity, you need to check if the space the piece moved to is within this list.
   - When testing for membership, lists have [O(n) efficiency while sets have O(1)](https://wiki.python.org/moin/TimeComplexity), making sets more faster.
   - Furthermore, values don't need to be accessed, only a check for membership.
   - Lastly sets ensure unique elements due to their properties, allowing for fewer checks and thus making sets the ideal choice.
