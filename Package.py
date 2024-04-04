@@ -5,21 +5,6 @@ from getpass import getpass
 import time
 
 
-# open and edits file
-def readWrite(fileName, oldText, newText, multiple):
-    with open(fileName, 'r') as file:
-        filedata = file.read()
-
-    if multiple:
-        for old, new in zip(oldText, newText):
-            filedata = filedata.replace(old, new)
-    else:
-        filedata = filedata.replace(oldText, newText)
-
-    with open(fileName, 'w') as file:
-        file.write(filedata)
-
-
 # text to replace and write in files
 METHOD = """def resource_path(relative_path):
     try:
@@ -83,6 +68,21 @@ VERSIONDATA = """VSVersionInfo(
         VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
     ]
 )"""
+
+
+# open and edits file
+def readWrite(fileName, oldText, newText, multiple):
+    with open(fileName, 'r') as file:
+        filedata = file.read()
+
+    if multiple:
+        for old, new in zip(oldText, newText):
+            filedata = filedata.replace(old, new)
+    else:
+        filedata = filedata.replace(oldText, newText)
+
+    with open(fileName, 'w') as file:
+        file.write(filedata)
 
 
 def main():

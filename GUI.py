@@ -116,10 +116,17 @@ def promoOutline(screen, size, toggle):
 
 # adds additional dialouge into the list
 # recursively calls itself after deleting the last text dialouge
-def addText(array, text, count):
+def addText(array, text, count, length):
     try:
         index = array.index("")
-        if count == 0:  # two line text
+        if length >= 850:
+            for string in {"Black pawn promoted to ", "White pawn promoted to ", "Invalid move:"}:
+                if string in array:
+                    index = array.index(string)
+                    text = text[3:] if array[0] == "Invalid move:" else text
+                    array[index] = array[index] + text
+                    return count
+        elif count == 0:  # two line text
             array[index] = text
             return count
         else:
@@ -128,12 +135,12 @@ def addText(array, text, count):
     except ValueError:
         array.pop(0)
         array.append("")
-        return addText(array, text, count)
+        return addText(array, text, count, length)
 
 
 # clears the dialouge list of unecessary dialouge
 # includes invalid moves and colour selector
-def clearText(array):
+def clearText(array, num):
     if array[0] == "Press the Key to Choose a Colour:":
         for i in range(len(array)):
             array[i] = ""
@@ -142,7 +149,7 @@ def clearText(array):
         for n in array:
             if n not in {"Invalid move:", "    White king in check", "    Black king in check", "Invalid Move"}:
                 newArray.append(n)
-        while len(newArray) != 9:
+        while len(newArray) != num:
             newArray.append("")
         array = newArray
     return array
@@ -154,7 +161,8 @@ def dialouge(size, text):
     dialougeSurf = pygame.Surface((size + size/1.9, size), pygame.SRCALPHA, 32).convert_alpha()
     buttonHeight = (size - 45)/6
     black = (0, 0, 0)
-    font = pygame.font.SysFont('Comic Sans MS', int((size / 960) * 27))
+    num = int((size / 960) * 27)
+    font = pygame.font.SysFont('Comic Sans MS', num)
     white = (255, 255, 255)
 
     # Calculate dimensions for the rectangle
@@ -169,7 +177,7 @@ def dialouge(size, text):
     # Render and blit text
     for i, txt in enumerate(text):
         render = font.render(txt, False, white)
-        height = 130 + 2 * buttonHeight + buttonHeight/3 + 45 * i
+        height = 130 + 2 * buttonHeight + buttonHeight/3 + ((40/27)*num) * i
         dialougeSurf.blit(render, (size + 30, height))
 
     return dialougeSurf
