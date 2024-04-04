@@ -1,7 +1,8 @@
 # **Overview** 
-- A traditional chess game developed in Python using the [PyGame](https://www.pygame.org/wiki/about) module.
-- Utilizes piece-square tables found from the [Chess Programming Wiki](https://www.chessprogramming.org/Simplified_Evaluation_Function).
+- A traditional chess game developed in Python using only the [PyGame](https://www.pygame.org/wiki/about) module.
+- Utilizes piece-square tables found from the [Chess Programming Wiki](https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function).
 - Includes two-player mode and an AI bot using a minimax algorithm with alpha-beta pruning.
+- Incorporates a dialogue window to announce moves, game state and special moves. 
     
 https://github.com/GeorgesCoding/Chess/assets/118407807/baf9b877-ae29-45b6-bbe5-0767394ad079
 
@@ -24,7 +25,6 @@ Below are the steps for downloading and running the program locally or using the
   5. Run this file. Windows Defender may abort the program as it's a random .exe file downloaded.
   6. To run, click "_More Info_", then "_Run anyway_".
 
-
   B. __Running locally through an IDE with Python installed__
   1. Clone repository: `git clone https://github.com/GeorgesCoding/Chess.git`
   2. Install PyGame: `pip install pygame`
@@ -37,39 +37,46 @@ __Notes__
 
 
 #
-# **Files**
+# **Files/Modules**
+For a more in-depth explanation of the game's functionality, see [Game Structure](https://github.com/GeorgesCoding/Chess/tree/main?tab=readme-ov-file#game-structure).
+
 1. ___Main.py_: Game initialization and event handler__
-	- Is responsible for dictating how the game behaves by examining the event detected by PyGame.
-	- Uses methods from _Controller.py_ to determine how to draw the state of the board based on button or mouse clicks.
-	- Three main buttons are restart, two-player mode and computer.
+	- Running this file will initialize the game window to the starting state, an empty board waiting for a button press.
+	- Is responsible for dictating game behaviour by examining the event (mouse/keyboard clicks) detected by PyGame.
+	- Uses functions from other modules to determine how to draw the state of the board from these events.
+	- Three main buttons are restart, two-player mode and computer with the pawn promotion buttons underneath.
 
 2. ___GUI.py_: Drawing and displaying components__
-   - Draws the board, pieces, buttons, side window and updates dialogue.
-   - Also includes the dragging animation when moving pieces.
-   - Each main component (ie. board, pieces, buttons) is created as a [_surface_](https://www.pygame.org/docs/ref/surface.html)
-   - The surface is converted as a bitmap image and is added to the main window surface specified as "screen" in _Main.py_.
-   - The method [_blit_](https://www.pygame.org/docs/ref/surface.html#pygame.Surface.blit) is responsible for this process.
-   - Images for the pieces and buttons are stored in the _Assets_ folder.
+	- Draws the board, pieces, buttons, and side window and updates dialogue text throughout the game.
+ 	- The dialogue window is altered through the recursive function _addText_.
+	- Also includes the dragging animation when moving pieces with functions that help locate and identify the piece.
+	- Images for the pieces and buttons are stored in the _Assets_ folder.
 
 3. ___Controller.py_: Game controller and move computations__
-	- Responsible for controlling the entirety of the game through functions.
+	- Responsible for controlling the game logistics and button/keyboard presses.
 	- Contains functions for move computations, move validity and helper functions for computations and checks.
- 	- Includes en passant capture, castling, check, checkmate and pawn promotion.
-	- The majority of the functions rely heavily on array computations.
-	- Uses a minimax algorithm with alpha-beta pruning for the computer generated moves.
-	- Currently reaches a max depth of 3 in the search tree.
+ 	- Includes en passant capture, castling, check, checkmate, stalemate and pawn promotion.
 
-4. ___Package.py_: Executable packaging script__
-	- First copies all necessary files into a temporary folder.
-	- Then edits the main files, _Main.Py_, _GUI.py_ and _Controller.py_ to include the resource_path function and replace the old image paths.
-	- This function allows the picture binary data to be read through the compiled python code.
+4. ___Engine.py_: Chess Engine__
+   	- Uses a minimax algorithm with alpha-beta pruning for the computer-generated moves.
+   	- Utilizes piece-square tables for middle and end-game scenarios for stronger move computations.
+	- Currently reaches a max depth of 3 in the search tree within an appropriate response time.
+
+5. ___Package.py_: Executable packaging script__
+	- First, the script copies all necessary modules and files into a temporary folder.
+	- Then edits the main files, _Main.Py_, _GUI.py_ and _Controller.py_ to include the _resource_path_ function and replace the old image paths.
+	- This function allows the picture binary data to be read through the compiled Python code.
 	- After will create a [version info resource file](https://learn.microsoft.com/en-us/windows/win32/menurc/versioninfo-resource) to be read by PyInstaller to include file information.
  	- Will then sign the file using Microsoft's [SignTool](https://learn.microsoft.com/en-us/windows/win32/appxpkg/how-to-sign-a-package-using-signtool).
-  	- Automatically deletes any unecessary files leaving only the executable in the curent working directory.  	
+  	- Automatically deletes any unnecessary files leaving only the executable in the current working directory.  	
 
 
 #
 # **Game Structure**
+- Each main component (ie. board, pieces, buttons, dialogue text) is created as a [_surface_](https://www.pygame.org/docs/ref/surface.html)
+- The surface is converted as a bitmap image and is added to the main window surface specified as "screen" in _Main.py_.
+- The method [_blit_](https://www.pygame.org/docs/ref/surface.html#pygame.Surface.blit) is responsible for this process.
+  
 - The chess board is represented through a 2D array.
 - Each space is an index in the sub-arrays with the sub-arrays in the 2D array being a row in the board.
 - Index starts at [0][0] to [7][7] in the following format: [y][x].
