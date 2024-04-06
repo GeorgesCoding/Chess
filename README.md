@@ -4,7 +4,6 @@
 - Utilizes piece-square tables found from the [Chess Programming Wiki](https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function).
 - Includes two-player mode and an AI bot using a minimax algorithm with alpha-beta pruning.
 - Incorporates a dialogue window to announce moves, game state and special moves.
-- The purpose of this project was to learn Python and gain rudimentary experience with AI and game development.
 
 https://github.com/GeorgesCoding/Chess/assets/118407807/88b3ea94-de94-4dbb-b189-552dcc79c38a
 
