@@ -1,10 +1,16 @@
+
 # **Overview** 
 - A traditional chess game developed in Python using only the [PyGame](https://www.pygame.org/wiki/about) module.
 - Utilizes piece-square tables found from the [Chess Programming Wiki](https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function).
 - Includes two-player mode and an AI bot using a minimax algorithm with alpha-beta pruning.
-- Incorporates a dialogue window to announce moves, game state and special moves. 
-    
-https://github.com/GeorgesCoding/Chess/assets/118407807/baf9b877-ae29-45b6-bbe5-0767394ad079
+- Incorporates a dialogue window to announce moves, game state and special moves.
+- The purpose of this project was to learn Python and gain rudimentary experience with AI and game development.
+
+https://github.com/GeorgesCoding/Chess/assets/118407807/88b3ea94-de94-4dbb-b189-552dcc79c38a
+
+Notes: 
+- The yellow highlight around the mouse is meant to display the mouse clicks and is not part of the game's attributes.
+- The game may appear to run slower due to screen recording software.
 
 
 #
