@@ -9,7 +9,7 @@ https://github.com/GeorgesCoding/Chess/assets/118407807/88b3ea94-de94-4dbb-b189-
 
 Notes: 
 - The yellow highlight around the mouse is meant to display the mouse clicks and is not part of the game.
-- The game may appear to run slower due to screen recording software.
+- The game may appear to run slower in the video due to the recording software.
 
 
 #
