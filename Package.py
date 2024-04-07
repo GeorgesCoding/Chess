@@ -21,8 +21,13 @@ def testBoard(board):
     print("--------------------------------")"""
 
 NEWIMPORT = """import pygame
+import math
 import os
 import sys
+"""
+
+OLDIMPORT = """import pygame
+import math
 """
 
 OLD = [
@@ -30,7 +35,7 @@ OLD = [
     "'Assets\KnightIcon.png'", "'Assets\RookIcon.png'", "'Assets\QueenIcon.png'", "(path)", "'Assets\Pawn.png'",
     "'Assets\Knight.png'", "'Assets\Bishop.png'", "'Assets\Rook.png'", "'Assets\Queen.png'",  "'Assets\King.png'",
     "'Assets\wPawn.png'",  "'Assets\wKnight.png'", "'Assets\wBishop.png'", "'Assets\wRook.png'", "'Assets\wQueen.png'",
-    "'Assets\wKing.png'", "import pygame", REPLACE,
+    "'Assets\wKing.png'", OLDIMPORT, REPLACE,
 ]
 
 NEW = [
@@ -93,12 +98,12 @@ def main():
 
     # copies files to a new folder called 'temp'
     shutil.copytree('Assets', 'temp')
-    for fileName in ('Main.py', 'GUI.py', 'Controller.py'):
+    for fileName in ('Main.py', 'GUI.py', 'Controller.py', 'Engine.py'):
         shutil.copy(fileName, 'temp')
     os.chdir('temp')
 
     # replace text in files
-    readWrite('Main.py', "'Assets\icon.png'", "resource_path('icon.png')", False)
+    readWrite('Main.py', "'Assets\icon.png'", "GUI.resource_path('icon.png')", False)
     readWrite('GUI.py', OLD, NEW, True)
     readWrite('Controller.py', 'from GUI import getPiece, getPos, addText, testBoard', 'from GUI import getPiece, getPos, addText', False)
     open('version.txt', 'a')

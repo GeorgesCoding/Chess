@@ -144,7 +144,6 @@ def minimax(board, canPassant, computer, depth, turn, isPawn, alpha, beta):
     opposite = 1 if computer == turn else 0
     moves, i = Controller.specificCompute(turn, board, canPassant, computer, opposite)  # all possible moves
     moves = Controller.computerCastle(turn, board, moves, i, canPassant, computer)  # includes castle
-    tempBoard = [row[:] for row in board]
     bestMove = None
 
     if depth == 0 or Controller.gameOver(computer, turn, board, canPassant):  # reached end of tree or game ended
@@ -157,21 +156,20 @@ def minimax(board, canPassant, computer, depth, turn, isPawn, alpha, beta):
                 if subList[0] != 10 and Controller.checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
                     oldY, oldX = subList[1]
                     newY, newX = newMove
-                    tempBoard[oldY][oldX] = 0
-                    tempBoard[newY][newX] = subList[0]
+                    newPiece = board[newY][newX]
+                    board[oldY][oldX] = 0
+                    board[newY][newX] = subList[0]
                     piece = subList[0]
-                    Controller.enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
+                    Controller.enPassantCapture(subList[0], board, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
 
-                    eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn, alpha, beta)[0]
+                    eval = minimax(board, canPassant, computer, depth - 1, -turn, isPawn, alpha, beta)[0]
                     maxEval = max(maxEval, eval)
                     bestMove = (oldY, oldX, newY, newX, piece) if maxEval == eval else bestMove
+                    Controller.undo(board, subList[0], newPiece, newY, newX, oldY, oldX)
 
                     alpha = max(alpha, eval)
                     if beta <= alpha:
-                        tempBoard = [row[:] for row in board]
                         break
-
-                tempBoard = [row[:] for row in board]
         return maxEval, bestMove
 
     else:  # black turn
@@ -181,21 +179,20 @@ def minimax(board, canPassant, computer, depth, turn, isPawn, alpha, beta):
                 if subList[0] != 10 and Controller.checkMove(subList[0], newMove[0], newMove[1], subList[1][0], subList[1][1], board, canPassant, computer):
                     oldY, oldX = subList[1]
                     newY, newX = newMove
-                    tempBoard[oldY][oldX] = 0
-                    tempBoard[newY][newX] = subList[0]
+                    newPiece = board[newY][newX]
+                    board[oldY][oldX] = 0
+                    board[newY][newX] = subList[0]
                     piece = subList[0]
-                    Controller.enPassantCapture(subList[0], tempBoard, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
+                    Controller.enPassantCapture(subList[0], board, newY, newX, oldY, oldX, isPawn, canPassant, [], computer, turn, True)
 
-                    eval = minimax(tempBoard, canPassant, computer, depth - 1, -turn, isPawn, alpha, beta)[0]
+                    eval = minimax(board, canPassant, computer, depth - 1, -turn, isPawn, alpha, beta)[0]
                     minEval = min(minEval, eval)
                     bestMove = (oldY, oldX, newY, newX, piece) if minEval == eval else bestMove
+                    Controller.undo(board, subList[0], newPiece, newY, newX, oldY, oldX)
 
                     beta = min(beta, eval)
                     if beta <= alpha:
-                        tempBoard = [row[:] for row in board]
                         break
-
-                tempBoard = [row[:] for row in board]
         return minEval, bestMove
 
 
@@ -256,7 +253,6 @@ def pieceSquare(piece, y, x, flip, board):
 # incporporates the values of the remaining pieces on the board, their positioning and if the king is in check
 def boardEvaluation(board, computer, canPassant):
     eval = 0
-    tempBoard = [row[:] for row in board]
 
     for y, row in enumerate(board):
         for x, n in enumerate(row):  # evaluates the number of pieces on each side
@@ -265,10 +261,9 @@ def boardEvaluation(board, computer, canPassant):
             table = pieceSquare(n, y, x, flip, board) if n < 0 else -pieceSquare(n, y, x, flip, board)
             eval += temp + table
 
-    # computeAll gave an index error in pawnMove
     opposite = 1 if computer == BLACK else 0
-    blackList = Controller.computeAll(1, tempBoard, 0, opposite + 1, canPassant, computer)
-    whiteList = Controller.computeAll(-1, tempBoard, 0, opposite, canPassant, computer)
+    blackList = Controller.computeAll(1, board, 0, opposite + 1, canPassant, computer)
+    whiteList = Controller.computeAll(-1, board, 0, opposite, canPassant, computer)
 
     if Controller.kingCoord(1, board) in blackList:
         eval -= 100  # black king in check
@@ -278,8 +273,11 @@ def boardEvaluation(board, computer, canPassant):
     return eval
 
 
-# defines the end game state
+# defines the end game state, when most pieces are gone
 # used to determine which piece square table to use
 def endGameState(board):
-    # define end game here
-    return True
+    empty = 0
+    for row in board:
+        empty += row.count(0)
+
+    return True if empty < 11 else False

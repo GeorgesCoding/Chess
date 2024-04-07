@@ -1,4 +1,5 @@
 import pygame
+import math
 
 # dictionary constant of the paths of the image of the pieces
 IMAGEPATH = {
@@ -116,16 +117,26 @@ def promoOutline(screen, size, toggle):
 
 # adds additional dialouge into the list
 # recursively calls itself after deleting the last text dialouge
-def addText(array, text, count, length):
+def addText(array, text, count, length, font):
+    concateText = ""
+    index = 999
+    reverseArray = reversed(tuple(enumerate(array)))
+
+    for i, string in reverseArray:  # goes through dialouge array in reverse, finding the most recently added line that contains one of the target values
+        if string in {"Black pawn promoted to", "White pawn promoted to", "Invalid move:"}:
+            index = i
+            changedText = text[3:]
+            changedText = changedText.lower() if array[index] != "Invalid move:" else changedText
+            concateText = array[index] + changedText
+            break
+
     try:
-        index = array.index("")
-        if length >= 850:
-            for string in {"Black pawn promoted to ", "White pawn promoted to ", "Invalid move:"}:
-                if string in array:
-                    index = array.index(string)
-                    text = text[3:] if array[0] == "Invalid move:" else text
-                    array[index] = array[index] + text
-                    return count
+        textLength = math.inf if (concateText == "" or font == 0) else font.size(concateText)[0]
+        index = array.index("") if (index == 999 or textLength + 25 >= length) else index
+
+        if textLength + 25 < length:
+            array[index] = concateText
+            return count
         elif count == 0:  # two line text
             array[index] = text
             return count
@@ -135,7 +146,7 @@ def addText(array, text, count, length):
     except ValueError:
         array.pop(0)
         array.append("")
-        return addText(array, text, count, length)
+        return addText(array, text, count, length, font)
 
 
 # clears the dialouge list of unecessary dialouge
@@ -147,7 +158,7 @@ def clearText(array, num):
     else:
         newArray = []
         for n in array:
-            if n not in {"Invalid move:", "    White king in check", "    Black king in check", "Invalid Move"}:
+            if n not in {"Invalid move:", "    White king in check", "    Black king in check", "Invalid Move", "Invalid move: White king in check", "Invalid move: Black king in check"}:
                 newArray.append(n)
         while len(newArray) != num:
             newArray.append("")
@@ -180,7 +191,7 @@ def dialouge(size, text):
         height = 130 + 2 * buttonHeight + buttonHeight/3 + ((40/27)*num) * i
         dialougeSurf.blit(render, (size + 30, height))
 
-    return dialougeSurf
+    return dialougeSurf, font
 
 
 # side window and button control

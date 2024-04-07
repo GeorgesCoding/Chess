@@ -3,7 +3,6 @@ import math
 import GUI
 import Controller
 from Engine import minimax
-import os
 
 BLACK = -1
 WHITE = 1
@@ -25,10 +24,8 @@ def main():
 
     # automatically changes window dimensions according to monitor size
     pygame.init()
-    # x, y = -1300, -1000
-    # os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x, y)
     size = pygame.display.Info().current_h
-    size = size  # /0.585
+    size = size
     SIZE = (size - 120)
     PSIZE = (SIZE-50)/8
 
@@ -75,11 +72,10 @@ def main():
     # draw board, pieces and side bar
     buttonSurface = GUI.buttons(SIZE)
     boardSurface = GUI.createBoard(SIZE, PSIZE)
-    dialougeSurf = GUI.dialouge(SIZE, text)
+    dialougeSurf, font = GUI.dialouge(SIZE, text)
     piecesSurface = GUI.drawPieces(board, PSIZE, SIZE)
 
     oldX, oldY = 0, 0
-
     # main loop
     while True:
         for event in pygame.event.get():
@@ -101,12 +97,12 @@ def main():
                     computer = Controller.randomTurn()
                     player = -computer
                     GUI.clearText(text, NUMTEXT)
-                dialougeSurf = GUI.dialouge(SIZE, text)
+                dialougeSurf = GUI.dialouge(SIZE, text)[0]
 
             # checks if game has ended
             if start and not outline and not end:
                 end = Controller.gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
-                dialougeSurf = GUI.dialouge(SIZE, text)
+                dialougeSurf = GUI.dialouge(SIZE, text)[0]
 
             # computer move
             if start and computer != None and turn == computer and not end and not outline:
@@ -120,10 +116,10 @@ def main():
                     board[oldY][newX[1]] = rook
                     Controller.firstMove(newY[1], board, oldY, newX[0])
                     Controller.firstMove(rook, board, oldY, newX[1])
-                    count = Controller.addText(text, str(PIECE[newY[1]]) + str(newY[0]), 0)
+                    count = Controller.addText(text, str(PIECE[newY[1]]) + str(newY[0]), 0, font)
                 else:
                     num, alph = Controller.computePos(piece, computer, player, newY, newX)
-                    count = Controller.addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count, 0)
+                    count = Controller.addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count, 0, font)
                     Controller.enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer, turn, False)
                     board[newY][newX] = piece
                     isPawn = Controller.pawnFirst(piece, newY, newX, oldY, oldX, computer, turn)
@@ -132,13 +128,13 @@ def main():
 
                     if piece in {-1, 1} and newY == 7:  # computer promotion
                         board[newY][newX] = piece * Controller.choice((5, 3, 4, 7))
-                        Controller.addText(text, PIECE[piece] + " promoted to ", 0, 0)
-                        Controller.addText(text, "    " + str(PIECE[board[newY][newX]]), 0, DIALOUGEINFO[0])
+                        Controller.addText(text, PIECE[piece] + " promoted to", 0, 0, font)
+                        Controller.addText(text, "    " + str(PIECE[board[newY][newX]]), 0, DIALOUGEINFO[0], font)
                 turn = -turn
                 text = GUI.clearText(text, NUMTEXT)
                 Controller.isCheck(end, piece, board, 0, canPassant, text, computer)
                 piecesSurface = GUI.drawPieces(board, PSIZE, SIZE)
-                dialougeSurf = GUI.dialouge(SIZE, text)
+                dialougeSurf = GUI.dialouge(SIZE, text)[0]
                 oldY, oldX = 0, 0
                 tempPiece = None
 
@@ -149,37 +145,38 @@ def main():
                 # pawn promotion is happening
                 if outline:
                     for i, p in enumerate(promoInfo):
-                        promoPressed, count = Controller.button(i + 1, p, promotion, board, text, count, DIALOUGEINFO[0])
+                        promoPressed, count = Controller.button(i + 1, p, promotion, board, text, count, DIALOUGEINFO[0], font)
                         if promoPressed:
                             outline = False
                             board = GUI.rotate(board, computer)
                             turn = -turn
                             text = GUI.clearText(text, NUMTEXT)
                             end = Controller.gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text, computer)
+                            Controller.isCheck(end, piece, board, opposite, canPassant, text, computer)
                             boardSurface = GUI.createBoard(SIZE, PSIZE)
                             buttonSurface = GUI.buttons(SIZE)
                             piecesSurface = GUI.drawPieces(board, PSIZE, SIZE)
-                            dialougeSurf = GUI.dialouge(SIZE, text)
+                            dialougeSurf = GUI.dialouge(SIZE, text)[0]
                             break
 
                 # restarts program
-                elif Controller.button(0, restartInfo, None, None, text, 0, 0):
+                elif Controller.button(0, restartInfo, None, None, text, 0, 0, 0):
                     pygame.quit()
                     main()
                     return
 
                 #  two player mode
-                elif not colourChoose and Controller.button(0, twoPlayerInfo, None, None, text, 0, 0):
+                elif not colourChoose and Controller.button(0, twoPlayerInfo, None, None, text, 0, 0, 0):
                     start = True
 
                 # Computer mode
-                elif not start and Controller.button(0, computerInfo, None, None, text, 0, 0) and not colourChoose:
-                    Controller.addText(text, "Press the Key to Choose a Colour:", 0, 0)
-                    Controller.addText(text, "W for White", 0, 0)
-                    Controller.addText(text, "B for Black", 0, 0)
-                    Controller.addText(text, "R for Random", 0, 0)
+                elif not start and Controller.button(0, computerInfo, None, None, text, 0, 0, 0) and not colourChoose:
+                    Controller.addText(text, "Press the Key to Choose a Colour:", 0, 0, font)
+                    Controller.addText(text, "W for White", 0, 0, font)
+                    Controller.addText(text, "B for Black", 0, 0, font)
+                    Controller.addText(text, "R for Random", 0, 0, font)
                     colourChoose = True
-                    dialougeSurf = GUI.dialouge(SIZE, text)
+                    dialougeSurf = GUI.dialouge(SIZE, text)[0]
 
                 # checks if a piece has been selected
                 elif start and tempPiece != 10 and Controller.playerTurn(Controller.pieceColour(tempPiece), turn, player) and not end:
@@ -222,12 +219,12 @@ def main():
                             if Controller.kingCoord(piece, tempBoard) in moveList:
                                 board[oldY][oldX] = piece
                                 inCheck = "    White king in check" if piece < 0 else "    Black king in check"
-                                Controller.addText(text, "Invalid move:", 0, 0)
-                                Controller.addText(text, inCheck, 0, DIALOUGEINFO[0])
+                                Controller.addText(text, "Invalid move:", 0, 0, font)
+                                Controller.addText(text, inCheck, 0, DIALOUGEINFO[0], font)
 
                             else:  # legal move
                                 num, alph = Controller.computePos(piece, computer, player, newY, newX)
-                                count = Controller.addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count, 0)
+                                count = Controller.addText(text, str(PIECE[piece]) + " to " + str(ALPH[alph]) + str(num), count, 0, font)
                                 Controller.enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, text, computer, turn, False)
                                 board[newY][newX] = piece
                                 isPawn = Controller.pawnFirst(piece, newY, newX, oldY, oldX, computer, turn)
@@ -254,18 +251,18 @@ def main():
                         else:  # within bounds, invalid move
                             board[oldY][oldX] = piece
                             if not (newY == oldY and newX == oldX):
-                                Controller.addText(text, "Invalid Move", 0, 0)
+                                Controller.addText(text, "Invalid Move", 0, 0, font)
 
                     else:  # piece placed outside of boards
                         board[oldY][oldX] = piece
                         if not (newY == oldY and newX == oldX):
-                            Controller.addText(text, "Invalid Move", 0, 0)
+                            Controller.addText(text, "Invalid Move", 0, 0, font)
 
                 # redraw surfaces, reset temp variables
                 boardSurface = GUI.createBoard(SIZE, PSIZE)
                 buttonSurface = GUI.buttons(SIZE)
                 piecesSurface = GUI.drawPieces(board, PSIZE, SIZE)
-                dialougeSurf = GUI.dialouge(SIZE, text)
+                dialougeSurf = GUI.dialouge(SIZE, text)[0]
                 selected = None
                 oldY, oldX = 0, 0
 

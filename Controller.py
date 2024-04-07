@@ -57,7 +57,7 @@ def isCheck(end, piece, board, opposite, canPassant, text, computer):
         moveList = computeAll(-piece, board, 0, opposite, canPassant, computer)
         if kingCoord(-piece, board) in moveList:
             inCheck = "    White king in check" if -piece < 0 else "    Black king in check"
-            addText(text, inCheck, 0, 0)
+            addText(text, inCheck, 0, 0, 0)
 
 
 # computes the board position of the piece
@@ -80,14 +80,16 @@ def kingCoord(piece, board):
 
 # determine if move is legal during check or if it prevents check
 def checkMove(piece, newY, newX, oldY, oldX, board, canPassant, computer):
-    tempBoard = [row[:] for row in board]
-    tempBoard[oldY][oldX] = 0
-    tempBoard[newY][newX] = piece
-    moveList = computeAll(piece, tempBoard, 0, 0, canPassant, computer)
+    newPiece = board[newY][newX]
+    board[oldY][oldX] = 0
+    board[newY][newX] = piece
+    moveList = computeAll(piece, board, 0, 0, canPassant, computer)
 
-    if (kingCoord(piece, tempBoard) in moveList):
+    if (kingCoord(piece, board) in moveList):
+        undo(board, piece, newPiece, newY, newX, oldY, oldX)
         return False
     else:
+        undo(board, piece, newPiece, newY, newX, oldY, oldX)
         return True
 
 
@@ -231,7 +233,7 @@ def enPassantCapture(piece, board, newY, newX, oldY, oldX, isPawn, canPassant, t
     if isPawn and coord in canPassant and piece in {-1, 11, -11, 1} and spaceCheck(piece, board, newY, newX) and newCoord == canPassant[0]:
         board[newY + add][newX] = 0
         if not noPrint:
-            addText(text, PIECE[piece] + " en passant capture", 0, 0)
+            addText(text, PIECE[piece] + " en passant capture", 0, 0, 0)
 
 
 # determines if en passant is a possible move
@@ -387,14 +389,14 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, text, count):
             firstMove(piece, board, oldY, kingX)
             firstMove(rook, board, oldY, rookX)
             board[mY][tempX] = 0
-            count = addText(text, str(PIECE[piece]) + str(side), count, 0)
+            count = addText(text, str(PIECE[piece]) + str(side), count, 0, 0, 0)
             return True, count
     return False, count
 
 
 # evaluates if a button is pressed
 # also dictates pawn promotion behaviour
-def button(selection, info, promotedPiece, board, text, count, length):
+def button(selection, info, promotedPiece, board, text, count, length, font):
     pressed = pygame.mouse.get_pos()[0] in range(info[0], info[2] + info[0]) and pygame.mouse.get_pos()[1] in range(info[1], info[3] + info[1])
     pawn = "Black"
 
@@ -408,8 +410,8 @@ def button(selection, info, promotedPiece, board, text, count, length):
             newPiece = -newPiece
             pawn = "White"
         board[y][x] = newPiece
-        addText(text, pawn + " pawn promoted to ", 0, 0)
-        addText(text, "    " + str(PIECE[newPiece]), 0, length)
+        addText(text, pawn + " pawn promoted to", 0, 0, font)
+        addText(text, "    " + str(PIECE[newPiece]), 0, length, font)
 
     if count == 0:
         return pressed
@@ -421,27 +423,33 @@ def button(selection, info, promotedPiece, board, text, count, length):
 def checkmate(king, board, canPassant, opposite, computer):
     canMove = False
     opposite = 1 if (opposite == 0 and computer == None) else 0
-
     moveList = specificCompute(-king, board, canPassant, computer, opposite)[0]
-    tempBoard = [row[:] for row in board]
 
     # goes through each list in moveList
     for i, _ in enumerate(moveList):
         n = moveList[i][0]
         oldY, oldX = moveList[i][1]
-        tempBoard = [row[:] for row in board]
-        tempBoard[oldY][oldX] = 0
+        board[oldY][oldX] = 0
 
         # goes through each sublist
         for (newY, newX) in moveList[i][2]:
-            movedBoard = [row[:] for row in tempBoard]
-            if spaceCheck(n, movedBoard, newY, newX):
-                movedBoard[newY][newX] = n
-                tempMoveList = computeAll(king, movedBoard, 0, opposite, canPassant, computer)
-                if kingCoord(king, movedBoard) not in tempMoveList:  # king not in check after move
+            if spaceCheck(n, board, newY, newX):
+                newPiece = board[newY][newX]
+                board[newY][newX] = n
+                tempMoveList = computeAll(king, board, 0, opposite, canPassant, computer)
+                if kingCoord(king, board) not in tempMoveList:  # king not in check after move
                     canMove = True
+                    undo(board, 0, newPiece, newY, newX, oldY, oldX)
                     break
+                undo(board, 0, newPiece, newY, newX, oldY, oldX)
+        board[oldY][oldX] = n
     return not canMove
+
+
+# undos the move to prevent deep copying the list
+def undo(board, oldPiece, newPiece, newY, newX, oldY, oldX):
+    board[newY][newX] = newPiece
+    board[oldY][oldX] = oldPiece
 
 
 # determines if the game has ended through checkmate or stalemate
@@ -471,29 +479,29 @@ def gameEnd(board, turn, pieceMoving, start, outline, canPassant, opposite, text
 
         # stalemate cases
         if emptySpace == 62:  # king vs king
-            addText(text, "Stalemate: Insufficient material.", 0, 0)
-            addText(text, "Press restart or exit the game.", 0, 0)
+            addText(text, "Stalemate: Insufficient material.", 0, 0, 0)
+            addText(text, "Press restart or exit the game.", 0, 0, 0)
             return True
         elif emptySpace == 61 and ((len(bishop) == 1 and knight == 0) or (knight == 1 and len(bishop) == 0)):  # 1 bishop/knight vs king
-            addText(text, "Stalemate: Insufficient material.", 0, 0)
-            addText(text, "Press restart or exit the game.", 0, 0)
+            addText(text, "Stalemate: Insufficient material.", 0, 0, 0)
+            addText(text, "Press restart or exit the game.", 0, 0, 0)
             return True
         elif emptySpace == 60 and len(bishop) == 2:  # 1 bishop vs 1 bishop, same colour
             b1, b2 = bishop[0][0], bishop[1][0]
             i1, i2 = (bishop[0][1] * 8) + bishop[0][2], (bishop[1][1] * 8) + bishop[1][2]
             y1, y2, = bishop[0][1], bishop[1][1]
             if b1 != b2 and y1 % 2 == i1 % 2 and y2 % 2 == i2 % 2:
-                addText(text, "Stalemate: Insufficient material.", 0, 0)
-                addText(text, "Press restart or exit the game.", 0, 0)
+                addText(text, "Stalemate: Insufficient material.", 0, 0, 0)
+                addText(text, "Press restart or exit the game.", 0, 0, 0)
                 return True
 
         if checkmate(king, board, canPassant, opposite, computer):  # cannot move
             winner = {-9: "Black", -99: "Black", 99: "White", 9: "White"}
             if kingCoord(king, board) in moveList:  # king in check
-                addText(text, "Checkmate: " + str(winner[king]) + " won!", 0, 0)
+                addText(text, "Checkmate: " + str(winner[king]) + " won!", 0, 0, 0)
             else:  # no possible moves, stalemate
-                addText(text, "Stalemate: " + str(winner[-king]) + " cannot move.", 0, 0)
-            addText(text, "Press restart or exit the game.", 0, 0)
+                addText(text, "Stalemate: " + str(winner[-king]) + " cannot move.", 0, 0, 0)
+            addText(text, "Press restart or exit the game.", 0, 0, 0)
             return True
         else:
             return False
