@@ -389,7 +389,7 @@ def castle(piece, board, oldY, oldX, pSize, size, moveList, text, count):
             firstMove(piece, board, oldY, kingX)
             firstMove(rook, board, oldY, rookX)
             board[mY][tempX] = 0
-            count = addText(text, str(PIECE[piece]) + str(side), count, 0, 0, 0)
+            count = addText(text, str(PIECE[piece]) + str(side), count, 0, 0)
             return True, count
     return False, count
 
