@@ -152,3 +152,11 @@ During checkmate, all piece movements and buttons are disabled with only the res
 There is a black box on the bottom right-hand side of the screen underneath the pawn promotion buttons. Here, commentary will be displayed according to the moves of the players. It will also display if the move is invalid if the king is in check, castling, checkmate and more. The most recent comment is at the bottom.
 
 ![Chess - frame at 0m59s](https://github.com/GeorgesCoding/Chess/assets/118407807/fa434f2e-0a77-42ce-a092-9a218224c755)
+
+
+#
+# **Citations**
+Here are some sources that helped me alot during development:
+
+- https://www.freecodecamp.org/news/simple-chess-ai-step-by-step-1d55a9266977/
+- https://www.youtube.com/watch?v=l-hh51ncgDI&ab_channel=SebastianLague
